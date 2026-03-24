@@ -17603,3 +17603,39 @@ Answer: **苹果公司(AAPL)美股日K线数据查询结果**
 2026-03-24 18:28:43 - ai_data_agent - INFO - Anthropic Response received
 2026-03-24 18:28:43 - ai_data_agent - INFO - Anthropic Content Length: 437
 2026-03-24 18:28:43 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-24 18:34:59 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 18:34:59 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 18:35:04 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 18:35:04 - ai_data_agent - INFO - Environment: development
+2026-03-24 18:35:04 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 18:35:04 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 18:35:04 - ai_data_agent - INFO - Database connection established
+2026-03-24 18:35:04 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 18:35:04 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 18:35:04 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 18:35:04 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 18:35:04 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 18:35:04 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 18:35:04 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 18:35:21 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-24 18:35:21 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-24 18:39:07 - ai_data_agent - WARNING - [ExecutorNode] No more steps to execute (step 0/0)
+2026-03-24 18:39:07 - ai_data_agent - WARNING - [ExecutorNode] No more steps to execute (step 1/1)
+2026-03-24 18:39:07 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 未知工具
+2026-03-24 18:39:07 - ai_data_agent - ERROR - [ExecutorNode] Unknown tool: unknown_tool
+2026-03-24 18:39:07 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_unknown_tool']
+2026-03-24 18:41:17 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 查询销售数据
+2026-03-24 18:41:17 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_sql_query']
+2026-03-24 18:41:17 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 查询库存数据
+2026-03-24 18:41:17 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_inv_001']
+2026-03-24 18:41:17 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/2: 查询销售数据
+2026-03-24 18:41:17 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_sql_query']
+2026-03-24 18:41:17 - ai_data_agent - INFO - [ExecutorNode] Executing step 2/2: 查询库存数据
+2026-03-24 18:41:17 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_1_inv_001']
+2026-03-24 18:41:17 - ai_data_agent - WARNING - [ExecutorNode] No more steps to execute (step 0/0)
+2026-03-24 18:41:17 - ai_data_agent - WARNING - [ExecutorNode] No more steps to execute (step 1/1)
+2026-03-24 18:41:18 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 未知工具
+2026-03-24 18:41:18 - ai_data_agent - ERROR - [ExecutorNode] Unknown tool: unknown_tool
+2026-03-24 18:41:18 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_unknown_tool']
+2026-03-24 18:41:18 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 错误的SQL
+2026-03-24 18:41:18 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_sql_query']
