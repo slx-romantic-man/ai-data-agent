@@ -122,7 +122,41 @@ feature_list.json 共拆解了 15 个核心功能卡片：
 - feature_list.json 是唯一真相来源 (Single Source of Truth)
 
 ===========================================
-六、失败模式警告 (FAILURE MODES)
+六、需求变更记录 (REQUIREMENT CHANGES)
+===========================================
+
+⚠️ 重要：F-10 实现过程中发生需求变更，影响后续功能
+
+[2026-03-24] F-10 需求变更
+原需求: 所有用户调用高危 API 时触发审批
+新需求: 基于用户角色的条件审批
+  - 管理员 (role=admin): 直接执行，无需审批
+  - 普通用户 (role=user): 调用 API 时需要审批
+
+实现方式:
+  - graph.py 的 planner_wrapper 中检查 permission.role
+  - 设置 requires_approval = has_api_calls and not is_admin
+  - should_require_approval() 路由到 approval_gate 或 executor
+
+受影响的后续功能:
+  - F-14: 人工审批网关场景测试
+    * 需要测试管理员和普通用户两种场景
+    * 管理员应该直接执行不触发审批
+    * 普通用户应该触发审批卡片
+
+已完成的实现:
+  - backend/app/agent/graph.py:72-75 (角色检查逻辑)
+  - backend/app/api/v1/approval.py (完整审批接口)
+  - test_approval.py (自动化测试脚本，已验证两种角色)
+  - frontend/js/features/chat.js (审批事件处理)
+  - frontend/js/app-template.js (审批卡片 UI)
+
+查看完整实现:
+  - Git commit: df8e345
+  - 详细记录: 本文件第 345-372 行
+
+===========================================
+七、失败模式警告 (FAILURE MODES)
 ===========================================
 
 ⚠️ 常见失败模式及应对：

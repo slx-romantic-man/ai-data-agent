@@ -18550,3 +18550,63 @@ Answer: 为了查询销售数据，请您提供以下信息：
 2026-03-24 21:15:32 - ai_data_agent - INFO - Anthropic Content Length: 351
 2026-03-24 21:15:32 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"time_range": {"start": "today", "end": "today", "description": "今天"}, "api_hint": "user"}, "metrics": ["用户总数"], "dimensions": ["日期"], "confidence": 0.9, "missing_info": ["用户统计API"], "clarification_question": "系统尚未配置用户统计相关的API，请先配置用户统计接口以支持此查询"}
 2026-03-24 21:15:32 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['用户统计API']
+2026-03-24 21:21:55 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 21:21:55 - ai_data_agent - INFO - Environment: development
+2026-03-24 21:21:55 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 21:21:55 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 21:21:55 - ai_data_agent - INFO - Database connection established
+2026-03-24 21:21:55 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 21:21:55 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 21:21:55 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 21:21:55 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 21:21:55 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 21:21:55 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 21:21:55 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 21:21:57 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 21:21:57 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 21:22:16 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 21:22:16 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 21:22:16 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 21:22:16 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 21:22:16 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 21:22:16 - ai_data_agent - INFO - [IntentNode] Processing query: 查询今天的用户总数
+2026-03-24 21:22:19 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 21:22:29 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 21:22:29 - ai_data_agent - INFO - Anthropic Content Length: 374
+2026-03-24 21:22:29 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_statistic", "entities": {"time_range": {"start": "2025-01-09", "end": "2025-01-09", "description": "今天"}, "api_hint": "user"}, "metrics": ["用户数"], "dimensions": ["日期"], "confidence": 0.95, "missing_info": null, "clarification_question": null}
+2026-03-24 21:22:29 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "data_statistic", "entities": {"time_range": {"start": "2025-01-09", "end": "2025-01-09", "description": "今天"}, "api_hint": "user"}, "metrics": ["用户数"], "dimensions": ["日期"], "confidence": 0.95}
+2026-03-24 21:22:29 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询今天的用户总数
+2026-03-24 21:22:53 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-24 21:23:07 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-24 21:23:09 - ai_data_agent - INFO - Retrieved 4 candidates for user 1
+2026-03-24 21:23:10 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 21:23:18 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 21:23:18 - ai_data_agent - INFO - Anthropic Content Length: 21
+2026-03-24 21:23:18 - ai_data_agent - INFO - LLM raw response: {"selected_apis": []}
+2026-03-24 21:23:18 - ai_data_agent - INFO - LLM selected 0 APIs
+2026-03-24 21:23:18 - ai_data_agent - INFO - [Retrieval Node] Retrieved 0 APIs
+2026-03-24 21:23:18 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询今天的用户总数
+2026-03-24 21:23:20 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 21:23:36 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 21:23:36 - ai_data_agent - INFO - Anthropic Content Length: 541
+2026-03-24 21:23:36 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-24 21:23:36 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/approval/test-1774358536/approve
+2026-03-24 21:23:37 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 21:23:37 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取2025-01-09的用户总数统计
+2026-03-24 21:23:37 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_user_daily']
+2026-03-24 21:23:37 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-24 21:23:37 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-24 21:23:37 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-24 21:23:37 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-24 21:23:37 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/approval/test-1774358536/approve - Status: 200
+2026-03-24 21:23:37 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 21:23:37 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 21:23:37 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 21:23:37 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 21:23:37 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 21:23:37 - ai_data_agent - INFO - [IntentNode] Processing query: 查询今天的用户总数
+2026-03-24 21:23:39 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 21:23:53 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 21:23:53 - ai_data_agent - INFO - Anthropic Content Length: 360
+2026-03-24 21:23:53 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_statistic", "entities": {"time_range": {"start": "today", "end": "today", "description": "今天"}, "api_hint": "user"}, "metrics": ["用户数"], "dimensions": [], "confidence": 0.9, "missing_info": ["系统尚未配置任何API"], "clarification_question": "当前系统暂无已配置的API，无法执行查询。请先配置用户统计相关的API接口。"}
+2026-03-24 21:23:53 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['系统尚未配置任何API']
