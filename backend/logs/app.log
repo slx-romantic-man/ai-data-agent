@@ -17571,3 +17571,35 @@ Answer: **苹果公司(AAPL)美股日K线数据查询结果**
 }
 2026-03-24 17:36:17 - ai_data_agent - INFO - LLM selected 1 APIs
 2026-03-24 17:36:17 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-24 17:47:18 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 17:47:18 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 17:47:21 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 17:47:21 - ai_data_agent - INFO - Environment: development
+2026-03-24 17:47:21 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 17:47:21 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 17:47:21 - ai_data_agent - INFO - Database connection established
+2026-03-24 17:47:21 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 17:47:21 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 17:47:21 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 17:47:21 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 17:47:21 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 17:47:21 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 17:47:21 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 17:47:44 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-24 17:47:44 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-24 18:28:02 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询华东地区最近7天的销售数据
+2026-03-24 18:28:09 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 18:28:22 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 18:28:22 - ai_data_agent - INFO - Anthropic Content Length: 579
+2026-03-24 18:28:22 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-24 18:28:22 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询数据
+2026-03-24 18:28:25 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 18:28:33 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 18:28:33 - ai_data_agent - INFO - Anthropic Content Length: 130
+2026-03-24 18:28:33 - ai_data_agent - ERROR - [PlannerNode] Failed to generate valid plan, using fallback
+2026-03-24 18:28:33 - ai_data_agent - INFO - [PlannerNode] Generated plan with 0 steps
+2026-03-24 18:28:33 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 分析上海地区的销售趋势
+2026-03-24 18:28:36 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 18:28:43 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 18:28:43 - ai_data_agent - INFO - Anthropic Content Length: 437
+2026-03-24 18:28:43 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
