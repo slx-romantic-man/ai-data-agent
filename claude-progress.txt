@@ -298,6 +298,27 @@ feature_list.json 共拆解了 15 个核心功能卡片：
 
 ---
 
+[2026-03-24] 会话 #8 - Coding Agent
+- 完成功能: F-08 接入状态持久化 (AsyncSqliteSaver)
+- 修改文件:
+  * backend/requirements.txt - 添加 langgraph-checkpoint-sqlite 和 aiosqlite
+  * backend/app/config/settings.py - 添加 POSTGRES_URL 配置项
+  * backend/app/agent/graph.py - 集成 AsyncSqliteSaver 作为 checkpointer
+  * backend/test_*.py - 更新所有测试文件以支持异步 create_graph
+- 实现细节:
+  * 使用 AsyncSqliteSaver 替代 PostgresSaver (更轻量，无需额外数据库)
+  * checkpointer 存储在 ./data/checkpoints.db
+  * create_graph 改为异步函数以支持 checkpointer 初始化
+  * 所有测试文件已更新为 await create_graph(permission)
+- 测试结果:
+  * test_simple_checkpoint.py 验证 checkpointer 成功初始化
+  * checkpointer.setup() 正常执行
+  * 数据库文件正确创建在 ./data/checkpoints.db
+- Git commit: feat: F-08 接入 AsyncSqliteSaver 实现状态持久化
+- 下一步: F-09 更新 API 层接入新的 LangGraph 工作流
+
+---
+
 [后续会话请在此处追加进展记录]
 
 格式示例：
