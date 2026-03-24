@@ -51,7 +51,7 @@
         "将生成的 plan 写入 state['plan']，重置 current_step 为 0",
         "测试 Planner 能够根据用户查询生成合理的多步骤计划"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-05",

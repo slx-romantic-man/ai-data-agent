@@ -197,6 +197,29 @@ feature_list.json 共拆解了 15 个核心功能卡片：
 
 ---
 
+[2026-03-24] Coding Agent Session 4
+- 完成功能: F-04 实现 Planner Node (全局规划师节点)
+- 修改文件:
+  * backend/app/agent/prompts/planner_prompt.py (新建)
+  * backend/app/agent/nodes/planner_node.py (新建)
+  * backend/tests/test_planner_node.py (新建)
+- 实现细节:
+  * 创建 Planner Prompt 模板，指导 LLM 生成结构化执行计划
+  * 实现 planner_node 函数，接收 AgentState 和 retrieved_apis
+  * 使用 Pydantic 模型 (PlanStep, ExecutionPlan) 验证 JSON 格式
+  * 实现降级策略：LLM 生成失败时使用第一个检索到的 API
+  * 将生成的 plan 写入 state['plan']，重置 current_step 为 0
+- 测试结果:
+  * test_planner_node_generates_valid_plan: 验证生成有效计划
+  * test_planner_node_handles_empty_apis: 验证处理空 API 列表
+  * test_planner_node_plan_structure: 验证计划结构完整性
+  * 3 passed in 47.80s
+- Python 导入测试通过
+- Git commit: feat: F-04 实现 Planner Node
+- 下一步: F-05 实现 Executor Node
+
+---
+
 [后续会话请在此处追加进展记录]
 
 格式示例：
