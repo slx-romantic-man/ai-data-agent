@@ -17461,3 +17461,17 @@ Answer: **苹果公司(AAPL)美股日K线数据查询结果**
 2026-03-24 16:46:26 - ai_data_agent - INFO - Shutting down AI Data Agent...
 2026-03-24 16:46:26 - ai_data_agent - INFO - Database connection closed
 2026-03-24 16:46:26 - ai_data_agent - INFO - AI Data Agent shutdown complete
+2026-03-24 17:06:01 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 17:06:01 - ai_data_agent - INFO - Environment: development
+2026-03-24 17:06:01 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 17:06:01 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 17:06:01 - ai_data_agent - INFO - Database connection established
+2026-03-24 17:06:01 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 17:06:01 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 17:06:01 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 17:06:01 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 17:06:01 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 17:06:01 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 17:06:01 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 17:06:02 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 17:06:02 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200

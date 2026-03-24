@@ -194,7 +194,8 @@
       "Bash(python test_api_query.py 2)",
       "Bash(python grant_permissions.py)",
       "Bash(python test_final_capabilities.py)",
-      "Bash(grep -E \"\\(^=|^能力|^说明|^查询|^-{5,}|^\\\\[|^✓|^✗|^🎉|^⚠️|测试\\)\")"
+      "Bash(grep -E \"\\(^=|^能力|^说明|^查询|^-{5,}|^\\\\[|^✓|^✗|^🎉|^⚠️|测试\\)\")",
+      "Bash(bash init.sh)"
     ]
   }
 }

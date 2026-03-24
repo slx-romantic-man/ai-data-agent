@@ -11,7 +11,7 @@
         "验证 AgentState 包含: messages, query, extracted_filters, plan, current_step, data_context 字段",
         "运行 Python 导入测试确认无语法错误"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-02",
