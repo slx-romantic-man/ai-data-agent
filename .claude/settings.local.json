@@ -195,7 +195,12 @@
       "Bash(python grant_permissions.py)",
       "Bash(python test_final_capabilities.py)",
       "Bash(grep -E \"\\(^=|^能力|^说明|^查询|^-{5,}|^\\\\[|^✓|^✗|^🎉|^⚠️|测试\\)\")",
-      "Bash(bash init.sh)"
+      "Bash(bash init.sh)",
+      "Bash(python -m pytest tests/agent/test_intent_node.py -v)",
+      "Bash(python -c \"from app.agent.nodes.intent_node import intent_clarification_node; from app.agent.state import AgentState; print\\(''✅ Import successful''\\); print\\(''✅ AgentState fields:'', list\\(AgentState.__annotations__.keys\\(\\)\\)\\)\")",
+      "Bash(python -c \"import sys; sys.path.insert\\(0, ''backend''\\); from app.agent.nodes.intent_node import intent_clarification_node; from app.agent.state import AgentState; print\\(''✅ Import successful''\\); print\\(''✅ AgentState fields:'', list\\(AgentState.__annotations__.keys\\(\\)\\)\\)\")",
+      "Bash(python -c \"import sys; sys.path.insert\\(0, ''backend''\\); from app.agent.nodes.intent_node import intent_clarification_node; from app.agent.state import AgentState; print\\(''Import successful''\\); print\\(''AgentState fields:'', list\\(AgentState.__annotations__.keys\\(\\)\\)\\)\")",
+      "Bash(git add:*)"
     ]
   }
 }

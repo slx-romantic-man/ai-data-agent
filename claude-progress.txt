@@ -164,6 +164,39 @@ feature_list.json 共拆解了 15 个核心功能卡片：
 
 ---
 
+[2026-03-24] Coding Agent Session #2
+- 完成功能: F-02 实现 Intent Clarification Node (意图澄清节点)
+- 修改文件:
+  * backend/app/agent/nodes/__init__.py (新建)
+  * backend/app/agent/nodes/intent_node.py (新建)
+  * backend/tests/agent/test_intent_node.py (新建单元测试)
+- 测试结果: 3个单元测试全部通过
+  * test_intent_node_with_complete_query: 验证完备查询提取 extracted_filters
+  * test_intent_node_with_incomplete_query: 验证不完备查询返回反问
+  * test_intent_node_state_structure: 验证状态结构正确性
+- Python 导入测试通过，AgentState 6个字段验证通过
+- Git commit: feat: F-02 实现 Intent Clarification Node
+- 下一步: F-03 实现 API Retrieval Node
+
+---
+
+[2026-03-24] 会话 #3 - Coding Agent
+- 完成功能: F-03 实现 API Retrieval Node (工具检索节点)
+- 修改文件:
+  * backend/app/agent/nodes/retrieval_node.py (新建)
+  * backend/tests/agent/test_retrieval_node.py (新建)
+  * feature_list.json (F-03 passes: false -> true)
+- 测试结果:
+  * test_retrieval_node_returns_apis: 验证返回 API 列表
+  * test_retrieval_node_does_not_pollute_state: 验证不污染 AgentState
+  * test_retrieval_node_api_format: 验证 API 格式正确
+  * 3 passed in 81.15s
+- Python 导入测试通过
+- Git commit: feat: F-03 实现 API Retrieval Node
+- 下一步: F-04 实现 Planner Node
+
+---
+
 [后续会话请在此处追加进展记录]
 
 格式示例：

@@ -17509,3 +17509,65 @@ Answer: **苹果公司(AAPL)美股日K线数据查询结果**
 2026-03-24 17:20:49 - ai_data_agent - INFO - Anthropic Content Length: 325
 2026-03-24 17:20:49 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_statistic", "entities": {"time_range": {"description": "本月"}, "api_hint": "order"}, "metrics": ["订单量"], "dimensions": [], "confidence": 0.9, "missing_info": ["已配置的API"], "clarification_question": "当前系统中暂无已配置的API，无法完成订单量查询。请先配置订单相关的API接口。"}
 2026-03-24 17:20:49 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['已配置的API']
+2026-03-24 17:27:11 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 17:27:11 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 17:27:15 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 17:27:15 - ai_data_agent - INFO - Environment: development
+2026-03-24 17:27:15 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 17:27:15 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 17:27:15 - ai_data_agent - INFO - Database connection established
+2026-03-24 17:27:15 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 17:27:15 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 17:27:15 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 17:27:15 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 17:27:15 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 17:27:15 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 17:27:15 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 17:33:05 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询IP归属地信息
+2026-03-24 17:33:06 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询销售数据
+2026-03-24 17:33:06 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询天气信息
+2026-03-24 17:34:59 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询IP归属地信息
+2026-03-24 17:35:16 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-24 17:35:30 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-24 17:35:31 - ai_data_agent - INFO - Retrieved 4 candidates for user 1
+2026-03-24 17:35:34 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 17:35:43 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 17:35:43 - ai_data_agent - INFO - Anthropic Content Length: 21
+2026-03-24 17:35:43 - ai_data_agent - INFO - LLM raw response: {"selected_apis": []}
+2026-03-24 17:35:43 - ai_data_agent - INFO - LLM selected 0 APIs
+2026-03-24 17:35:43 - ai_data_agent - INFO - [Retrieval Node] Retrieved 0 APIs
+2026-03-24 17:35:43 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询销售数据
+2026-03-24 17:35:43 - ai_data_agent - INFO - Retrieved 4 candidates for user 1
+2026-03-24 17:35:43 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 17:36:03 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 17:36:03 - ai_data_agent - INFO - Anthropic Content Length: 219
+2026-03-24 17:36:03 - ai_data_agent - INFO - LLM raw response: ```json
+{
+    "selected_apis": [
+        {
+            "api_id": 3,
+            "reason": "虽然这是库存查询API，但与销售数据有业务关联，销售数据通常与库存变化相关。相似度为负值说明系统可能没有完全匹配的API，但在候选列表中这是最相关的选择",
+            "call_order": 1
+        }
+    ]
+}
+```
+2026-03-24 17:36:03 - ai_data_agent - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2026-03-24 17:36:03 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-24 17:36:03 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-24 17:36:03 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询天气信息
+2026-03-24 17:36:03 - ai_data_agent - INFO - Retrieved 4 candidates for user 1
+2026-03-24 17:36:04 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 17:36:17 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 17:36:17 - ai_data_agent - INFO - Anthropic Content Length: 195
+2026-03-24 17:36:17 - ai_data_agent - INFO - LLM raw response: {
+    "selected_apis": [
+        {
+            "api_id": 1,
+            "reason": "用户明确需要查询天气信息，WeatherAPI天气服务描述为查询不同城市的天气情况，与用户需求完全匹配，且相似度最高为0.705",
+            "call_order": 1
+        }
+    ]
+}
+2026-03-24 17:36:17 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-24 17:36:17 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
