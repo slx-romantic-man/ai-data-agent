@@ -17475,3 +17475,37 @@ Answer: **苹果公司(AAPL)美股日K线数据查询结果**
 2026-03-24 17:06:01 - ai_data_agent - INFO - AI Data Agent started successfully
 2026-03-24 17:06:02 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
 2026-03-24 17:06:02 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 17:15:36 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 17:15:36 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 17:15:39 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 17:15:39 - ai_data_agent - INFO - Environment: development
+2026-03-24 17:15:39 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 17:15:39 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 17:15:39 - ai_data_agent - INFO - Database connection established
+2026-03-24 17:15:39 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 17:15:39 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 17:15:39 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 17:15:39 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 17:15:39 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 17:15:39 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 17:15:39 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 17:16:00 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-24 17:16:00 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-24 17:20:01 - ai_data_agent - INFO - [IntentNode] Processing query: 查询最近7天北京地区的销售额
+2026-03-24 17:20:06 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 17:20:19 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 17:20:19 - ai_data_agent - INFO - Anthropic Content Length: 404
+2026-03-24 17:20:19 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"time_range": {"start": "2024-01-01", "end": "2024-01-07", "description": "最近7天"}, "location": "北京", "api_hint": "sales"}, "metrics": ["销售额"], "dimensions": ["日期", "地区"], "confidence": 0.95, "missing_info": null, "clarification_question": null}
+2026-03-24 17:20:19 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"time_range": {"start": "2024-01-01", "end": "2024-01-07", "description": "最近7天"}, "location": "北京", "api_hint": "sales"}, "metrics": ["销售额"], "dimensions": ["日期", "地区"], "confidence": 0.95}
+2026-03-24 17:20:19 - ai_data_agent - INFO - [IntentNode] Processing query: 查询IP归属地
+2026-03-24 17:20:21 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 17:20:28 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 17:20:28 - ai_data_agent - INFO - Anthropic Content Length: 237
+2026-03-24 17:20:28 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"api_hint": "geo"}, "metrics": [], "dimensions": [], "confidence": 0.7, "missing_info": ["IP地址"], "clarification_question": "请提供需要查询的IP地址"}
+2026-03-24 17:20:28 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['IP地址']
+2026-03-24 17:20:28 - ai_data_agent - INFO - [IntentNode] Processing query: 查询本月订单量
+2026-03-24 17:20:30 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 17:20:49 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 17:20:49 - ai_data_agent - INFO - Anthropic Content Length: 325
+2026-03-24 17:20:49 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_statistic", "entities": {"time_range": {"description": "本月"}, "api_hint": "order"}, "metrics": ["订单量"], "dimensions": [], "confidence": 0.9, "missing_info": ["已配置的API"], "clarification_question": "当前系统中暂无已配置的API，无法完成订单量查询。请先配置订单相关的API接口。"}
+2026-03-24 17:20:49 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['已配置的API']
