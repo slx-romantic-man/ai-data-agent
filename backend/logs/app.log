@@ -17639,3 +17639,30 @@ Answer: **苹果公司(AAPL)美股日K线数据查询结果**
 2026-03-24 18:41:18 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_unknown_tool']
 2026-03-24 18:41:18 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 错误的SQL
 2026-03-24 18:41:18 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_sql_query']
+2026-03-24 18:48:31 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 18:48:31 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 18:48:36 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 18:48:36 - ai_data_agent - INFO - Environment: development
+2026-03-24 18:48:36 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 18:48:36 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 18:48:37 - ai_data_agent - INFO - Database connection established
+2026-03-24 18:48:37 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 18:48:37 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 18:48:37 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 18:48:37 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 18:48:37 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 18:48:37 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 18:48:37 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Extracted 2 total rows from data_context
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 0 data sources
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-24 18:53:26 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 2 data sources
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Extracted 2 total rows from data_context
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Extracted 3 total rows from data_context
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Extracted 1 total rows from data_context
+2026-03-24 18:53:26 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
