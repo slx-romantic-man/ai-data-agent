@@ -355,6 +355,41 @@ window.AppTemplate = `
                                             <pre class="text-xs bg-gray-50 p-3 rounded-lg text-gray-700 overflow-x-auto">{{ msg.sql }}</pre>
                                         </div>
 
+                                        <!-- Approval Card -->
+                                        <div v-if="msg.approval" class="mt-4 border border-yellow-300 bg-yellow-50 rounded-lg p-4">
+                                            <div class="flex items-center space-x-2 mb-3">
+                                                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                                </svg>
+                                                <span class="font-semibold text-yellow-800">需要人工审批</span>
+                                            </div>
+                                            <div class="text-sm text-gray-700 mb-3">
+                                                <div class="font-medium mb-1">执行计划:</div>
+                                                <ul class="list-disc list-inside space-y-1">
+                                                    <li v-for="(step, idx) in msg.approval.plan" :key="idx">{{ step }}</li>
+                                                </ul>
+                                            </div>
+                                            <div v-if="msg.approval.status === 'pending'" class="flex space-x-3">
+                                                <button @click="handleApproval(msg, 'approve')"
+                                                    class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium">
+                                                    批准执行
+                                                </button>
+                                                <button @click="handleApproval(msg, 'reject')"
+                                                    class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                                                    拒绝执行
+                                                </button>
+                                            </div>
+                                            <div v-else-if="msg.approval.status === 'approved'" class="text-green-600 font-medium">
+                                                ✓ 已批准
+                                            </div>
+                                            <div v-else-if="msg.approval.status === 'rejected'" class="text-red-600 font-medium">
+                                                ✗ 已拒绝
+                                            </div>
+                                            <div v-else-if="msg.approval.status === 'processing'" class="text-blue-600 font-medium">
+                                                处理中...
+                                            </div>
+                                        </div>
+
                                         <!-- Export Button -->
                                         <div v-if="hasExportableData(msg)" class="mt-4 flex items-center space-x-4">
                                             <button @click="exportToExcel(msg)"

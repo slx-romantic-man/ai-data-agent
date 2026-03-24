@@ -18151,3 +18151,402 @@ Answer: 为了查询销售数据，请您提供以下信息：
 2026-03-24 19:59:31 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 400
 2026-03-24 19:59:56 - ai_data_agent - INFO - Request: GET http://localhost:8002/openapi.json
 2026-03-24 19:59:57 - ai_data_agent - INFO - Response: GET http://localhost:8002/openapi.json - Status: 200
+2026-03-24 20:01:48 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 20:01:48 - ai_data_agent - INFO - Environment: development
+2026-03-24 20:01:48 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 20:01:48 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 20:01:48 - ai_data_agent - INFO - Database connection established
+2026-03-24 20:01:48 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 20:01:48 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 20:01:48 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 20:01:48 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 20:01:48 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 20:01:48 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 20:01:48 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 20:01:48 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 20:01:48 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 20:02:07 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:02:08 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 20:02:08 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:02:08 - ai_data_agent - INFO - [IntentNode] Processing query: 查询销售数据
+2026-03-24 20:02:11 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 20:02:22 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 20:02:22 - ai_data_agent - INFO - Anthropic Content Length: 279
+2026-03-24 20:02:22 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"api_hint": "sales"}, "metrics": [], "dimensions": [], "confidence": 0.65, "missing_info": ["时间范围", "具体指标"], "clarification_question": "请告诉我您想查询哪个时间段的数据，以及您想查看的具体指标是什么（如销售额、订单量等）？"}
+2026-03-24 20:02:22 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['时间范围', '具体指标']
+2026-03-24 20:03:21 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:03:22 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 20:03:22 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:03:22 - ai_data_agent - INFO - [IntentNode] Processing query: 查询2026年3月的销售数据，按地区汇总
+2026-03-24 20:03:25 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 20:03:40 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 20:03:40 - ai_data_agent - INFO - Anthropic Content Length: 426
+2026-03-24 20:03:40 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_statistic", "entities": {"time_range": {"start": "2026-03-01", "end": "2026-03-31", "description": "2026年3月"}, "location": null, "api_hint": "sales"}, "metrics": ["销售额", "销售量"], "dimensions": ["地区"], "confidence": 0.85, "missing_info": ["具体指标", "地区列表"], "clarification_question": "请确认您需要的具体销售指标（如销售额、销售量或订单数），以及是否需要特定地区或全部地区的汇总数据？"}
+2026-03-24 20:03:40 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['具体指标', '地区列表']
+2026-03-24 20:05:07 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:05:07 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 20:05:07 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:05:07 - ai_data_agent - INFO - [IntentNode] Processing query: 查询销售数据
+2026-03-24 20:05:09 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 20:05:21 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 20:05:21 - ai_data_agent - INFO - Anthropic Content Length: 293
+2026-03-24 20:05:21 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"api_hint": "sales"}, "metrics": ["销售额", "订单量"], "dimensions": [], "confidence": 0.6, "missing_info": ["时间范围", "业务类型（可选）", "地区（可选）"], "clarification_question": "请提供需要查询的销售数据时间范围，例如：最近7天、本月或指定日期"}
+2026-03-24 20:05:21 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['时间范围', '业务类型（可选）', '地区（可选）']
+2026-03-24 20:06:50 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:06:50 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 20:06:51 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:06:51 - ai_data_agent - INFO - [IntentNode] Processing query: 查询销售数据
+2026-03-24 20:06:56 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 20:07:08 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 20:07:08 - ai_data_agent - INFO - Anthropic Content Length: 277
+2026-03-24 20:07:08 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"api_hint": "sales"}, "metrics": ["销售额", "订单量"], "dimensions": [], "confidence": 0.6, "missing_info": ["时间范围"], "clarification_question": "请问您想查询哪个时间段内的销售数据？例如：最近7天、本月、或者指定日期范围。"}
+2026-03-24 20:07:08 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['时间范围']
+2026-03-24 20:08:14 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:08:14 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 20:08:14 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:08:14 - ai_data_agent - INFO - [IntentNode] Processing query: 查询销售数据
+2026-03-24 20:08:16 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 20:08:30 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 20:08:30 - ai_data_agent - INFO - Anthropic Content Length: 363
+2026-03-24 20:08:30 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"api_hint": "sales"}, "metrics": [], "dimensions": [], "confidence": 0.5, "missing_info": ["时间范围", "具体指标（如销售额、订单量）", "查询维度（如按地区、按产品）"], "clarification_question": "请提供以下信息以便为您查询销售数据：1) 需要查询的时间范围（如最近7天、本月、具体日期）；2) 具体想查看哪些指标（销售额、订单量、毛利等）；3) 是否需要按特定维度分类（按地区、按产品、按部门等）"}
+2026-03-24 20:08:30 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['时间范围', '具体指标（如销售额、订单量）', '查询维度（如按地区、按产品）']
+2026-03-24 20:09:35 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:09:36 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 20:09:36 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:09:36 - ai_data_agent - INFO - [IntentNode] Processing query: 查询销售数据
+2026-03-24 20:09:40 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 20:09:54 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 20:09:54 - ai_data_agent - INFO - Anthropic Content Length: 285
+2026-03-24 20:09:54 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"api_hint": "sales"}, "metrics": [], "dimensions": [], "confidence": 0.7, "missing_info": ["时间范围", "具体指标"], "clarification_question": "请提供需要查询的时间范围（如最近7天、本月或具体日期），以及想要查看的销售指标（如销售额、订单量等）"}
+2026-03-24 20:09:54 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['时间范围', '具体指标']
+2026-03-24 20:15:21 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 20:15:21 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 20:15:29 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 20:15:29 - ai_data_agent - INFO - Environment: development
+2026-03-24 20:15:29 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 20:15:29 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 20:15:29 - ai_data_agent - INFO - Database connection established
+2026-03-24 20:15:29 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 20:15:29 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 20:15:29 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 20:15:29 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 20:15:29 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 20:15:29 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 20:15:29 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 20:15:43 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-24 20:15:43 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-24 20:22:11 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/auth/me
+2026-03-24 20:22:11 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/auth/me - Status: 200
+2026-03-24 20:22:11 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/auth/me
+2026-03-24 20:22:12 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/auth/me - Status: 200
+2026-03-24 20:22:12 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/history
+2026-03-24 20:22:12 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:22:12 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/history
+2026-03-24 20:22:13 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:22:14 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/admin/users
+2026-03-24 20:22:14 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/admin/users - Status: 200
+2026-03-24 20:22:14 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/admin/credit-logs?limit=100
+2026-03-24 20:22:14 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/admin/users
+2026-03-24 20:22:14 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/admin/credit-logs?limit=100 - Status: 200
+2026-03-24 20:22:14 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/system-apis
+2026-03-24 20:22:14 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/categories/tree
+2026-03-24 20:22:14 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/system-apis - Status: 200
+2026-03-24 20:22:14 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/categories/tree - Status: 200
+2026-03-24 20:22:14 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/admin/credit-logs?limit=100
+2026-03-24 20:22:14 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/admin/users - Status: 200
+2026-03-24 20:22:14 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/system-apis
+2026-03-24 20:22:14 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/categories/tree
+2026-03-24 20:22:17 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/admin/credit-logs?limit=100 - Status: 200
+2026-03-24 20:22:17 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/system-apis - Status: 200
+2026-03-24 20:22:17 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/system-apis
+2026-03-24 20:22:17 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/system-apis - Status: 200
+2026-03-24 20:22:17 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/system-apis
+2026-03-24 20:22:17 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/categories/tree - Status: 200
+2026-03-24 20:22:17 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/system-apis - Status: 200
+2026-03-24 20:22:17 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/categories/tree
+2026-03-24 20:22:17 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/categories/tree - Status: 200
+2026-03-24 20:22:17 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/categories/tree
+2026-03-24 20:22:17 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/categories/tree - Status: 200
+2026-03-24 20:23:21 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/system-apis
+2026-03-24 20:23:21 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/system-apis - Status: 200
+2026-03-24 20:23:21 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/system-apis
+2026-03-24 20:23:21 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/system-apis - Status: 200
+2026-03-24 20:23:21 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/categories/tree
+2026-03-24 20:23:21 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/categories/tree - Status: 200
+2026-03-24 20:23:21 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/categories/tree
+2026-03-24 20:23:21 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/categories/tree - Status: 200
+2026-03-24 20:26:33 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/approval/pending/test_thread
+2026-03-24 20:26:33 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/approval/pending/test_thread - Status: 404
+2026-03-24 20:28:19 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 20:28:19 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 20:28:30 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 20:28:30 - ai_data_agent - INFO - Environment: development
+2026-03-24 20:28:30 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 20:28:30 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 20:28:30 - ai_data_agent - INFO - Database connection established
+2026-03-24 20:28:30 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 20:28:30 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 20:28:30 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 20:28:30 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 20:28:30 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 20:28:30 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 20:28:30 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 20:28:43 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/approval/pending/test_thread
+2026-03-24 20:28:43 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/approval/pending/test_thread - Status: 404
+2026-03-24 20:28:56 - ai_data_agent - INFO - Request: GET http://localhost:8002/openapi.json
+2026-03-24 20:28:57 - ai_data_agent - INFO - Response: GET http://localhost:8002/openapi.json - Status: 200
+2026-03-24 20:32:10 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 20:32:10 - ai_data_agent - INFO - Environment: development
+2026-03-24 20:32:10 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 20:32:10 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 20:32:10 - ai_data_agent - INFO - Database connection established
+2026-03-24 20:32:10 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 20:32:10 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 20:32:10 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 20:32:10 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 20:32:10 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 20:32:10 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 20:32:10 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 20:32:10 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 20:32:10 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 20:32:28 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/approval/pending/test_thread
+2026-03-24 20:32:28 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 20:32:28 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/approval/pending/test_thread - Status: 200
+2026-03-24 20:42:43 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 20:42:43 - ai_data_agent - INFO - Environment: development
+2026-03-24 20:42:43 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 20:42:43 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 20:42:44 - ai_data_agent - INFO - Database connection established
+2026-03-24 20:42:44 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 20:42:44 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 20:42:44 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 20:42:44 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 20:42:44 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 20:42:44 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 20:42:44 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 20:42:44 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 20:42:44 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 20:44:35 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/auth/me
+2026-03-24 20:44:35 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/auth/me - Status: 200
+2026-03-24 20:44:35 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/auth/me
+2026-03-24 20:44:36 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/auth/me - Status: 200
+2026-03-24 20:44:36 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/history
+2026-03-24 20:44:36 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:44:36 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/history
+2026-03-24 20:44:37 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:44:58 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 20:44:58 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 20:44:58 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/history
+2026-03-24 20:44:58 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:44:58 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/chat/suggestions
+2026-03-24 20:44:58 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/history
+2026-03-24 20:44:58 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/chat/suggestions - Status: 200
+2026-03-24 20:44:58 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:44:58 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/chat/suggestions
+2026-03-24 20:44:58 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/chat/suggestions - Status: 200
+2026-03-24 20:45:01 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:01 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:01 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:01 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:05 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:05 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:05 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:05 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:07 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:07 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:07 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:07 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:09 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:09 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:09 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:09 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:11 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:11 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:11 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:11 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:14 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:14 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:14 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:14 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:16 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:16 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:45:16 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/api-permission/my-apis
+2026-03-24 20:45:16 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/api-permission/my-apis - Status: 200
+2026-03-24 20:46:58 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:46:58 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:46:58 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:46:58 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 20:46:58 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:46:58 - ai_data_agent - INFO - [IntentNode] Processing query: 查询用户数据
+2026-03-24 20:47:03 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 20:47:14 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 20:47:14 - ai_data_agent - INFO - Anthropic Content Length: 311
+2026-03-24 20:47:14 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"api_hint": "user"}, "metrics": [], "dimensions": [], "confidence": 0.3, "missing_info": ["时间范围", "查询指标", "查询维度"], "clarification_question": "您想查询什么用户数据呢？比如：查询哪个时间段的用户？需要按什么维度查看（如日期、地区）？具体想了解用户数、新增用户、活跃用户还是其他指标？"}
+2026-03-24 20:47:14 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['时间范围', '查询指标', '查询维度']
+2026-03-24 20:49:18 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 20:49:18 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 20:49:18 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/history
+2026-03-24 20:49:18 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:49:18 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/chat/suggestions
+2026-03-24 20:49:18 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/chat/suggestions - Status: 200
+2026-03-24 20:49:18 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/history
+2026-03-24 20:49:18 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/chat/suggestions
+2026-03-24 20:49:18 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:49:18 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/chat/suggestions - Status: 200
+2026-03-24 20:49:31 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:49:31 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:49:31 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:49:31 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 20:49:31 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:49:31 - ai_data_agent - INFO - [IntentNode] Processing query: 查询用户数据
+2026-03-24 20:49:34 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 20:49:47 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 20:49:47 - ai_data_agent - INFO - Anthropic Content Length: 351
+2026-03-24 20:49:47 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"api_hint": "user"}, "metrics": [], "dimensions": [], "confidence": 0.4, "missing_info": ["用户数据指标（如用户数、活跃用户数、新增用户数）", "时间范围（如最近7天、本月）", "分析维度（如按日期、按地区、按渠道）"], "clarification_question": "您想查询哪些用户数据指标？例如：用户总数、活跃用户数、新增用户数等。同时请告诉我您需要的时间范围和分析维度（如按日期、地区或渠道）"}
+2026-03-24 20:49:47 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['用户数据指标（如用户数、活跃用户数、新增用户数）', '时间范围（如最近7天、本月）', '分析维度（如按日期、按地区、按渠道）']
+2026-03-24 20:56:53 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 20:56:53 - ai_data_agent - INFO - Environment: development
+2026-03-24 20:56:53 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 20:56:53 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 20:56:53 - ai_data_agent - INFO - Database connection established
+2026-03-24 20:56:53 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 20:56:53 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 20:56:53 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 20:56:53 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 20:56:53 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 20:56:53 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 20:56:53 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 20:56:53 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 20:56:53 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 20:57:28 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/auth/me
+2026-03-24 20:57:28 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/auth/me - Status: 200
+2026-03-24 20:57:28 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/auth/me
+2026-03-24 20:57:28 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/auth/me - Status: 200
+2026-03-24 20:57:28 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/history
+2026-03-24 20:57:28 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:57:28 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/history
+2026-03-24 20:57:29 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:57:34 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 20:57:34 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 20:57:34 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/history
+2026-03-24 20:57:34 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:57:34 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/chat/suggestions
+2026-03-24 20:57:34 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/history
+2026-03-24 20:57:34 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/chat/suggestions - Status: 200
+2026-03-24 20:57:34 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:57:34 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/chat/suggestions
+2026-03-24 20:57:34 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/chat/suggestions - Status: 200
+2026-03-24 20:57:55 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:57:55 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:57:55 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:57:55 - ai_data_agent - ERROR - Stream chat error: At 'planner' node, 'should_require_approval' branch found unknown target '__interrupt__'
+2026-03-24 20:57:55 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:58:36 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 20:58:36 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 20:58:36 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/history
+2026-03-24 20:58:36 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:58:36 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/chat/suggestions
+2026-03-24 20:58:36 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/chat/suggestions - Status: 200
+2026-03-24 20:58:36 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/history
+2026-03-24 20:58:37 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/history - Status: 200
+2026-03-24 20:58:37 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/chat/suggestions
+2026-03-24 20:58:37 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/chat/suggestions - Status: 200
+2026-03-24 20:58:47 - ai_data_agent - INFO - Request: OPTIONS http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:58:47 - ai_data_agent - INFO - Response: OPTIONS http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 20:58:47 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 20:58:47 - ai_data_agent - ERROR - Stream chat error: At 'planner' node, 'should_require_approval' branch found unknown target '__interrupt__'
+2026-03-24 20:58:47 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 21:00:25 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 21:00:25 - ai_data_agent - INFO - Environment: development
+2026-03-24 21:00:25 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 21:00:25 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 21:00:25 - ai_data_agent - INFO - Database connection established
+2026-03-24 21:00:25 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 21:00:25 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 21:00:25 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 21:00:25 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 21:00:25 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 21:00:25 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 21:00:25 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 21:00:26 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 21:00:26 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 21:03:49 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 21:03:51 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 21:05:01 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 21:05:01 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 21:05:01 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 21:05:02 - ai_data_agent - ERROR - Stream chat error: unsupported operand type(s) for +: 'function' and 'list'
+2026-03-24 21:05:02 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 21:07:42 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 21:07:42 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 21:07:42 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 21:07:42 - ai_data_agent - ERROR - Stream chat error: unsupported operand type(s) for +: 'function' and 'list'
+2026-03-24 21:07:42 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 21:11:02 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 21:11:02 - ai_data_agent - INFO - Environment: development
+2026-03-24 21:11:02 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 21:11:02 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 21:11:02 - ai_data_agent - INFO - Database connection established
+2026-03-24 21:11:02 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 21:11:02 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 21:11:02 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 21:11:02 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 21:11:02 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 21:11:02 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 21:11:02 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 21:11:02 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 21:11:02 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 21:11:18 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 21:11:18 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 21:11:18 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 21:11:18 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 21:11:18 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 21:11:18 - ai_data_agent - INFO - [IntentNode] Processing query: 查询用户数据
+2026-03-24 21:11:21 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 21:11:39 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 21:11:39 - ai_data_agent - INFO - Anthropic Content Length: 313
+2026-03-24 21:11:39 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"api_hint": "user"}, "metrics": [], "dimensions": [], "confidence": 0.4, "missing_info": ["时间范围", "具体指标", "查询维度"], "clarification_question": "您想查询什么用户数据？比如：查询哪段时间的用户？需要统计哪些指标（如用户数、活跃用户、新增用户）？是否需要按特定维度筛选（如地区、业务类型）？"}
+2026-03-24 21:11:39 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['时间范围', '具体指标', '查询维度']
+2026-03-24 21:13:31 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 21:13:31 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 21:13:31 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 21:13:31 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 21:13:31 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 21:13:31 - ai_data_agent - INFO - [IntentNode] Processing query: 查询今天的用户总数
+2026-03-24 21:13:33 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 21:13:59 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 21:13:59 - ai_data_agent - INFO - Anthropic Content Length: 283
+2026-03-24 21:13:59 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_statistic", "entities": {"time_range": {"description": "今天"}, "api_hint": "user"}, "metrics": ["用户数"], "dimensions": ["日期"], "confidence": 0.9, "missing_info": null, "clarification_question": null}
+2026-03-24 21:13:59 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "data_statistic", "entities": {"time_range": {"description": "今天"}, "api_hint": "user"}, "metrics": ["用户数"], "dimensions": ["日期"], "confidence": 0.9}
+2026-03-24 21:13:59 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询今天的用户总数
+2026-03-24 21:14:24 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-24 21:14:40 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-24 21:14:44 - ai_data_agent - INFO - Retrieved 4 candidates for user 1
+2026-03-24 21:14:45 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 21:14:57 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 21:14:57 - ai_data_agent - INFO - Anthropic Content Length: 27
+2026-03-24 21:14:57 - ai_data_agent - INFO - LLM raw response: {
+    "selected_apis": []
+}
+2026-03-24 21:14:57 - ai_data_agent - INFO - LLM selected 0 APIs
+2026-03-24 21:14:57 - ai_data_agent - INFO - [Retrieval Node] Retrieved 0 APIs
+2026-03-24 21:14:57 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询今天的用户总数
+2026-03-24 21:14:58 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 21:15:14 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 21:15:14 - ai_data_agent - INFO - Anthropic Content Length: 468
+2026-03-24 21:15:14 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-24 21:15:14 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/approval/test-1774358011/approve
+2026-03-24 21:15:14 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 21:15:15 - ai_data_agent - ERROR - Approve execution error: cannot access local variable 'resume_is_map' where it is not associated with a value
+2026-03-24 21:15:15 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/approval/test-1774358011/approve - Status: 500
+2026-03-24 21:15:15 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-24 21:15:15 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-24 21:15:15 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 21:15:15 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 21:15:15 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 21:15:15 - ai_data_agent - INFO - [IntentNode] Processing query: 查询今天的用户总数
+2026-03-24 21:15:16 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 21:15:32 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 21:15:32 - ai_data_agent - INFO - Anthropic Content Length: 351
+2026-03-24 21:15:32 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"time_range": {"start": "today", "end": "today", "description": "今天"}, "api_hint": "user"}, "metrics": ["用户总数"], "dimensions": ["日期"], "confidence": 0.9, "missing_info": ["用户统计API"], "clarification_question": "系统尚未配置用户统计相关的API，请先配置用户统计接口以支持此查询"}
+2026-03-24 21:15:32 - ai_data_agent - INFO - [IntentNode] Missing info detected: ['用户统计API']

@@ -528,6 +528,22 @@ async def stream_chat(
                                     yield f"data: {json.dumps({'type': 'data', 'data': final_data}, ensure_ascii=False)}\n\n"
                                     break
 
+            # Check if workflow is interrupted (waiting for approval)
+            state = await graph.aget_state(config)
+            if state.next:
+                # Workflow is interrupted, send approval_required event
+                approval_event = json.dumps({
+                    "type": "approval_required",
+                    "data": {
+                        "thread_id": session_id,
+                        "plan": state.values.get("plan", []),
+                        "current_step": state.values.get("current_step", 0)
+                    }
+                }, ensure_ascii=False)
+                yield f"data: {approval_event}\n\n"
+                yield f"data: {json.dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
+                return
+
             # Send done event
             yield f"data: {json.dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
 

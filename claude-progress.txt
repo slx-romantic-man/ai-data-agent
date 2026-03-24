@@ -342,6 +342,35 @@ feature_list.json 共拆解了 15 个核心功能卡片：
 
 ---
 
+[2026-03-24] F-10 人工审批网关前后端交互
+- 完成功能: F-10 实现人工审批网关的前后端交互
+- 修改文件:
+  * backend/app/api/v1/approval.py (新建) - 审批接口
+  * backend/app/agent/graph.py - 添加 approval_gate 节点和条件路由
+  * backend/app/agent/state.py - 添加 requires_approval 字段
+  * backend/app/agent/nodes/planner_node.py - 权限检查逻辑
+  * backend/app/api/v1/chat.py - 添加 approval_required 事件推送
+  * frontend/js/features/chat.js - 审批事件处理和 handleApproval 函数
+  * frontend/js/app-template.js - 审批卡片 UI 组件
+  * test_approval.py (新建) - 自动化测试脚本
+- 实现细节:
+  * 在 graph.py 中添加 approval_gate 节点，interrupt_before=["approval_gate"]
+  * planner_wrapper 检查用户角色和 API 调用，设置 requires_approval 标志
+  * 普通用户调用 API 时触发审批，管理员直接执行
+  * GET /approval/pending/{thread_id} 查询待审批状态
+  * POST /approval/{thread_id}/approve 使用 graph.astream(None, config) 恢复执行
+  * POST /approval/{thread_id}/reject 返回拒绝状态
+  * 前端渲染黄色审批卡片，显示执行计划和批准/拒绝按钮
+- 测试结果:
+  * test_approval.py 验证完整审批流程
+  * ✓ 普通用户触发审批卡片并显示计划详情
+  * ✓ 批准接口成功恢复执行并返回结果
+  * ✓ 管理员直接执行，无需审批
+- Git commit: feat: F-10 实现人工审批网关前后端交互
+- 下一步: F-11 端到端测试：简单查询场景
+
+---
+
 [后续会话请在此处追加进展记录]
 
 格式示例：

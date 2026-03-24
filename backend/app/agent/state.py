@@ -26,3 +26,6 @@ class AgentState(TypedDict):
     # 数据上下文：存储各步骤查询结果
     # key 格式: step_{idx}_{api_id}
     data_context: Dict[str, Any]
+
+    # 是否需要人工审批
+    requires_approval: bool

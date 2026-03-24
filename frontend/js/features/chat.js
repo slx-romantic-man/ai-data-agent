@@ -126,6 +126,14 @@ window.AppModules.createChatFeature = function(deps) {
                     };
                     assistantMsg.sql = data.sql;
                 }
+                else if (type === 'approval_required') {
+                    assistantMsg.approval = {
+                        thread_id: data.thread_id,
+                        plan: data.plan,
+                        current_step: data.current_step,
+                        status: 'pending'
+                    };
+                }
                 else if (type === 'done') {
                     if (assistantMsg.typewriterInterval) clearInterval(assistantMsg.typewriterInterval);
                     assistantMsg.isTyping = false;
@@ -298,6 +306,44 @@ window.AppModules.createChatFeature = function(deps) {
         }
     };
 
+    const handleApproval = async (msg, action) => {
+        if (!msg.approval || !msg.approval.thread_id) return;
+
+        try {
+            msg.approval.status = 'processing';
+            const endpoint = action === 'approve'
+                ? `/approval/${msg.approval.thread_id}/approve`
+                : `/approval/${msg.approval.thread_id}/reject`;
+
+            const res = await api.post(endpoint);
+            msg.approval.status = action === 'approve' ? 'approved' : 'rejected';
+
+            if (action === 'approve') {
+                chatLoading.value = true;
+                await api.streamChat(currentSessionId.value, '', (event) => {
+                    const type = event.type;
+                    const data = event.data;
+
+                    if (type === 'answer') {
+                        msg.content = data.content;
+                    } else if (type === 'data') {
+                        msg.data = {
+                            columns: data.columns,
+                            rows: data.rows,
+                            total: data.total
+                        };
+                        msg.sql = data.sql;
+                    } else if (type === 'done') {
+                        chatLoading.value = false;
+                    }
+                });
+            }
+        } catch (err) {
+            msg.approval.status = 'error';
+            alert('操作失败: ' + (err.message || '未知错误'));
+        }
+    };
+
     return {
         sendMessage,
         startNewConversation,
@@ -307,6 +353,7 @@ window.AppModules.createChatFeature = function(deps) {
         loadConversation,
         askQuestion,
         showTableData,
-        exportToExcel
+        exportToExcel,
+        handleApproval
     };
 };

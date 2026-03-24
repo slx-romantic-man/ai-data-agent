@@ -528,7 +528,8 @@ window.AppSetup = function() {
             loadConversation,
             askQuestion,
             showTableData,
-            exportToExcel
+            exportToExcel,
+            handleApproval
         } = chatFeature;
 
         const historyFeature = window.AppModules.createHistoryFeature({
@@ -717,7 +718,7 @@ window.AppSetup = function() {
             showApiDetailModal, showAddCategoryModal, showAddApiModal, showEditApiModal, showDeleteConfirmModal,
             selectedApi, apiToDelete, apiForm, newCategoryForm, categorySelectionByApi, availableCategories,
             getRoleName, handleLogin, quickLogin, handleLogout,
-            sendMessage, askQuestion, startNewConversation, showTableData, exportToExcel,
+            sendMessage, askQuestion, startNewConversation, showTableData, exportToExcel, handleApproval,
             renderMarkdown, hasExportableData, hasExportableDataRaw,
             loadApis, toggleDeleteMode, viewApiDetail, editApi, closeApiModal, saveApi, confirmDeleteApi, deleteApi,
             createCategoryFromApisView, moveApiToUncategorized, moveApiToCategory,

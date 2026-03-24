@@ -29,6 +29,14 @@ def should_continue_execution(state: AgentState) -> str:
     return "analyzer"
 
 
+def should_require_approval(state: AgentState) -> str:
+    """判断是否需要人工审批"""
+    requires_approval = state.get("requires_approval", False)
+    if requires_approval:
+        return "approval_gate"
+    return "executor"
+
+
 def should_clarify(state: AgentState) -> str:
     """判断 Intent 节点后是否需要澄清"""
     extracted_filters = state.get("extracted_filters")
@@ -57,9 +65,16 @@ async def create_graph(permission: PermissionContext):
         return state
 
     async def planner_wrapper(state: AgentState) -> AgentState:
-        """Planner 节点包装器，传递缓存的检索结果"""
+        """Planner 节点包装器，传递缓存的检索结果和权限信息"""
         global _retrieved_apis_cache
-        return await _planner_node(state, _retrieved_apis_cache)
+        result = await _planner_node(state, _retrieved_apis_cache)
+
+        # 检查是否需要审批：非管理员且有 API 调用
+        is_admin = permission.role == "admin"
+        has_api_calls = any(step.get("tool") == "api_fetch" for step in result.get("plan", []))
+        result["requires_approval"] = has_api_calls and not is_admin
+
+        return result
 
     async def executor_wrapper(state: AgentState) -> AgentState:
         """Executor 节点包装器"""
@@ -72,6 +87,7 @@ async def create_graph(permission: PermissionContext):
     workflow.add_node("intent", intent_clarification_node)
     workflow.add_node("retrieval", retrieval_wrapper)
     workflow.add_node("planner", planner_wrapper)
+    workflow.add_node("approval_gate", lambda state: state)
     workflow.add_node("executor", executor_wrapper)
     workflow.add_node("analyzer", analyzer_node)
 
@@ -89,7 +105,17 @@ async def create_graph(permission: PermissionContext):
     )
 
     workflow.add_edge("retrieval", "planner")
-    workflow.add_edge("planner", "executor")
+
+    workflow.add_conditional_edges(
+        "planner",
+        should_require_approval,
+        {
+            "executor": "executor",
+            "approval_gate": "approval_gate"
+        }
+    )
+
+    workflow.add_edge("approval_gate", "executor")
 
     workflow.add_conditional_edges(
         "executor",
@@ -111,10 +137,10 @@ async def create_graph(permission: PermissionContext):
     conn = aiosqlite.connect("./data/checkpoints.db")
     memory = AsyncSqliteSaver(conn)
 
-    # 编译图（设置人工审批网关和 checkpointer）
+    # 编译图（在 approval_gate 前中断）
     graph = workflow.compile(
-        interrupt_before=["executor"],
-        checkpointer=memory
+        checkpointer=memory,
+        interrupt_before=["approval_gate"]
     )
 
     logger.info("[Graph] LangGraph workflow compiled with AsyncSqliteSaver")
