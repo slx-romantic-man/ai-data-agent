@@ -1,0 +1,55 @@
+[
+  {
+    "id": "session-1773641364228",
+    "user_id": "user_278029ad",
+    "title": "查询ip为12.34.56.78的用户‘",
+    "messages": [
+      {
+        "role": "user",
+        "content": "查询ip为12.34.56.78的用户‘",
+        "timestamp": "2026-03-16T14:09:51.517717"
+      },
+      {
+        "role": "assistant",
+        "content": "**IP地址 12.34.56.78 地理位置查询结果：**\n\n| 属性 | 信息 |\n|------|------|\n| **IP地址** | 12.34.56.78 |\n| **国家** | 美国 |\n| **国家代码** | US |\n| **运营商** | 美国电话电报 (AT&T) |\n| **经度** | -98.5795 |\n| **纬度** | 39.8283 |\n| **省份** | - |\n| **城市** | - |\n\n**说明**：该IP地址归属于美国AT&T公司，经纬度坐标显示为美国本土中心区域。由于未返回具体的省份和城市信息，可能是一个公共网关或数据中心IP，无法精确定位到具体城市。",
+        "timestamp": "2026-03-16T14:09:51.521559",
+        "data": {
+          "columns": [
+            "ProvinceEn",
+            "CityEn",
+            "Ip",
+            "Isp",
+            "Country",
+            "Latitude",
+            "City",
+            "CountryCode",
+            "County",
+            "Longitude",
+            "CountryEn",
+            "Province"
+          ],
+          "rows": [
+            {
+              "ProvinceEn": "null",
+              "CityEn": "null",
+              "Ip": "12.34.56.78",
+              "Isp": "美国电话电报",
+              "Country": "美国",
+              "Latitude": "39.8283",
+              "City": "",
+              "CountryCode": "US",
+              "County": "",
+              "Longitude": "-98.5795",
+              "CountryEn": "United States",
+              "Province": ""
+            }
+          ],
+          "total": 1,
+          "sql": "API: geo/ip_lookup"
+        }
+      }
+    ],
+    "created_at": "2026-03-16T14:09:51.517717",
+    "updated_at": "2026-03-16T14:09:51.521559"
+  }
+]

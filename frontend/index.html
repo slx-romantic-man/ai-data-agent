@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Data Agent - 智能数据分析平台</title>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zinc: { 950: '#09090b' },
+                        brand: { DEFAULT: '#09090b', hover: '#27272a' }
+                    },
+                    borderRadius: {
+                        'xs': '2px', 'sm': '4px', 'md': '6px',
+                        'lg': '8px', 'xl': '12px', '2xl': '16px', '3xl': '24px'
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
+                        'card-hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+                        'dropdown': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05)',
+                        'modal': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- CSS Modules -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body class="bg-gray-50">
+    <div id="app"></div>
+
+    <!-- JS Modules (order matters) -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app-template.js"></script>
+    <script src="js/features/chat.js"></script>
+    <script src="js/features/history.js"></script>
+    <script src="js/features/admin-users.js"></script>
+    <script src="js/features/admin-permissions.js"></script>
+    <script src="js/features/api-management.js"></script>
+    <script src="js/features/view-watchers.js"></script>
+    <script src="js/app-setup.js"></script>
+    <script src="js/app.js"></script></body>
+
+</html>

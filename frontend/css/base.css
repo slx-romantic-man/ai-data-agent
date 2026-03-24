@@ -1,0 +1,124 @@
+/**
+ * Base CSS - Global styles, CSS variables, typography
+ */
+
+:root {
+    --app-bg: #fbfbfd;
+    --border-default: #e4e4e7;
+    --text-primary: #09090b;
+    --text-secondary: #71717a;
+}
+
+* {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background-color: var(--app-bg);
+    color: var(--text-primary);
+}
+
+/* Smooth Transitions */
+.transition-all-custom {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Linear Style Button Click */
+button:active {
+    transform: scale(0.97);
+}
+
+/* Fade Animations */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+/* Custom Scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 5px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #e4e4e7;
+    border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #d4d4d8;
+}
+
+/* Input Focus Polish */
+input:focus,
+textarea:focus {
+    outline: none !important;
+    border-color: #09090b !important;
+    box-shadow: 0 0 0 1px #09090b !important;
+}
+
+/* Apple Glassmorphism */
+.glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Markdown Content Typography */
+.markdown-content h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.markdown-content h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0.8rem 0 0.4rem;
+    letter-spacing: -0.01em;
+}
+
+.markdown-content h3 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0.6rem 0 0.3rem;
+}
+
+.markdown-content p {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+.markdown-content code {
+    background: #f4f4f5;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.markdown-content pre {
+    background: #09090b;
+    border: 1px solid #27272a;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.markdown-content pre code {
+    background: none;
+    color: #e4e4e7;
+    padding: 0;
+    font-size: 0.9em;
+}

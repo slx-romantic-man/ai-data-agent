@@ -1,0 +1,162 @@
+/**
+ * Chat CSS - Chat interface styles
+ */
+
+/* Chat Bubble Animation */
+.chat-bubble {
+    animation: slideUp 0.3s cubic-bezier(0.17, 0.67, 0.3, 1.03);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Typewriter Cursor */
+.typewriter-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: #09090b;
+    margin-left: 2px;
+    animation: cursorBlink 0.8s infinite;
+    vertical-align: middle;
+}
+
+@keyframes cursorBlink {
+    0%, 50% {
+        opacity: 1;
+    }
+    51%, 100% {
+        opacity: 0;
+    }
+}
+
+/* Thinking Animation */
+.thinking-dots::after {
+    content: '';
+    animation: thinking 1.5s infinite;
+}
+
+@keyframes thinking {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+/* Chat Message Styles */
+.chat-message-user {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border-radius: 16px 16px 4px 16px;
+}
+
+.chat-message-assistant {
+    background: #f4f4f5;
+    color: #18181b;
+    border-radius: 16px 16px 16px 4px;
+}
+
+/* Reasoning Steps */
+.reasoning-step {
+    border-left: 2px solid #e4e4e7;
+    padding-left: 12px;
+    margin-left: 8px;
+}
+
+.reasoning-step-thought {
+    color: #71717a;
+    font-size: 0.875rem;
+}
+
+.reasoning-step-action {
+    background: #f4f4f5;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+}
+
+.reasoning-step-observation {
+    background: #ecfdf5;
+    border: 1px solid #d1fae5;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+/* Data Table in Chat */
+.chat-data-table {
+    overflow-x: auto;
+    border: 1px solid #e4e4e7;
+    border-radius: 8px;
+}
+
+.chat-data-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.chat-data-table th {
+    background: #f4f4f5;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid #e4e4e7;
+}
+
+.chat-data-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f4f4f5;
+}
+
+.chat-data-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* SQL Display */
+.sql-display {
+    background: #18181b;
+    color: #a1a1aa;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    overflow-x: auto;
+}
+
+/* Chat Input */
+.chat-input-container {
+    border-top: 1px solid #e4e4e7;
+    background: white;
+    padding: 16px;
+}
+
+.chat-input {
+    resize: none;
+    min-height: 44px;
+    max-height: 120px;
+}
+
+/* Sample Questions */
+.sample-question-btn {
+    background: #f4f4f5;
+    border: 1px solid #e4e4e7;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sample-question-btn:hover {
+    background: #e4e4e7;
+    border-color: #d4d4d8;
+}

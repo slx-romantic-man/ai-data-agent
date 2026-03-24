@@ -1,0 +1,212 @@
+{
+  "project_features": [
+    {
+      "id": "F-01",
+      "priority": 1,
+      "category": "architecture",
+      "description": "引入 LangGraph 库并定义 AgentState 数据结构",
+      "steps": [
+        "在 backend/requirements.txt 中添加 langgraph 依赖",
+        "在 backend/app/agent/ 下创建 state.py 定义 AgentState TypedDict",
+        "验证 AgentState 包含: messages, query, extracted_filters, plan, current_step, data_context 字段",
+        "运行 Python 导入测试确认无语法错误"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-02",
+      "priority": 2,
+      "category": "architecture",
+      "description": "实现 Intent Clarification Node (意图澄清节点)",
+      "steps": [
+        "在 backend/app/agent/nodes/ 下创建 intent_node.py",
+        "实现函数接收 AgentState，调用 LLM 判断查询条件是否完备",
+        "如果条件缺失返回反问文本，如果完备则提取 extracted_filters",
+        "编写单元测试验证节点输入输出正确"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-03",
+      "priority": 3,
+      "category": "architecture",
+      "description": "实现 API Retrieval Node (工具检索节点)",
+      "steps": [
+        "在 backend/app/agent/nodes/ 下创建 retrieval_node.py",
+        "复用现有的 api_retrieval_service.py 进行向量召回",
+        "将召回的 Top-10 API Schema 存入临时变量传递给下游",
+        "验证检索结果格式正确且不污染 AgentState"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-04",
+      "priority": 4,
+      "category": "architecture",
+      "description": "实现 Planner Node (全局规划师节点)",
+      "steps": [
+        "在 backend/app/agent/nodes/ 下创建 planner_node.py",
+        "设计 Prompt 模板让 LLM 生成 JSON 格式的执行计划",
+        "添加 Pydantic 校验确保 JSON 格式正确",
+        "将生成的 plan 写入 state['plan']，重置 current_step 为 0",
+        "测试 Planner 能够根据用户查询生成合理的多步骤计划"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-05",
+      "priority": 5,
+      "category": "architecture",
+      "description": "实现 Executor Node (无脑执行机节点)",
+      "steps": [
+        "在 backend/app/agent/nodes/ 下创建 executor_node.py",
+        "实现遍历 state['plan'] 并根据 tool 字段路由到对应工具",
+        "复用现有的 api_fetch, sql_query 工具执行查询",
+        "将查询结果隔离存入 state['data_context'] 字典，key 为 step_{idx}_{api_id}",
+        "递增 state['current_step']",
+        "测试执行器能正确调用工具并保存数据到 data_context"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-06",
+      "priority": 6,
+      "category": "architecture",
+      "description": "实现 Analyzer Node (终局分析节点)",
+      "steps": [
+        "在 backend/app/agent/nodes/ 下创建 analyzer_node.py",
+        "从 state['data_context'] 提取所有累积数据",
+        "复用现有的 DataAnalyzer 进行最终洞察生成",
+        "将分析报告追加到 state['messages']",
+        "测试分析节点能够综合多个数据源生成连贯的分析报告"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-07",
+      "priority": 7,
+      "category": "architecture",
+      "description": "构建 LangGraph 工作流图并配置边与路由",
+      "steps": [
+        "在 backend/app/agent/ 下创建 graph.py",
+        "使用 StateGraph 定义节点: Intent -> Retrieval -> Planner -> Executor -> Analyzer",
+        "配置条件边: Intent 根据条件完备性路由，Executor 循环边判断 current_step",
+        "设置 interrupt_before=['Executor'] 实现人工审批网关",
+        "编译图并测试完整流程能够从用户查询到最终分析"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-08",
+      "priority": 8,
+      "category": "persistence",
+      "description": "接入 PostgresSaver 实现状态持久化",
+      "steps": [
+        "在 backend/requirements.txt 添加 langgraph-checkpoint-postgres",
+        "在 backend/app/config/ 配置数据库连接",
+        "在 graph.py 中初始化 PostgresSaver 作为 checkpointer",
+        "测试多轮对话能够正确保存和恢复 AgentState",
+        "验证 data_context 在第二轮对话中可以被正确读取"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-09",
+      "priority": 9,
+      "category": "integration",
+      "description": "更新 API 层接入新的 LangGraph 工作流",
+      "steps": [
+        "修改 backend/app/api/chat.py 的 /chat/stream 端点",
+        "将原有 ReAct 循环替换为 LangGraph 图调用",
+        "保持 SSE 流式输出格式不变",
+        "测试前端能够正常接收流式推理过程",
+        "验证会话持久化功能正常工作"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-10",
+      "priority": 10,
+      "category": "integration",
+      "description": "实现人工审批网关的前后端交互",
+      "steps": [
+        "在后端实现 interrupt 挂起时推送审批卡片的 SSE 事件",
+        "在前端 js/chat.js 中添加审批卡片 UI 组件",
+        "实现用户点击批准/拒绝后调用恢复执行的 API",
+        "测试高危 API 调用能够正确触发审批流程",
+        "验证审批通过后流程能够继续执行"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-11",
+      "priority": 11,
+      "category": "testing",
+      "description": "端到端测试：简单查询场景",
+      "steps": [
+        "启动服务 bash init.sh",
+        "在前端输入简单查询如'查询最近七天订单统计'",
+        "验证 Intent Node 正确提取时间条件",
+        "验证 Planner 生成合理的单步计划",
+        "验证 Executor 调用正确的 API",
+        "验证 Analyzer 返回清晰的分析结果"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-12",
+      "priority": 12,
+      "category": "testing",
+      "description": "端到端测试：复杂归因分析场景",
+      "steps": [
+        "输入复杂查询如'华东地区库存异常的原因是什么'",
+        "验证 Planner 生成多步骤计划(库存查询 + 订单查询 + 异常检测)",
+        "验证 Executor 按顺序执行所有步骤",
+        "验证 data_context 正确隔离存储多个 API 结果",
+        "验证 Analyzer 能够综合多个数据源进行归因分析"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-13",
+      "priority": 13,
+      "category": "testing",
+      "description": "端到端测试：多轮下钻场景",
+      "steps": [
+        "第一轮查询'查询华东地区销售数据'",
+        "验证结果正确返回并保存到 thread_id 对应的 checkpoint",
+        "第二轮追问'为什么上海的销售额下降了'",
+        "验证系统能够从 checkpoint 恢复 data_context",
+        "验证第二轮分析能够利用第一轮的数据无需重新查询"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-14",
+      "priority": 14,
+      "category": "testing",
+      "description": "端到端测试：人工审批网关场景",
+      "steps": [
+        "输入触发高危 API 的查询",
+        "验证流程在 Executor 前挂起",
+        "验证前端显示审批卡片并展示计划详情",
+        "点击批准按钮",
+        "验证流程恢复执行并返回最终结果"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-15",
+      "priority": 15,
+      "category": "documentation",
+      "description": "更新项目文档反映 v4 架构变更",
+      "steps": [
+        "更新 README.md 说明新的 LangGraph 架构",
+        "在 docs/ 下创建 architecture-v4.md 详细说明状态机设计",
+        "更新 API 文档说明新的审批网关接口",
+        "添加多轮对话和状态持久化的使用示例"
+      ],
+      "passes": false
+    }
+  ]
+}

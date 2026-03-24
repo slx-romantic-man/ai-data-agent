@@ -1,0 +1,22 @@
+INFO:     Will watch for changes in these directories: ['D:\\Users\\Desktop\\实习工作\\day2\\ai-data-agent - v3.1']
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+INFO:     Started reloader process [4680] using StatReload
+D:\Users\Desktop\实习工作\day2\ai-data-agent - v3.1\app\access\metadata\table_metadata.py:32: UserWarning: Field name "schema" in "TableMetadata" shadows an attribute in parent "BaseModel"
+  class TableMetadata(BaseModel):
+INFO:     Started server process [16984]
+INFO:     Waiting for application startup.
+2026-03-23 15:28:12 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-23 15:28:12 - ai_data_agent - INFO - Environment: development
+2026-03-23 15:28:12 - ai_data_agent - INFO - Debug mode: True
+2026-03-23 15:28:12 - ai_data_agent - INFO - Initializing database connection...
+2026-03-23 15:28:12 - ai_data_agent - INFO - Database connection established
+2026-03-23 15:28:12 - ai_data_agent - INFO - Initializing tool router...
+2026-03-23 15:28:12 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-23 15:28:12 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-23 15:28:12 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-23 15:28:12 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-23 15:28:12 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-23 15:28:12 - ai_data_agent - INFO - AI Data Agent started successfully
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'app\config\settings.py'. Reloading...
+ 

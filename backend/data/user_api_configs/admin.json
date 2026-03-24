@@ -1,0 +1,47 @@
+{
+  "alpha_vantage_stock": {
+    "name": "Alpha Vantage 股票查询",
+    "description": "查询特定股票数据",
+    "base_url": "https://www.alphavantage.co",
+    "auth": {
+      "type": "none",
+      "api_key_header": "X-API-Key",
+      "api_key_value": null,
+      "bearer_token": null,
+      "username": null,
+      "password": null,
+      "custom_headers": {}
+    },
+    "endpoints": {
+      "get_stock": {
+        "path": "/query",
+        "method": "GET",
+        "description": "",
+        "params_mapping": {
+          "apikey": "apikey",
+          "function": "function",
+          "symbol": "symbol",
+          "outputsize\t": "outputsize\t",
+          "datatype": "datatype"
+        },
+        "required_params": [
+          "apikey",
+          "function",
+          "symbol"
+        ],
+        "default_params": {
+          "apikey": "SHWM728I2BFSMGF6",
+          "function": "TIME_SERIES_DAILY",
+          "symbol": "IBM",
+          "outputsize\t": "compact",
+          "datatype": "json"
+        },
+        "response_data_path": null,
+        "response_field_mapping": {}
+      }
+    },
+    "enabled": true,
+    "timeout": 30,
+    "retry_count": 3
+  }
+}
