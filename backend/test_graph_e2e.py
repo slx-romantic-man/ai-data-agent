@@ -19,7 +19,7 @@ async def test_e2e_with_execution():
         allowed_tables=["*"]
     )
 
-    graph = create_graph(permission)
+    graph = await create_graph(permission)
 
     initial_state: AgentState = {
         "messages": [],

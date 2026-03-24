@@ -1,0 +1,45 @@
+2026-03-24 19:32:30 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with SqliteSaver
+2026-03-24 19:32:30 - ai_data_agent - INFO - ============================================================
+2026-03-24 19:32:30 - ai_data_agent - INFO - Test: State Persistence with Multi-turn Conversation
+2026-03-24 19:32:30 - ai_data_agent - INFO - ============================================================
+2026-03-24 19:32:30 - ai_data_agent - INFO - 
+[Round 1] Initial query
+2026-03-24 19:34:34 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 19:34:34 - ai_data_agent - INFO - ============================================================
+2026-03-24 19:34:34 - ai_data_agent - INFO - Test: State Persistence with Multi-turn Conversation
+2026-03-24 19:34:34 - ai_data_agent - INFO - ============================================================
+2026-03-24 19:34:34 - ai_data_agent - INFO - 
+[Round 1] Initial query
+2026-03-24 19:35:29 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 19:35:29 - ai_data_agent - INFO - ============================================================
+2026-03-24 19:35:29 - ai_data_agent - INFO - Test: State Persistence with Multi-turn Conversation
+2026-03-24 19:35:29 - ai_data_agent - INFO - ============================================================
+2026-03-24 19:35:29 - ai_data_agent - INFO - 
+[Round 1] Initial query
+2026-03-24 19:35:30 - ai_data_agent - INFO - [IntentNode] Processing query: 查询华东地区的销售数据
+2026-03-24 19:35:31 - ai_data_agent - INFO - LLM Request: https://api.openai.com/v1/chat/completions
+2026-03-24 19:35:31 - ai_data_agent - DEBUG - LLM Payload: {"model": "gpt-4", "messages": [{"role": "system", "content": "你是一个专业的数据分析助手，擅长理解用户意图并判断查询条件是否完备。"}, {"role": "user", "content": "分析用户问题，识别意图类型和提取关键信息。\n\n用户问题：查询华东地区的销售数据\n\n系统已配置的API列表：\n暂无已配置的API\n\n请分析并返回以下信息（JSON格式）：\n\n1. intent_type: 意图类型\n   - \"api_query\": 调用API查询数据（默认类型，适用于大部分数据查询）\n   - \"data_detail\": 查询数据明细（如：查看订单列表）\n   - \"data_statistic\": 统计汇总（如：订单总量、平均值）\n   - \"data_analysis\": 数据分析（如：趋势分析、对比分析）\n   - \"data_export\": 导出数据（如：导出Excel）\n\n2. entities: 提取的实体信息\n   - time_range:
+2026-03-24 19:35:32 - ai_data_agent - ERROR - LLM Request Error: Illegal header value b'Bearer '
+2026-03-24 19:35:32 - ai_data_agent - INFO - Retrying in 2 seconds... (attempt 1/3)
+2026-03-24 19:35:34 - ai_data_agent - ERROR - LLM Request Error: Illegal header value b'Bearer '
+2026-03-24 19:35:34 - ai_data_agent - INFO - Retrying in 4 seconds... (attempt 2/3)
+2026-03-24 19:35:39 - ai_data_agent - ERROR - LLM Request Error: Illegal header value b'Bearer '
+2026-03-24 19:39:50 - ai_data_agent - INFO - Creating graph with checkpointer...
+2026-03-24 19:39:50 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 19:39:50 - ai_data_agent - INFO - Graph created: <langgraph.graph.state.CompiledStateGraph object at 0x000001C8C6C9D3A0>
+2026-03-24 19:39:50 - ai_data_agent - INFO - Checkpointer: <langgraph.checkpoint.sqlite.aio.AsyncSqliteSaver object at 0x000001C8C6C9D1F0>
+2026-03-24 19:39:50 - ai_data_agent - INFO - ✅ Checkpointer initialized successfully
+2026-03-24 19:40:34 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-24 19:40:34 - ai_data_agent - INFO - ============================================================
+2026-03-24 19:40:34 - ai_data_agent - INFO - Test: Checkpoint Persistence
+2026-03-24 19:40:34 - ai_data_agent - INFO - ============================================================
+2026-03-24 19:40:34 - ai_data_agent - INFO - 
+[Round 1] Initialize state with query
+2026-03-24 19:40:34 - ai_data_agent - INFO - [IntentNode] Processing query: 查询华东地区销售数据
+2026-03-24 19:40:38 - ai_data_agent - INFO - LLM Request: https://api.openai.com/v1/chat/completions
+2026-03-24 19:40:38 - ai_data_agent - DEBUG - LLM Payload: {"model": "gpt-4", "messages": [{"role": "system", "content": "你是一个专业的数据分析助手，擅长理解用户意图并判断查询条件是否完备。"}, {"role": "user", "content": "分析用户问题，识别意图类型和提取关键信息。\n\n用户问题：查询华东地区销售数据\n\n系统已配置的API列表：\n暂无已配置的API\n\n请分析并返回以下信息（JSON格式）：\n\n1. intent_type: 意图类型\n   - \"api_query\": 调用API查询数据（默认类型，适用于大部分数据查询）\n   - \"data_detail\": 查询数据明细（如：查看订单列表）\n   - \"data_statistic\": 统计汇总（如：订单总量、平均值）\n   - \"data_analysis\": 数据分析（如：趋势分析、对比分析）\n   - \"data_export\": 导出数据（如：导出Excel）\n\n2. entities: 提取的实体信息\n   - time_range: 
+2026-03-24 19:40:39 - ai_data_agent - ERROR - LLM Request Error: Illegal header value b'Bearer '
+2026-03-24 19:40:39 - ai_data_agent - INFO - Retrying in 2 seconds... (attempt 1/3)
+2026-03-24 19:40:41 - ai_data_agent - ERROR - LLM Request Error: Illegal header value b'Bearer '
+2026-03-24 19:40:41 - ai_data_agent - INFO - Retrying in 4 seconds... (attempt 2/3)
+2026-03-24 19:40:46 - ai_data_agent - ERROR - LLM Request Error: Illegal header value b'Bearer '

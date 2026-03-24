@@ -19,7 +19,7 @@ async def test_full_flow():
         allowed_tables=["*"]
     )
 
-    graph = create_graph(permission)
+    graph = await create_graph(permission)
 
     # 使用条件完备的查询
     initial_state: AgentState = {

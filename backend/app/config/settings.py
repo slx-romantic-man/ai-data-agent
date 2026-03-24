@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     DATABASE_POOL_SIZE: int = 10
     DATABASE_MAX_OVERFLOW: int = 20
 
+    # PostgreSQL for LangGraph Checkpointer
+    POSTGRES_URL: str = "postgresql://user:password@localhost:5432/langgraph_checkpoints"
+
     # LLM Configuration
     LLM_PROVIDER: str = "openai"
     LLM_API_KEY: str = ""

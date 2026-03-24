@@ -108,7 +108,7 @@
         "测试多轮对话能够正确保存和恢复 AgentState",
         "验证 data_context 在第二轮对话中可以被正确读取"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-09",

@@ -17985,3 +17985,18 @@ Test Results:
 2026-03-24 19:19:53 - ai_data_agent - INFO -   Messages: 1
 2026-03-24 19:19:53 - ai_data_agent - INFO - 
 Test PASSED
+2026-03-24 19:23:45 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 19:23:45 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 19:23:51 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 19:23:51 - ai_data_agent - INFO - Environment: development
+2026-03-24 19:23:51 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 19:23:51 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 19:23:51 - ai_data_agent - INFO - Database connection established
+2026-03-24 19:23:51 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 19:23:51 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 19:23:51 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 19:23:51 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 19:23:51 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 19:23:51 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 19:23:51 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 19:30:25 - ai_data_agent - INFO - [Graph] SqliteSaver initialized for state persistence

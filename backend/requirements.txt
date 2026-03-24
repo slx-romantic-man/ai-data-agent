@@ -18,3 +18,5 @@ asyncpg>=0.28.0
 python-multipart>=0.0.6
 aiofiles>=23.0.0
 langgraph>=0.2.0
+langgraph-checkpoint-sqlite>=1.0.0
+aiosqlite>=0.17.0

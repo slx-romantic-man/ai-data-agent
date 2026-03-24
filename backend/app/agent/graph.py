@@ -3,6 +3,7 @@ LangGraph 工作流图定义
 组装所有节点并配置边与路由逻辑
 """
 from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.agent.state import AgentState
 from app.agent.nodes.intent_node import intent_clarification_node
 from app.agent.nodes.retrieval_node import retrieval_node as _retrieval_node
@@ -37,7 +38,7 @@ def should_clarify(state: AgentState) -> str:
     return "retrieval"
 
 
-def create_graph(permission: PermissionContext):
+async def create_graph(permission: PermissionContext):
     """
     创建 LangGraph 工作流图
 
@@ -101,8 +102,20 @@ def create_graph(permission: PermissionContext):
 
     workflow.add_edge("analyzer", END)
 
-    # 编译图（设置人工审批网关）
-    graph = workflow.compile(interrupt_before=["executor"])
+    # 初始化 AsyncSqliteSaver 用于状态持久化
+    import os
+    import aiosqlite
+    os.makedirs("./data", exist_ok=True)
 
-    logger.info("[Graph] LangGraph workflow compiled successfully")
+    # 创建数据库连接
+    conn = aiosqlite.connect("./data/checkpoints.db")
+    memory = AsyncSqliteSaver(conn)
+
+    # 编译图（设置人工审批网关和 checkpointer）
+    graph = workflow.compile(
+        interrupt_before=["executor"],
+        checkpointer=memory
+    )
+
+    logger.info("[Graph] LangGraph workflow compiled with AsyncSqliteSaver")
     return graph

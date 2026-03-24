@@ -22,7 +22,7 @@ async def test_graph_flow():
     )
 
     # 创建图
-    graph = create_graph(permission)
+    graph = await create_graph(permission)
 
     # 初始化状态
     initial_state: AgentState = {
