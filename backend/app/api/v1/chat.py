@@ -23,6 +23,8 @@ from app.models.user import UserContext
 from app.agent.core.streaming_agent import get_streaming_agent
 from app.api.dependencies import get_user_context, get_permission_context
 from app.models.permission import PermissionContext
+from app.agent.graph import create_graph
+from app.agent.state import AgentState
 from app.access.database import get_mysql_client, get_postgres_client
 from app.access.metadata import get_schema_loader
 from app.config.settings import settings
@@ -457,8 +459,6 @@ async def stream_chat(
                     yield f"data: {error_event}\n\n"
                     return
 
-            agent = await get_streaming_agent()
-
             # Get or create session
             session_id = request.session_id or generate_session_id()
             conversation_history = []
@@ -482,27 +482,54 @@ async def stream_chat(
             final_data = None
             total_tokens = 0
 
-            # Stream the agent's reasoning process
-            async for event in agent.process_stream(
-                user_query=user_message,
-                user_context=user,
-                conversation_history=conversation_history,
-                permission_context=permission,
-            ):
-                # Capture answer text for session history
-                if event.get("type") == "answer":
-                    final_answer_text = event.get("data", {}).get("content", "")
-                    # Capture token usage if available
-                    token_usage = event.get("data", {}).get("token_usage", {})
-                    if token_usage:
-                        total_tokens = token_usage.get("total_tokens", 0)
+            # Create LangGraph workflow
+            graph = await create_graph(permission)
 
-                # Capture data results
-                if event.get("type") == "data":
-                    final_data = event.get("data")
+            # Initialize state
+            initial_state: AgentState = {
+                "messages": conversation_history,
+                "query": user_message,
+                "extracted_filters": None,
+                "plan": None,
+                "current_step": 0,
+                "data_context": {}
+            }
 
-                event_data = json.dumps(event, ensure_ascii=False)
-                yield f"data: {event_data}\n\n"
+            # Stream events from LangGraph
+            config = {"configurable": {"thread_id": session_id}}
+
+            async for event in graph.astream(initial_state, config, stream_mode="updates"):
+                for node_name, node_output in event.items():
+                    # Emit node execution event
+                    yield f"data: {json.dumps({'type': 'thought', 'data': {'content': f'[{node_name}] 节点执行中...'}}, ensure_ascii=False)}\n\n"
+
+                    # Handle intent node output
+                    if node_name == "intent":
+                        messages = node_output.get("messages", [])
+                        if messages:
+                            last_msg = messages[-1]
+                            if last_msg.get("type") == "clarification":
+                                final_answer_text = last_msg.get("content", "")
+                                yield f"data: {json.dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
+
+                    # Check if this is the final analyzer output
+                    if node_name == "analyzer":
+                        messages = node_output.get("messages", [])
+                        if messages:
+                            final_answer_text = messages[-1].get("content", "")
+                            yield f"data: {json.dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
+
+                        # Extract data from data_context
+                        data_context = node_output.get("data_context", {})
+                        if data_context:
+                            for key, value in data_context.items():
+                                if isinstance(value, dict) and "data" in value:
+                                    final_data = value
+                                    yield f"data: {json.dumps({'type': 'data', 'data': final_data}, ensure_ascii=False)}\n\n"
+                                    break
+
+            # Send done event
+            yield f"data: {json.dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
 
             # Deduct credits (estimate tokens if not provided)
             # For now, use a simple estimation based on response length

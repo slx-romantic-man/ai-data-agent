@@ -18000,3 +18000,154 @@ Test PASSED
 2026-03-24 19:23:51 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
 2026-03-24 19:23:51 - ai_data_agent - INFO - AI Data Agent started successfully
 2026-03-24 19:30:25 - ai_data_agent - INFO - [Graph] SqliteSaver initialized for state persistence
+2026-03-24 19:48:05 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 19:48:05 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 19:48:10 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 19:48:10 - ai_data_agent - INFO - Environment: development
+2026-03-24 19:48:10 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 19:48:10 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 19:48:10 - ai_data_agent - INFO - Database connection established
+2026-03-24 19:48:10 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 19:48:10 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 19:48:10 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 19:48:10 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 19:48:10 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 19:48:10 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 19:48:10 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 19:53:26 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 19:53:26 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 19:54:30 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 19:54:31 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 19:54:31 - ai_data_agent - INFO - [_get_relevant_apis] Called with query='查询销售数据', user_id='user_001'
+2026-03-24 19:54:31 - ai_data_agent - INFO - [_get_relevant_apis] Getting permission service...
+2026-03-24 19:54:31 - ai_data_agent - INFO - [_get_relevant_apis] Getting active API IDs...
+2026-03-24 19:54:31 - ai_data_agent - INFO - [_get_relevant_apis] Found 1 active API IDs
+2026-03-24 19:54:32 - ai_data_agent - INFO - Starting API retrieval for query: 查询销售数据
+2026-03-24 19:54:32 - ai_data_agent - INFO - Getting retrieval service...
+2026-03-24 19:54:36 - ai_data_agent - INFO - Calling get_apis_for_query with user_id=user_001
+2026-03-24 19:55:04 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-24 19:55:19 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-24 19:55:21 - ai_data_agent - INFO - Retrieved 1 candidates for user user_001
+2026-03-24 19:55:25 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 19:55:31 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 19:55:31 - ai_data_agent - INFO - Anthropic Content Length: 27
+2026-03-24 19:55:31 - ai_data_agent - INFO - LLM raw response: {
+    "selected_apis": []
+}
+2026-03-24 19:55:31 - ai_data_agent - INFO - LLM selected 0 APIs
+2026-03-24 19:55:31 - ai_data_agent - INFO - Retrieval returned 0 APIs
+2026-03-24 19:55:31 - ai_data_agent - WARNING - Retrieval returned empty list, falling back
+2026-03-24 19:55:42 - ai_data_agent - INFO - Iteration 1 LLM full response received.
+2026-03-24 19:55:42 - ai_data_agent - INFO - [DEBUG] LLM Response: Thought: 用户要求查询销售数据，但没有提供具体的时间范围或筛选条件。根据数据查询规范，我需要先确认用户想要查询的具体时间范围，以便执行精确查询。
+
+Action: 无需调用API，需要先向用户确认查询条件。
+
+销售数据查询需要明确以下信息：
+
+1. **时间范围**（必填）：请告诉我您要查询的起止日期
+   - 例如：2026-01-01 至 2026-03-24
+
+2. **可选筛选条件**：
+   - 商品类别
+   - 地区/部门
+   - 客户类型
+
+请提供您需要查询的时间范围，我将为您获取销售数据。
+2026-03-24 19:55:42 - ai_data_agent - INFO - [DEBUG] LLM Response (first 1000 chars): Thought: 用户要求查询销售数据，但没有提供具体的时间范围或筛选条件。根据数据查询规范，我需要先确认用户想要查询的具体时间范围，以便执行精确查询。
+
+Action: 无需调用API，需要先向用户确认查询条件。
+
+销售数据查询需要明确以下信息：
+
+1. **时间范围**（必填）：请告诉我您要查询的起止日期
+   - 例如：2026-01-01 至 2026-03-24
+
+2. **可选筛选条件**：
+   - 商品类别
+   - 地区/部门
+   - 客户类型
+
+请提供您需要查询的时间范围，我将为您获取销售数据。
+2026-03-24 19:55:42 - ai_data_agent - INFO - Final Parse - thought: 用户要求查询销售数据，但没有提供具体的时间范围或筛选条件。根据数据查询规范，我需要先确认用户想要查询..., action: None, answer: None
+2026-03-24 19:55:59 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 19:55:59 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 400
+2026-03-24 19:57:47 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-24 19:57:47 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-24 19:57:54 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-24 19:57:54 - ai_data_agent - INFO - Environment: development
+2026-03-24 19:57:54 - ai_data_agent - INFO - Debug mode: True
+2026-03-24 19:57:54 - ai_data_agent - INFO - Initializing database connection...
+2026-03-24 19:57:55 - ai_data_agent - INFO - Database connection established
+2026-03-24 19:57:55 - ai_data_agent - INFO - Initializing tool router...
+2026-03-24 19:57:55 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-24 19:57:55 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-24 19:57:55 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-24 19:57:55 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-24 19:57:55 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-24 19:57:55 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-24 19:58:24 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 19:58:24 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-24 19:58:24 - ai_data_agent - INFO - [_get_relevant_apis] Called with query='查询销售数据', user_id='user_001'
+2026-03-24 19:58:24 - ai_data_agent - INFO - [_get_relevant_apis] Getting permission service...
+2026-03-24 19:58:24 - ai_data_agent - INFO - [_get_relevant_apis] Getting active API IDs...
+2026-03-24 19:58:24 - ai_data_agent - INFO - [_get_relevant_apis] Found 1 active API IDs
+2026-03-24 19:58:24 - ai_data_agent - INFO - Starting API retrieval for query: 查询销售数据
+2026-03-24 19:58:24 - ai_data_agent - INFO - Getting retrieval service...
+2026-03-24 19:58:24 - ai_data_agent - INFO - Calling get_apis_for_query with user_id=user_001
+2026-03-24 19:58:25 - ai_data_agent - INFO - Retrieved 1 candidates for user user_001
+2026-03-24 19:58:26 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-24 19:58:34 - ai_data_agent - INFO - Anthropic Response received
+2026-03-24 19:58:34 - ai_data_agent - INFO - Anthropic Content Length: 21
+2026-03-24 19:58:34 - ai_data_agent - INFO - LLM raw response: {"selected_apis": []}
+2026-03-24 19:58:34 - ai_data_agent - INFO - LLM selected 0 APIs
+2026-03-24 19:58:34 - ai_data_agent - INFO - Retrieval returned 0 APIs
+2026-03-24 19:58:34 - ai_data_agent - WARNING - Retrieval returned empty list, falling back
+2026-03-24 19:58:48 - ai_data_agent - INFO - Iteration 1 LLM full response received.
+2026-03-24 19:58:48 - ai_data_agent - INFO - [DEBUG] LLM Response: Thought: 用户要求查询销售数据，但没有提供具体的时间范围和其他查询条件。根据数据查询规范，我需要先了解用户具体想要查询的时间范围才能进行查询。
+
+Action: 无（需要先获取必要参数）
+
+Observation: 缺少必需的查询参数
+
+Thought: 用户查询销售数据，但缺少关键信息。需要向用户确认查询的时间范围（开始日期和结束日期），因为严禁在 API 参数中输入模糊的日期范围（如"last_7_days"），必须使用具体日期。
+
+Answer: 为了查询销售数据，请您提供以下信息：
+
+1. **时间范围**（必填）：
+   - 开始日期：请指定具体日期（格式：YYYY-MM-DD）
+   - 结束日期：请指定具体日期（格式：YYYY-MM-DD）
+
+2. （可选）其他筛选条件：
+   - 地区/门店
+   - 商品类别
+   - 销售部门
+
+请告诉我您要查询的时间范围，例如：2026-03-01 至 2026-03-23
+2026-03-24 19:58:48 - ai_data_agent - INFO - [DEBUG] LLM Response (first 1000 chars): Thought: 用户要求查询销售数据，但没有提供具体的时间范围和其他查询条件。根据数据查询规范，我需要先了解用户具体想要查询的时间范围才能进行查询。
+
+Action: 无（需要先获取必要参数）
+
+Observation: 缺少必需的查询参数
+
+Thought: 用户查询销售数据，但缺少关键信息。需要向用户确认查询的时间范围（开始日期和结束日期），因为严禁在 API 参数中输入模糊的日期范围（如"last_7_days"），必须使用具体日期。
+
+Answer: 为了查询销售数据，请您提供以下信息：
+
+1. **时间范围**（必填）：
+   - 开始日期：请指定具体日期（格式：YYYY-MM-DD）
+   - 结束日期：请指定具体日期（格式：YYYY-MM-DD）
+
+2. （可选）其他筛选条件：
+   - 地区/门店
+   - 商品类别
+   - 销售部门
+
+请告诉我您要查询的时间范围，例如：2026-03-01 至 2026-03-23
+2026-03-24 19:58:48 - ai_data_agent - INFO - Final Parse - thought: 用户要求查询销售数据，但没有提供具体的时间范围和其他查询条件。根据数据查询规范，我需要先了解用户具体..., action: None, answer: 为了查询销售数据，请您提供以下信息：
+
+1. **时间范围**（必填）：
+   - 开始日期：请指定
+2026-03-24 19:59:31 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-24 19:59:31 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 400
+2026-03-24 19:59:56 - ai_data_agent - INFO - Request: GET http://localhost:8002/openapi.json
+2026-03-24 19:59:57 - ai_data_agent - INFO - Response: GET http://localhost:8002/openapi.json - Status: 200

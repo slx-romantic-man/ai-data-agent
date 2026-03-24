@@ -1072,5 +1072,124 @@
     ],
     "created_at": "2026-03-24T15:42:59.903070",
     "updated_at": "2026-03-24T15:44:36.204684"
+  },
+  "test_session_001": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "查询销售数据",
+        "timestamp": "2026-03-24T19:55:42.494834"
+      },
+      {
+        "role": "assistant",
+        "content": "",
+        "timestamp": "2026-03-24T19:55:42.494834"
+      },
+      {
+        "role": "user",
+        "content": "查询销售数据",
+        "timestamp": "2026-03-24T19:58:48.752425"
+      },
+      {
+        "role": "assistant",
+        "content": "为了查询销售数据，请您提供以下信息：\n\n1. **时间范围**（必填）：\n   - 开始日期：请指定具体日期（格式：YYYY-MM-DD）\n   - 结束日期：请指定具体日期（格式：YYYY-MM-DD）\n\n2. （可选）其他筛选条件：\n   - 地区/门店\n   - 商品类别\n   - 销售部门\n\n请告诉我您要查询的时间范围，例如：2026-03-01 至 2026-03-23",
+        "timestamp": "2026-03-24T19:58:48.752425"
+      },
+      {
+        "role": "assistant",
+        "content": "请告诉我您想查询哪个时间段的数据，以及您想查看的具体指标是什么（如销售额、订单量等）？",
+        "type": "clarification"
+      },
+      {
+        "role": "user",
+        "content": "查询销售数据",
+        "timestamp": "2026-03-24T20:02:23.149540"
+      },
+      {
+        "role": "assistant",
+        "content": "",
+        "timestamp": "2026-03-24T20:02:23.149540"
+      },
+      {
+        "role": "assistant",
+        "content": "请提供需要查询的销售数据时间范围，例如：最近7天、本月或指定日期",
+        "type": "clarification"
+      },
+      {
+        "role": "user",
+        "content": "查询销售数据",
+        "timestamp": "2026-03-24T20:05:21.681077"
+      },
+      {
+        "role": "assistant",
+        "content": "",
+        "timestamp": "2026-03-24T20:05:21.681077"
+      }
+    ],
+    "created_at": "2026-03-24T19:55:42.494834",
+    "updated_at": "2026-03-24T20:05:21.681077"
+  },
+  "test_full_001": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "查询2026年3月的销售数据，按地区汇总",
+        "timestamp": "2026-03-24T20:03:42.988122"
+      },
+      {
+        "role": "assistant",
+        "content": "",
+        "timestamp": "2026-03-24T20:03:42.988122"
+      }
+    ],
+    "created_at": "2026-03-24T20:03:42.988122",
+    "updated_at": "2026-03-24T20:03:42.988122"
+  },
+  "f09_test_session": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "查询销售数据",
+        "timestamp": "2026-03-24T20:07:10.525360"
+      },
+      {
+        "role": "assistant",
+        "content": "",
+        "timestamp": "2026-03-24T20:07:10.525360"
+      },
+      {
+        "role": "assistant",
+        "content": "请提供以下信息以便为您查询销售数据：1) 需要查询的时间范围（如最近7天、本月、具体日期）；2) 具体想查看哪些指标（销售额、订单量、毛利等）；3) 是否需要按特定维度分类（按地区、按产品、按部门等）",
+        "type": "clarification"
+      },
+      {
+        "role": "user",
+        "content": "查询销售数据",
+        "timestamp": "2026-03-24T20:08:31.058026"
+      },
+      {
+        "role": "assistant",
+        "content": "",
+        "timestamp": "2026-03-24T20:08:31.058026"
+      }
+    ],
+    "created_at": "2026-03-24T20:07:10.525360",
+    "updated_at": "2026-03-24T20:08:31.058026"
+  },
+  "persistence_test_001": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "查询销售数据",
+        "timestamp": "2026-03-24T20:09:57.032782"
+      },
+      {
+        "role": "assistant",
+        "content": "",
+        "timestamp": "2026-03-24T20:09:57.032782"
+      }
+    ],
+    "created_at": "2026-03-24T20:09:57.032782",
+    "updated_at": "2026-03-24T20:09:57.032782"
   }
 }

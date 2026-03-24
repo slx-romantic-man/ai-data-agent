@@ -319,6 +319,29 @@ feature_list.json 共拆解了 15 个核心功能卡片：
 
 ---
 
+[2026-03-24] Coding Agent Session - F-09
+- 完成功能: F-09 更新 API 层接入新的 LangGraph 工作流
+- 修改文件:
+  * backend/app/api/v1/chat.py - 替换 ReAct 循环为 LangGraph 图调用
+  * 添加 from app.agent.graph import create_graph
+  * 添加 from app.agent.state import AgentState
+  * /chat/stream 端点完全重写，使用 graph.astream() 流式输出
+- 实现细节:
+  * 初始化 AgentState 包含 messages, query, extracted_filters, plan, current_step, data_context
+  * 使用 config = {"configurable": {"thread_id": session_id}} 实现会话持久化
+  * 保持 SSE 事件格式不变 (thought, answer, data, done, quota)
+  * 添加 intent 节点输出处理，支持澄清问题场景
+  * 添加 analyzer 节点输出处理，提取最终答案和数据
+- 测试结果:
+  * test_f09_verification.py 验证 SSE 事件格式正确
+  * 成功接收 thought, done, quota 事件
+  * LangGraph 节点正确执行 (看到 "[intent] 节点执行中...")
+  * test_session_persistence.py 验证会话持久化基础功能
+- Git commit: feat: F-09 更新 API 层接入新的 LangGraph 工作流
+- 下一步: F-10 实现人工审批网关的前后端交互
+
+---
+
 [后续会话请在此处追加进展记录]
 
 格式示例：
