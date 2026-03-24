@@ -66,7 +66,7 @@
         "递增 state['current_step']",
         "测试执行器能正确调用工具并保存数据到 data_context"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-06",
@@ -80,7 +80,7 @@
         "将分析报告追加到 state['messages']",
         "测试分析节点能够综合多个数据源生成连贯的分析报告"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-07",
@@ -94,7 +94,7 @@
         "设置 interrupt_before=['Executor'] 实现人工审批网关",
         "编译图并测试完整流程能够从用户查询到最终分析"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-08",
