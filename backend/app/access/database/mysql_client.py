@@ -25,6 +25,7 @@ class MySQLClient:
 
     async def get_table_schema(self, table_name: str) -> List[Dict[str, Any]]:
         """Get table schema information."""
+        db_name = self.db.database_url.split("/")[-1].split("?")[0]
         sql = """
             SELECT
                 COLUMN_NAME as column_name,
@@ -33,10 +34,10 @@ class MySQLClient:
                 COLUMN_KEY as column_key,
                 COLUMN_COMMENT as column_comment
             FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE TABLE_NAME = :table_name
+            WHERE TABLE_NAME = :table_name AND TABLE_SCHEMA = :db_name
             ORDER BY ORDINAL_POSITION
         """
-        rows = await self.db.fetch_all(sql, {"table_name": table_name})
+        rows = await self.db.fetch_all(sql, {"table_name": table_name, "db_name": db_name})
         return [dict(row._mapping) for row in rows]
 
     async def get_all_tables(self) -> List[str]:
@@ -53,13 +54,14 @@ class MySQLClient:
 
     async def get_table_columns(self, table_name: str) -> List[str]:
         """Get column names for a table."""
+        db_name = self.db.database_url.split("/")[-1].split("?")[0]
         sql = """
             SELECT COLUMN_NAME
             FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE TABLE_NAME = :table_name
+            WHERE TABLE_NAME = :table_name AND TABLE_SCHEMA = :db_name
             ORDER BY ORDINAL_POSITION
         """
-        rows = await self.db.fetch_all(sql, {"table_name": table_name})
+        rows = await self.db.fetch_all(sql, {"table_name": table_name, "db_name": db_name})
         return [row.COLUMN_NAME for row in rows]
 
     async def execute_query(
@@ -81,11 +83,17 @@ class MySQLClient:
         Only allows SELECT queries for security.
         """
         # Validate SQL is read-only
+        import re
         sql_upper = sql.strip().upper()
-        forbidden_keywords = ["INSERT", "UPDATE", "DELETE", "DROP", "CREATE", "ALTER", "TRUNCATE", "GRANT", "REVOKE"]
+        forbidden_keywords = [
+            "INSERT", "UPDATE", "DELETE", "DROP", "CREATE",
+            "ALTER", "TRUNCATE", "GRANT", "REVOKE"
+        ]
 
         for keyword in forbidden_keywords:
-            if keyword in sql_upper:
+            # Use word-boundary matching to avoid false positives
+            # e.g. "CREATE" should not match "CREATED_AT"
+            if re.search(r'\b' + keyword + r'\b', sql_upper):
                 raise ValueError(f"Forbidden SQL keyword detected: {keyword}")
 
         if not sql_upper.startswith("SELECT") and not sql_upper.startswith("WITH"):

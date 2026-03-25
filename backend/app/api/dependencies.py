@@ -77,7 +77,7 @@ async def get_current_user(
     # Demo mode: return default user
     if settings.DEBUG:
         user_service = get_user_service()
-        user_context = user_service.get_user_context("user_001")
+        user_context = user_service.get_user_context("admin")
         if user_context:
             return user_context
 

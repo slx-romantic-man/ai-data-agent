@@ -151,7 +151,7 @@
         "验证 Executor 调用正确的 API",
         "验证 Analyzer 返回清晰的分析结果"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-12",

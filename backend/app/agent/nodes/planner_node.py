@@ -30,30 +30,40 @@ class ExecutionPlan(BaseModel):
     reasoning: str = Field(..., description="规划推理过程")
 
 
-async def planner_node(state: AgentState, retrieved_apis: list) -> AgentState:
+async def planner_node(state: AgentState, retrieved_apis: list, retrieved_tables: list = None) -> AgentState:
     """
     Planner Node: 生成结构化执行计划
 
     Args:
         state: 当前 AgentState
         retrieved_apis: 从 retrieval_node 传递的 API 列表
+        retrieved_tables: 从 retrieval_node 传递的数据库表列表
 
     Returns:
         更新后的 AgentState，包含 plan 字段
     """
     query = state["query"]
     extracted_filters = state.get("extracted_filters") or {}
+    retrieved_tables = retrieved_tables or []
 
     logger.info(f"[PlannerNode] Generating plan for query: {query}")
+    logger.info(f"[PlannerNode] Available APIs: {len(retrieved_apis)}, Tables: {len(retrieved_tables)}")
+
+    # 合并 API 和表信息
+    all_tools = retrieved_apis + retrieved_tables
 
     # 调用 LLM 生成计划
     llm = get_llm()
-    prompt = get_planner_prompt(query, extracted_filters, retrieved_apis)
+    prompt = get_planner_prompt(query, extracted_filters, all_tools)
+
+    logger.info(f"[PlannerNode] Prompt sent to LLM:\n{prompt[:2000]}")
 
     response = await llm.chat([
         {"role": "system", "content": "你是一个专业的数据查询规划师，擅长将复杂查询拆解为结构化的执行步骤。"},
         {"role": "user", "content": prompt}
     ])
+
+    logger.info(f"[PlannerNode] LLM Response: {response[:1000]}")
 
     # 解析并验证计划
     plan_data = _parse_and_validate_plan(response)

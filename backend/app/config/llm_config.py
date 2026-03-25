@@ -300,11 +300,18 @@ class AnthropicClient(BaseLLMClient):
 
             logger.info(f"Anthropic Response received")
 
+            if message is None:
+                logger.error("Anthropic response is None")
+                return ""
+
             # Extract text content
             content = ""
-            for block in message.content:
-                if block.type == "text":
-                    content += block.text
+            if message.content:
+                for block in message.content:
+                    if block.type == "text":
+                        content += block.text
+            else:
+                logger.warning("Anthropic response has no content")
 
             logger.info(f"Anthropic Content Length: {len(content)}")
             return content

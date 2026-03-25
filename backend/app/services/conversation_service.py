@@ -4,8 +4,10 @@ Uses database for storage instead of JSON files.
 Also manages conversation state for multi-turn dialogue.
 """
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+from decimal import Decimal
 import asyncio
+import json
 
 from sqlalchemy import select, delete as sql_delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +18,21 @@ from app.models.chat import ConversationContext, ConversationState
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+def _serialize_data(data: Any) -> Any:
+    """Recursively serialize data to JSON-compatible format."""
+    if data is None:
+        return None
+    if isinstance(data, (datetime, date)):
+        return data.isoformat()
+    if isinstance(data, Decimal):
+        return float(data)
+    if isinstance(data, dict):
+        return {k: _serialize_data(v) for k, v in data.items()}
+    if isinstance(data, (list, tuple)):
+        return [_serialize_data(item) for item in data]
+    return data
 
 
 class Conversation:
@@ -276,7 +293,7 @@ class ConversationService:
                 conversation_id=db_conv.id,
                 role=role,
                 content=content,
-                data=data,
+                data=_serialize_data(data) if data else None,
                 created_at=now,
             )
             session.add(db_msg)

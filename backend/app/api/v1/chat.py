@@ -4,7 +4,8 @@ Chat API endpoints.
 from typing import Dict, Any
 import json
 import os
-from datetime import datetime
+from datetime import datetime, date
+from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
@@ -35,6 +36,22 @@ from app.services.user_service import get_user_service
 from app.services.credit_service import get_credit_service
 from app.services.conversation_service import get_conversation_service
 from app.services.suggestion_service import get_suggestion_service
+
+
+class _DateEncoder(json.JSONEncoder):
+    """JSON encoder that handles date, datetime, and Decimal types."""
+
+    def default(self, obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super().default(obj)
+
+
+def _json_dumps(obj, **kwargs) -> str:
+    """json.dumps wrapper with date/Decimal support."""
+    return json.dumps(obj, cls=_DateEncoder, **kwargs)
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -128,32 +145,43 @@ async def chat(
             "messages": [],
             "created_at": datetime.now(),
         })
-        conversation_history = session.get("messages", [])
 
-        agent = await get_streaming_agent()
+        # Use LangGraph workflow
+        graph = await create_graph(permission)
 
-        final_answer_text = ""
+        initial_state: AgentState = {
+            "messages": [],
+            "query": request.message,
+            "extracted_filters": None,
+            "plan": None,
+            "current_step": 0,
+            "data_context": {}
+        }
+
+        config = {"configurable": {"thread_id": session_id}}
+        result = await graph.ainvoke(initial_state, config)
+
+        # Extract results
+        messages = result.get("messages", [])
+        if messages:
+            last_msg = messages[-1]
+            final_answer_text = last_msg.get("content") if isinstance(last_msg, dict) else last_msg.content
+        else:
+            final_answer_text = "处理完成"
+
+        data_context = result.get("data_context", {})
         final_data = None
         final_sql = ""
+
+        # Extract SQL and data from data_context
+        for key, value in data_context.items():
+            if isinstance(value, dict):
+                if "sql" in value:
+                    final_sql = value.get("sql", "")
+                if "data" in value:
+                    final_data = value.get("data")
+
         final_reasoning_log = None
-
-        async for event in agent.process_stream(
-            user_query=request.message,
-            user_context=user,
-            conversation_history=conversation_history,
-            permission_context=permission,
-        ):
-            event_type = event.get("type")
-            data = event.get("data", {})
-
-            if event_type == "answer":
-                final_answer_text = data.get("content", "")
-                final_reasoning_log = data.get("reasoning_log")
-            elif event_type == "data":
-                final_data = data
-                final_sql = data.get("sql", "")
-            elif event_type == "error":
-                raise RuntimeError(data.get("message", "Unknown stream error"))
 
         # Update session
         session["messages"].append({
@@ -435,7 +463,7 @@ async def stream_chat(
             # Get user account for credit check
             user_account = user_service.get_user_by_user_id(user.user_id)
             if not user_account:
-                error_event = json.dumps({
+                error_event = _json_dumps({
                     "type": "error",
                     "data": {"message": "用户不存在"}
                 }, ensure_ascii=False)
@@ -446,7 +474,7 @@ async def stream_chat(
             if not user_account.has_unlimited_credits():
                 user_service.check_and_reset_if_needed(user.user_id)
                 if user_account.quota.current_balance <= 0:
-                    error_event = json.dumps({
+                    error_event = _json_dumps({
                         "type": "error",
                         "data": {
                             "message": "积分不足，请等待每日重置或联系管理员充值",
@@ -501,7 +529,7 @@ async def stream_chat(
             async for event in graph.astream(initial_state, config, stream_mode="updates"):
                 for node_name, node_output in event.items():
                     # Emit node execution event
-                    yield f"data: {json.dumps({'type': 'thought', 'data': {'content': f'[{node_name}] 节点执行中...'}}, ensure_ascii=False)}\n\n"
+                    yield f"data: {_json_dumps({'type': 'thought', 'data': {'content': f'[{node_name}] 节点执行中...'}}, ensure_ascii=False)}\n\n"
 
                     # Handle intent node output
                     if node_name == "intent":
@@ -510,14 +538,14 @@ async def stream_chat(
                             last_msg = messages[-1]
                             if last_msg.get("type") == "clarification":
                                 final_answer_text = last_msg.get("content", "")
-                                yield f"data: {json.dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
+                                yield f"data: {_json_dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
 
                     # Check if this is the final analyzer output
                     if node_name == "analyzer":
                         messages = node_output.get("messages", [])
                         if messages:
                             final_answer_text = messages[-1].get("content", "")
-                            yield f"data: {json.dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
+                            yield f"data: {_json_dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
 
                         # Extract data from data_context
                         data_context = node_output.get("data_context", {})
@@ -525,14 +553,14 @@ async def stream_chat(
                             for key, value in data_context.items():
                                 if isinstance(value, dict) and "data" in value:
                                     final_data = value
-                                    yield f"data: {json.dumps({'type': 'data', 'data': final_data}, ensure_ascii=False)}\n\n"
+                                    yield f"data: {_json_dumps({'type': 'data', 'data': final_data}, ensure_ascii=False)}\n\n"
                                     break
 
             # Check if workflow is interrupted (waiting for approval)
             state = await graph.aget_state(config)
             if state.next:
                 # Workflow is interrupted, send approval_required event
-                approval_event = json.dumps({
+                approval_event = _json_dumps({
                     "type": "approval_required",
                     "data": {
                         "thread_id": session_id,
@@ -541,11 +569,11 @@ async def stream_chat(
                     }
                 }, ensure_ascii=False)
                 yield f"data: {approval_event}\n\n"
-                yield f"data: {json.dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
+                yield f"data: {_json_dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
                 return
 
             # Send done event
-            yield f"data: {json.dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
+            yield f"data: {_json_dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
 
             # Deduct credits (estimate tokens if not provided)
             # For now, use a simple estimation based on response length
@@ -569,7 +597,7 @@ async def stream_chat(
                 )
 
                 # Send quota update event
-                quota_event = json.dumps({
+                quota_event = _json_dumps({
                     "type": "quota",
                     "data": {
                         "credits_deducted": deduct_result.get("credits_deducted", 0),
@@ -616,7 +644,7 @@ async def stream_chat(
 
         except Exception as e:
             logger.error(f"Stream chat error: {str(e)}")
-            error_event = json.dumps({
+            error_event = _json_dumps({
                 "type": "error",
                 "data": {"message": str(e)}
             }, ensure_ascii=False)

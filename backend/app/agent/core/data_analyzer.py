@@ -4,6 +4,8 @@ Performs analysis on query results.
 """
 import json
 from typing import Optional, Dict, Any, List
+from datetime import datetime, date
+from decimal import Decimal
 
 from app.config.llm_config import BaseLLMClient, get_llm
 from app.agent.prompts.analysis_prompt import (
@@ -12,6 +14,17 @@ from app.agent.prompts.analysis_prompt import (
     get_comparison_analysis_prompt,
     get_anomaly_analysis_prompt,
 )
+
+
+class _DateEncoder(json.JSONEncoder):
+    """JSON encoder that handles date, datetime, and Decimal types."""
+
+    def default(self, obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super().default(obj)
 
 
 class DataAnalyzer:
@@ -101,7 +114,7 @@ class DataAnalyzer:
         sample_data = data[:max_rows]
 
         # Convert to JSON string
-        return json.dumps(sample_data, ensure_ascii=False, indent=2)
+        return json.dumps(sample_data, ensure_ascii=False, indent=2, cls=_DateEncoder)
 
     def _generate_summary(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Generate summary statistics for data."""

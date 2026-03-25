@@ -17,6 +17,7 @@ logger = get_logger(__name__)
 
 # 全局变量存储检索结果
 _retrieved_apis_cache = []
+_retrieved_tables_cache = []
 
 
 def should_continue_execution(state: AgentState) -> str:
@@ -59,15 +60,16 @@ async def create_graph(permission: PermissionContext):
 
     async def retrieval_wrapper(state: AgentState) -> AgentState:
         """Retrieval 节点包装器，缓存检索结果"""
-        global _retrieved_apis_cache
+        global _retrieved_apis_cache, _retrieved_tables_cache
         result = await _retrieval_node(state)
         _retrieved_apis_cache = result.get("retrieved_apis", [])
+        _retrieved_tables_cache = result.get("retrieved_tables", [])
         return state
 
     async def planner_wrapper(state: AgentState) -> AgentState:
         """Planner 节点包装器，传递缓存的检索结果和权限信息"""
-        global _retrieved_apis_cache
-        result = await _planner_node(state, _retrieved_apis_cache)
+        global _retrieved_apis_cache, _retrieved_tables_cache
+        result = await _planner_node(state, _retrieved_apis_cache, _retrieved_tables_cache)
 
         # 检查是否需要审批：非管理员且有 API 调用
         is_admin = permission.role == "admin"

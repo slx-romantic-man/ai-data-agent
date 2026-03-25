@@ -65,11 +65,16 @@ async def executor_node(state: AgentState, permission: PermissionContext) -> Age
 async def _execute_sql_query(params: Dict[str, Any], permission: PermissionContext) -> Dict[str, Any]:
     """执行 SQL 查询工具"""
     try:
+        logger.info(f"[ExecutorNode] SQL params: {params}")
         tool = await get_sql_query_tool()
         result = await tool.execute(params, permission)
 
         from app.models.tool import ToolStatus
         success = result.status == ToolStatus.SUCCESS
+
+        logger.info(f"[ExecutorNode] SQL result status: {result.status}, data rows: {len(result.data) if result.data else 0}")
+        if not success:
+            logger.error(f"[ExecutorNode] SQL error: {result.error}")
 
         return {
             "success": success,
