@@ -52,7 +52,7 @@ bash init.sh
 三、功能清单概览
 ===========================================
 
-feature_list.json 共拆解了 15 个核心功能卡片：
+feature_list.json 共拆解了 19 个核心功能卡片：
 
 优先级 1-7: 核心架构节点实现 (LangGraph 状态机)
   - F-01: 引入 LangGraph 并定义 AgentState
@@ -68,14 +68,18 @@ feature_list.json 共拆解了 15 个核心功能卡片：
   - F-09: 更新 API 层接入新工作流
   - F-10: 实现人工审批网关前后端交互
 
-优先级 11-14: 端到端测试
+优先级 11-15: 端到端测试与文档
   - F-11: 简单查询场景
   - F-12: 复杂归因分析场景
   - F-13: 多轮下钻场景
   - F-14: 人工审批网关场景
-
-优先级 15: 文档更新
   - F-15: 更新项目文档反映 v4 架构
+
+优先级 16-19: Python 代码执行能力 (新增)
+  - F-16: 实现 Python 代码执行工具
+  - F-17: 更新 Planner 支持 python_exec 工具类型
+  - F-18: 更新 Executor 路由支持 Python 代码执行
+  - F-19: 端到端测试：数学运算场景
 
 ===========================================
 四、标准启动序列 (MANDATORY)
@@ -154,6 +158,43 @@ feature_list.json 共拆解了 15 个核心功能卡片：
 查看完整实现:
   - Git commit: df8e345
   - 详细记录: 本文件第 345-372 行
+
+---
+
+[2026-03-25] Python 代码执行能力需求变更
+原需求: 仅使用 LLM 进行数据分析
+新需求: 严谨数学运算使用 Python 代码执行
+  - Planner 自动识别数学运算需求
+  - 仅允许安全的数学库（numpy, pandas, math, statistics）
+  - 从 data_context 自动提取数据作为 Python 变量
+  - 结果存入 data_context 支持多步骤依赖
+  - 支持多轮对话中的计算结果复用
+
+受影响的功能:
+  - F-11, F-12: 测试场景需包含数学运算案例
+  - F-15: 文档需说明 Python 执行能力
+  - 新增 F-16 到 F-19: Python 执行相关功能
+
+实施文件:
+  - backend/app/agent/tools/python_exec_tool.py (新建)
+  - backend/app/agent/nodes/planner_node.py (修改 PlanStep 模型)
+  - backend/app/agent/nodes/executor_node.py (添加 python_exec 路由)
+  - backend/app/agent/prompts/planner_prompt.py (更新 Prompt)
+  - backend/app/agent/tools/__init__.py (注册新工具)
+  - backend/requirements.txt (添加 numpy>=1.24.0)
+  - feature_list.json (添加 F-16 到 F-19)
+
+新增功能清单:
+  - F-16 (priority 16): 实现 Python 代码执行工具
+  - F-17 (priority 17): 更新 Planner 支持 python_exec 工具类型
+  - F-18 (priority 18): 更新 Executor 路由支持 Python 代码执行
+  - F-19 (priority 19): 端到端测试：数学运算场景
+
+安全机制:
+  - 白名单库: numpy, pandas, math, statistics, json, datetime
+  - 黑名单函数: eval, exec, __import__, open, compile, globals, locals, os, sys
+  - 执行超时: 5秒
+  - 数据注入: 从 data_context 自动提取并转换为 Python 变量
 
 ===========================================
 七、失败模式警告 (FAILURE MODES)

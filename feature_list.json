@@ -209,6 +209,66 @@
         "添加多轮对话和状态持久化的使用示例"
       ],
       "passes": false
+    },
+    {
+      "id": "F-16",
+      "priority": 16,
+      "category": "architecture",
+      "description": "实现 Python 代码执行工具 (python_exec_tool.py)",
+      "steps": [
+        "在 backend/app/agent/tools/ 下创建 python_exec_tool.py",
+        "实现 PythonExecTool 类继承 BaseTool",
+        "实现安全沙箱：白名单库（numpy, pandas, math, statistics）+ 黑名单函数（eval, exec, open, os）",
+        "添加执行超时限制（5秒）和异常处理",
+        "在 backend/app/agent/tools/__init__.py 中注册新工具",
+        "编写单元测试 backend/tests/test_python_exec_tool.py 验证安全性和功能"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-17",
+      "priority": 17,
+      "category": "architecture",
+      "description": "更新 Planner 支持 python_exec 工具类型",
+      "steps": [
+        "修改 backend/app/agent/nodes/planner_node.py 的 PlanStep 模型",
+        "扩展 tool 字段支持 'python_exec' 类型",
+        "修改 backend/app/agent/prompts/planner_prompt.py 添加 python_exec 工具说明",
+        "添加示例：计算增长率、求和、平均值等场景",
+        "测试 Planner 能够识别数学运算需求并生成 python_exec 计划"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-18",
+      "priority": 18,
+      "category": "architecture",
+      "description": "更新 Executor 路由支持 Python 代码执行",
+      "steps": [
+        "修改 backend/app/agent/nodes/executor_node.py",
+        "添加 elif tool_name == 'python_exec' 路由分支",
+        "实现数据注入逻辑：从 data_context 提取数据转为 Python 变量",
+        "调用 PythonExecTool 执行代码",
+        "将执行结果存入 data_context，key 格式为 step_{idx}_python_exec",
+        "测试 Executor 能正确执行 Python 代码并保存结果"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-19",
+      "priority": 19,
+      "category": "testing",
+      "description": "端到端测试：数学运算场景",
+      "steps": [
+        "场景1：简单计算 - 查询'上个月销售额10000，这个月12000，增长率是多少'",
+        "验证 Planner 生成 python_exec 步骤",
+        "验证 Executor 执行代码并计算出 20%",
+        "场景2：基于API数据计算 - 查询'最近7天订单数据的平均订单金额'",
+        "验证先 api_fetch 获取数据，再 python_exec 计算平均值",
+        "场景3：多步骤依赖 - 查询'销售数据和成本数据的利润率'",
+        "验证两次 api_fetch + 一次 python_exec 的完整流程"
+      ],
+      "passes": false
     }
   ]
 }
