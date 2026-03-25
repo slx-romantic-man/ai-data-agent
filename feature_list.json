@@ -165,7 +165,7 @@
         "验证 data_context 正确隔离存储多个 API 结果",
         "验证 Analyzer 能够综合多个数据源进行归因分析"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-13",

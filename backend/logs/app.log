@@ -21052,3 +21052,712 @@ TABLE api_configs (No description):
 2026-03-25 16:53:03 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
 2026-03-25 16:53:03 - ai_data_agent - INFO - AI Data Agent started successfully
 2026-03-25 16:53:17 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-25 16:53:17 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-25 16:53:17 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-25 16:53:18 - ai_data_agent - INFO - [IntentNode] Processing query: 查询最近七天订单统计
+2026-03-25 16:53:19 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 16:53:36 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 16:53:36 - ai_data_agent - INFO - Anthropic Content Length: 346
+2026-03-25 16:53:36 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_statistic", "entities": {"time_range": {"start": "relative:-7d", "end": "relative:today", "description": "最近7天"}, "api_hint": "orders"}, "metrics": ["订单量", "订单金额"], "dimensions": ["日期"], "confidence": 0.85, "missing_info": null, "clarification_question": null}
+2026-03-25 16:53:36 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "data_statistic", "entities": {"time_range": {"start": "relative:-7d", "end": "relative:today", "description": "最近7天"}, "api_hint": "orders"}, "metrics": ["订单量", "订单金额"], "dimensions": ["日期"], "confidence": 0.85}
+2026-03-25 16:53:36 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询最近七天订单统计
+2026-03-25 16:53:36 - ai_data_agent - INFO - [Retrieval Node] Intent type: data_statistic
+2026-03-25 16:53:36 - ai_data_agent - INFO - Retrieved 4 candidates for user 1
+2026-03-25 16:53:37 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 16:53:46 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 16:53:46 - ai_data_agent - INFO - Anthropic Content Length: 21
+2026-03-25 16:53:46 - ai_data_agent - INFO - LLM raw response: {"selected_apis": []}
+2026-03-25 16:53:46 - ai_data_agent - INFO - LLM selected 0 APIs
+2026-03-25 16:53:46 - ai_data_agent - INFO - [Retrieval Node] Retrieved 0 APIs
+2026-03-25 16:53:46 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-25 16:53:46 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询最近七天订单统计
+2026-03-25 16:53:46 - ai_data_agent - INFO - [PlannerNode] Available APIs: 0, Tables: 12
+2026-03-25 16:53:46 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：查询最近七天订单统计
+
+提取的过滤条件：
+{
+  "intent_type": "data_statistic",
+  "entities": {
+    "time_range": {
+      "start": "relative:-7d",
+      "end": "relative:today",
+      "description": "最近7天"
+    },
+    "api_hint": "orders"
+  },
+  "metrics": [
+    "订单量",
+    "订单金额"
+  ],
+  "dimensions": [
+    "日期"
+  ],
+  "confidence": 0.85
+}
+
+可用的API列表：
+（无可用API）
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - id: integer [PK]
+  - user_id: string
+  - user_id: string
+  - api_config_id: integer
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - conversation_id: string
+  - status: string
+  - status: string
+  - response_time_ms: integer
+  - response_time_ms: integer
+  - error_message: string
+  - error_message: string
+  - called_at: datetime
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - id: integer [PK]
+  - name: string
+  - name: string
+  - description: string
+  - description: string
+  - parent_id: integer
+  - parent_id: integer
+  - sort_order: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_by: integer
+  - created_at: datetime
+  - created_at: datetime
+  - updated_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - id: integer [PK]
+  - config_id: string
+  - config_id: string
+  - name: string
+  - name: string
+  - description: string
+  - description: string
+  - base_url: string
+  - base_url: string
+  - auth_type: string
+  - category_id: integer
+  - auth_config: json
+  - auth_type: string
+  - auth_config: string
+  - endpoints: json
+  - auth_fields: json
+  - timeout: integer
+  - retry_count: integer
+  - endpoints: json
+  - is_system: integer
+  - timeout: integer
+  - is_active: integer
+  - retry_count: integer
+  - is_system:
+2026-03-25 16:53:47 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 16:54:07 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 16:54:07 - ai_data_agent - INFO - Anthropic Content Length: 760
+2026-03-25 16:54:07 - ai_data_agent - INFO - [PlannerNode] LLM Response: {
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "sql_query",
+            "api_id": "",
+            "params": {
+                "sql": "SELECT DATE(order_date) as date, COUNT(*) as order_count, SUM(amount) as total_amount FROM orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(order_date) ORDER BY date"
+            },
+            "description": "查询订单表获取最近7天的订单统计数据，按日期分组统计订单量和订单金额",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户查询最近7天订单统计数据，需要统计订单量和订单金额，按日期维度分组。可用API列表为空，因此必须使用sql_query工具查询数据库。orders表包含order_date字段用于时间过滤，amount字段用于金额统计。通过DATE()函数将日期时间转换为日期格式，COUNT(*)统计订单数量，SUM(amount)统计订单总金额。SQL语句使用DATE_SUB(CURDATE(), INTERVAL 7 DAY)计算7天前的日期作为过滤条件，GROUP BY按日期分组，ORDER BY按日期排序返回结果。"
+}
+2026-03-25 16:54:07 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-25 16:54:07 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 查询订单表获取最近7天的订单统计数据，按日期分组统计订单量和订单金额
+2026-03-25 16:54:07 - ai_data_agent - INFO - [ExecutorNode] SQL params: {'sql': 'SELECT DATE(order_date) as date, COUNT(*) as order_count, SUM(amount) as total_amount FROM orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(order_date) ORDER BY date'}
+2026-03-25 16:54:07 - ai_data_agent - INFO - [ExecutorNode] SQL result status: ToolStatus.SUCCESS, data rows: 3
+2026-03-25 16:54:07 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_sql_query']
+2026-03-25 16:54:07 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-25 16:54:07 - ai_data_agent - INFO - [AnalyzerNode] Extracted 1 total rows from data_context
+2026-03-25 16:54:08 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 16:54:40 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 16:54:40 - ai_data_agent - INFO - Anthropic Content Length: 2299
+2026-03-25 16:54:40 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-25 17:02:40 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-25 17:02:40 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-25 17:02:46 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-25 17:02:46 - ai_data_agent - INFO - Environment: development
+2026-03-25 17:02:46 - ai_data_agent - INFO - Debug mode: True
+2026-03-25 17:02:46 - ai_data_agent - INFO - Initializing database connection...
+2026-03-25 17:02:46 - ai_data_agent - INFO - Database connection established
+2026-03-25 17:02:46 - ai_data_agent - INFO - Initializing tool router...
+2026-03-25 17:02:46 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-25 17:02:46 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-25 17:02:46 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-25 17:02:46 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-25 17:02:46 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-25 17:02:46 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-25 17:03:16 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/auth/login
+2026-03-25 17:03:16 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/auth/login - Status: 404
+2026-03-25 17:03:48 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-25 17:03:48 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-25 17:03:50 - ai_data_agent - INFO - Request: POST http://localhost:8002/auth/login
+2026-03-25 17:03:50 - ai_data_agent - INFO - Response: POST http://localhost:8002/auth/login - Status: 404
+2026-03-25 17:04:36 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-25 17:04:36 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 422
+2026-03-25 17:05:00 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-25 17:05:00 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-25 17:05:21 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-25 17:05:21 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 400
+2026-03-25 17:07:29 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-25 17:07:29 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 400
+2026-03-25 17:08:38 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat
+2026-03-25 17:08:38 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 400
+2026-03-25 17:11:13 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-25 17:11:13 - ai_data_agent - INFO - Environment: development
+2026-03-25 17:11:13 - ai_data_agent - INFO - Debug mode: True
+2026-03-25 17:11:13 - ai_data_agent - INFO - Initializing database connection...
+2026-03-25 17:11:13 - ai_data_agent - INFO - Database connection established
+2026-03-25 17:11:13 - ai_data_agent - INFO - Initializing tool router...
+2026-03-25 17:11:13 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-25 17:11:13 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-25 17:11:13 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-25 17:11:13 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-25 17:11:13 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-25 17:11:13 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-25 17:11:14 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-25 17:11:14 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-25 17:11:49 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-25 17:11:49 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-25 17:11:49 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat
+2026-03-25 17:11:49 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 400
+2026-03-25 17:14:24 - ai_data_agent - INFO - Request: GET http://localhost:8002/openapi.json
+2026-03-25 17:14:25 - ai_data_agent - INFO - Response: GET http://localhost:8002/openapi.json - Status: 200
+2026-03-25 17:15:13 - ai_data_agent - INFO - Request: GET http://localhost:8002/openapi.json
+2026-03-25 17:15:13 - ai_data_agent - INFO - Response: GET http://localhost:8002/openapi.json - Status: 200
+2026-03-25 17:16:19 - ai_data_agent - INFO - Request: GET http://localhost:8002/openapi.json
+2026-03-25 17:16:19 - ai_data_agent - INFO - Response: GET http://localhost:8002/openapi.json - Status: 200
+2026-03-25 17:16:48 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-25 17:16:49 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-25 17:16:49 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat
+2026-03-25 17:16:49 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-25 17:16:49 - ai_data_agent - INFO - [IntentNode] Processing query: test query
+2026-03-25 17:16:51 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 17:17:01 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 17:17:01 - ai_data_agent - INFO - Anthropic Content Length: 192
+2026-03-25 17:17:01 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {}, "metrics": [], "dimensions": [], "confidence": 0.1, "missing_info": null, "clarification_question": null}
+2026-03-25 17:17:01 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {}, "metrics": [], "dimensions": [], "confidence": 0.1}
+2026-03-25 17:17:01 - ai_data_agent - INFO - [Retrieval Node] Processing query: test query
+2026-03-25 17:17:01 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-25 17:17:21 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-25 17:17:35 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-25 17:17:36 - ai_data_agent - INFO - Retrieved 4 candidates for user 1
+2026-03-25 17:17:37 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 17:17:46 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 17:17:46 - ai_data_agent - INFO - Anthropic Content Length: 21
+2026-03-25 17:17:46 - ai_data_agent - INFO - LLM raw response: {"selected_apis": []}
+2026-03-25 17:17:46 - ai_data_agent - INFO - LLM selected 0 APIs
+2026-03-25 17:17:46 - ai_data_agent - INFO - [Retrieval Node] Retrieved 0 APIs
+2026-03-25 17:17:46 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-25 17:17:46 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: test query
+2026-03-25 17:17:46 - ai_data_agent - INFO - [PlannerNode] Available APIs: 0, Tables: 12
+2026-03-25 17:17:46 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：test query
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {},
+  "metrics": [],
+  "dimensions": [],
+  "confidence": 0.1
+}
+
+可用的API列表：
+（无可用API）
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_id: string
+  - input_tokens: integer
+  - output_tokens: integer
+  - total_tokens: integer
+  - credits_deducted: integer
+  - balance_after: integer
+  - created_at: datetime
+
+
+6. 表名: messages
+   描述: 数据库表: messages
+   结构: 
+TABLE messages (No description):
+  - id: integer [PK]
+  - conversation_id
+2026-03-25 17:17:47 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 17:18:07 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 17:18:07 - ai_data_agent - INFO - Anthropic Content Length: 533
+2026-03-25 17:18:07 - ai_data_agent - INFO - [PlannerNode] LLM Response: {
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "sql_query",
+            "api_id": "",
+            "params": {
+                "sql": "SELECT COUNT(*) as total_calls, COUNT(DISTINCT user_id) as unique_users, COUNT(DISTINCT api_config_id) as unique_apis FROM api_call_logs"
+            },
+            "description": "获取API调用日志的基本统计信息",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户查询为'test query'，意图类型为api_query但置信度很低(0.1)，且无具体过滤条件。由于无可用API，使用sql_query工具查询api_call_logs表获取基本的API调用统计信息。"
+}
+2026-03-25 17:18:07 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-25 17:18:07 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取API调用日志的基本统计信息
+2026-03-25 17:18:07 - ai_data_agent - INFO - [ExecutorNode] SQL params: {'sql': 'SELECT COUNT(*) as total_calls, COUNT(DISTINCT user_id) as unique_users, COUNT(DISTINCT api_config_id) as unique_apis FROM api_call_logs'}
+2026-03-25 17:18:07 - ai_data_agent - INFO - [ExecutorNode] SQL result status: ToolStatus.SUCCESS, data rows: 3
+2026-03-25 17:18:07 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_sql_query']
+2026-03-25 17:18:07 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-25 17:18:07 - ai_data_agent - INFO - [AnalyzerNode] Extracted 1 total rows from data_context
+2026-03-25 17:18:08 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 17:18:34 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 17:18:34 - ai_data_agent - INFO - Anthropic Content Length: 1375
+2026-03-25 17:18:34 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-25 17:18:34 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 200
+2026-03-25 17:19:07 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-25 17:19:07 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-25 17:19:07 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat
+2026-03-25 17:19:07 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-25 17:19:07 - ai_data_agent - INFO - [IntentNode] Processing query: 华东地区库存异常的原因是什么
+2026-03-25 17:19:08 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 17:19:19 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 17:19:19 - ai_data_agent - INFO - Anthropic Content Length: 288
+2026-03-25 17:19:19 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_analysis", "entities": {"location": "华东地区", "api_hint": "inventory"}, "metrics": ["库存异常程度"], "dimensions": ["地区", "产品分类", "时间"], "confidence": 0.85, "missing_info": null, "clarification_question": null}
+2026-03-25 17:19:19 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "data_analysis", "entities": {"location": "华东地区", "api_hint": "inventory"}, "metrics": ["库存异常程度"], "dimensions": ["地区", "产品分类", "时间"], "confidence": 0.85}
+2026-03-25 17:19:19 - ai_data_agent - INFO - [Retrieval Node] Processing query: 华东地区库存异常的原因是什么
+2026-03-25 17:19:19 - ai_data_agent - INFO - [Retrieval Node] Intent type: data_analysis
+2026-03-25 17:19:19 - ai_data_agent - INFO - Retrieved 4 candidates for user 1
+2026-03-25 17:19:20 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 17:19:32 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 17:19:32 - ai_data_agent - INFO - Anthropic Content Length: 241
+2026-03-25 17:19:32 - ai_data_agent - INFO - LLM raw response: {
+    "selected_apis": [
+        {
+            "api_id": 4,
+            "reason": "Inventory Query V5是唯一与库存管理相关的API，虽然它只能查询库存数量，无法直接分析异常原因，但在给定的候选API中，它是与用户问题主题（库存）最相关的选项。其他API（天气、股票）与库存异常问题无关。",
+            "call_order": 1
+        }
+    ]
+}
+2026-03-25 17:19:32 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-25 17:19:32 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-25 17:19:32 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-25 17:19:32 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 华东地区库存异常的原因是什么
+2026-03-25 17:19:32 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-25 17:19:32 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：华东地区库存异常的原因是什么
+
+提取的过滤条件：
+{
+  "intent_type": "data_analysis",
+  "entities": {
+    "location": "华东地区",
+    "api_hint": "inventory"
+  },
+  "metrics": [
+    "库存异常程度"
+  ],
+  "dimensions": [
+    "地区",
+    "产品分类",
+    "时间"
+  ],
+  "confidence": 0.85
+}
+
+可用的API列表：
+1. API ID: 4
+   描述: 
+   参数: {}
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_id: string
+  - input_tokens: integer
+  - output_tokens: integer
+  - total_tokens: integer
+  - credits_deducted: integer
+  - balance_after: integer
+  - creat
+2026-03-25 17:19:33 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 17:20:16 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 17:20:16 - ai_data_agent - INFO - Anthropic Content Length: 530
+2026-03-25 17:20:16 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "4",
+            "params": {
+                "location": "华东地区",
+                "data_type": "inventory_analysis"
+            },
+            "description": "调用API获取华东地区库存相关数据",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户查询华东地区库存异常的原因，数据分析意图。根据提取的entities，location为华东地区，api_hint为inventory。可用API列表中有API ID: 4（描述为空，参数为空），优先尝试使用api_fetch工具调用该API获取库存数据。如果API返回数据不足，再考虑使用sql_query查询相关数据库表。"
+}
+```
+2026-03-25 17:20:16 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-25 17:20:16 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 调用API获取华东地区库存相关数据
+2026-03-25 17:20:16 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_4']
+2026-03-25 17:20:16 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-25 17:20:16 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-25 17:20:16 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-25 17:20:16 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-25 17:20:16 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 200
+2026-03-25 17:20:55 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-25 17:20:55 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-25 17:20:55 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat
+2026-03-25 17:20:55 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-25 17:20:55 - ai_data_agent - INFO - [IntentNode] Processing query: 华东地区库存异常的原因是什么
+2026-03-25 17:20:57 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 17:21:16 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 17:21:16 - ai_data_agent - INFO - Anthropic Content Length: 272
+2026-03-25 17:21:16 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_analysis", "entities": {"location": "华东地区", "api_hint": "inventory"}, "metrics": ["库存异常"], "dimensions": ["地区"], "confidence": 0.75, "missing_info": null, "clarification_question": null}
+2026-03-25 17:21:16 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "data_analysis", "entities": {"location": "华东地区", "api_hint": "inventory"}, "metrics": ["库存异常"], "dimensions": ["地区"], "confidence": 0.75}
+2026-03-25 17:21:16 - ai_data_agent - INFO - [Retrieval Node] Processing query: 华东地区库存异常的原因是什么
+2026-03-25 17:21:16 - ai_data_agent - INFO - [Retrieval Node] Intent type: data_analysis
+2026-03-25 17:21:16 - ai_data_agent - INFO - Retrieved 4 candidates for user 1
+2026-03-25 17:21:18 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 17:21:29 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 17:21:29 - ai_data_agent - INFO - Anthropic Content Length: 198
+2026-03-25 17:21:29 - ai_data_agent - INFO - LLM raw response: {
+    "selected_apis": [
+        {
+            "api_id": 3,
+            "reason": "用户询问的是华东地区库存异常的原因，Inventory Query V5是唯一与库存管理相关的API，可用于查询库存数据以分析异常原因",
+            "call_order": 1
+        }
+    ]
+}
+2026-03-25 17:21:29 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-25 17:21:29 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-25 17:21:29 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-25 17:21:29 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 华东地区库存异常的原因是什么
+2026-03-25 17:21:29 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-25 17:21:29 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：华东地区库存异常的原因是什么
+
+提取的过滤条件：
+{
+  "intent_type": "data_analysis",
+  "entities": {
+    "location": "华东地区",
+    "api_hint": "inventory"
+  },
+  "metrics": [
+    "库存异常"
+  ],
+  "dimensions": [
+    "地区"
+  ],
+  "confidence": 0.75
+}
+
+可用的API列表：
+1. API ID: 3
+   描述: Query inventory quantities
+   参数: {}
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_id: string
+  - input_tokens: integer
+  - output_tokens: integer
+  - total_tokens: integer
+  - credits_deducted: integer
+  - balance_after: integer
+  - cre
+2026-03-25 17:21:30 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-25 17:21:57 - ai_data_agent - INFO - Anthropic Response received
+2026-03-25 17:21:57 - ai_data_agent - INFO - Anthropic Content Length: 557
+2026-03-25 17:21:57 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": 3,
+            "params": {},
+            "description": "调用库存查询API获取库存数据（参数为空，将返回所有库存记录）",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户查询华东地区库存异常的原因。根据提取的过滤条件，location为'华东地区'，metrics为'库存异常'，api_hint为'inventory'。可用的API列表中有API ID 3（Query inventory quantities）正好匹配库存查询需求，因此优先使用api_fetch工具。虽然API参数为空无法直接传递地区和异常过滤条件，但先调用该API获取原始库存数据，然后基于返回数据进行分析。如果返回的数据包含地区字段，可以进一步筛选华东地区；如果包含异常状态字段，可以筛选异常记录；否则需要根据返回的库存数量等数据判断是否存在异常。"
+}
+```
+2026-03-25 17:21:57 - ai_data_agent - ERROR - [PlannerNode] Validation error: 1 validation error for ExecutionPlan
+steps.0.api_id
+  Input should be a valid string [type=string_type, input_value=3, input_type=int]
+    For further information visit https://errors.pydantic.dev/2.12/v/string_type
+2026-03-25 17:21:57 - ai_data_agent - ERROR - [PlannerNode] Failed to generate valid plan, using fallback
+2026-03-25 17:21:57 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-25 17:21:57 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 查询 Query inventory quantities
+2026-03-25 17:21:57 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_3']
+2026-03-25 17:21:57 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-25 17:21:57 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-25 17:21:57 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-25 17:21:57 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-25 17:21:57 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 200
