@@ -179,7 +179,7 @@
         "验证系统能够从 checkpoint 恢复 data_context",
         "验证第二轮分析能够利用第一轮的数据无需重新查询"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-14",
