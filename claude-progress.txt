@@ -180,5 +180,41 @@ F-08 [P8] 更新端到端测试，覆盖RBAC直通替代审批和股票分析链
 【下一步】创建 .gitignore 并执行 Git 初始提交
 
 ===========================================
+九、F-01 功能完成记录
+===========================================
+
+【完成时间】2026-03-26
+【完成智能体】编码智能体 (Coding Agent)
+【功能ID】F-01
+【功能描述】移除普通员工调用API需要人工审批的执行门槛，改为基于API权限直接放行或拒绝
+
+【实现方案】
+1. 修改 graph.py 中的 planner_wrapper：
+   - 在 Planner 阶段预检查用户对所有 API 的访问权限
+   - 有权限：生成计划，设置 requires_approval=False
+   - 无权限：清空计划，设置错误信息，直接路由到 Analyzer
+
+2. 修改 should_require_approval 路由函数：
+   - 计划为空时路由到 analyzer（显示权限错误）
+   - 不再基于角色判断是否需要审批
+
+3. 修改 analyzer_node.py：
+   - 检测空计划且无数据的情况
+   - 返回友好的权限错误提示
+
+【测试结果】
+✅ Test 1: 有权限的员工直接执行 - PASSED
+✅ Test 2: 无权限的员工直接拒绝 - PASSED
+
+【修改文件】
+- backend/app/agent/graph.py
+- backend/app/agent/nodes/analyzer_node.py
+- backend/test_f01_rbac_direct.py (新增)
+- feature_list.json (F-01 passes=true)
+
+【Git 提交】
+feat: F-01 移除普通员工API调用审批门槛，改为基于权限直接放行或拒绝
+
+===========================================
 【日志结束】初始化智能体任务完成
 ===========================================
