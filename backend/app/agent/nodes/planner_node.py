@@ -17,7 +17,7 @@ logger = get_logger(__name__)
 class PlanStep(BaseModel):
     """执行步骤模型"""
     step_id: int = Field(..., description="步骤编号")
-    tool: str = Field(..., description="工具类型: api_fetch 或 sql_query")
+    tool: str = Field(..., description="工具类型: api_fetch, sql_query 或 python_exec")
     api_id: str = Field(default="", description="API标识符")
     params: Dict[str, Any] = Field(default_factory=dict, description="调用参数")
     description: str = Field(..., description="步骤描述")

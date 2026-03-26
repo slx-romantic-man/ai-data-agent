@@ -24114,3 +24114,273 @@ TABLE credit_logs (No description):
 2026-03-26 11:34:18 - ai_data_agent - INFO - AI Data Agent started successfully
 2026-03-26 11:34:35 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
 2026-03-26 11:34:35 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-26 12:21:28 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-26 12:21:28 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-26 12:21:34 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-26 12:21:34 - ai_data_agent - INFO - Environment: development
+2026-03-26 12:21:34 - ai_data_agent - INFO - Debug mode: True
+2026-03-26 12:21:34 - ai_data_agent - INFO - Initializing database connection...
+2026-03-26 12:21:34 - ai_data_agent - INFO - Database connection established
+2026-03-26 12:21:34 - ai_data_agent - INFO - Initializing tool router...
+2026-03-26 12:21:34 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-26 12:21:34 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-26 12:21:34 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-26 12:21:34 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-26 12:21:34 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-26 12:21:34 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-26 12:27:00 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 上个月销售额10000，这个月12000，增长率是多少？
+2026-03-26 12:27:00 - ai_data_agent - INFO - [PlannerNode] Available APIs: 0, Tables: 0
+2026-03-26 12:27:00 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：上个月销售额10000，这个月12000，增长率是多少？
+
+提取的过滤条件：
+{}
+
+可用的API列表：
+（无可用API）
+
+
+可用的数据库表：
+（无可用数据库表）
+
+
+【重要约束】
+- 如果"可用的API列表"显示"（无可用API）"，则必须使用sql_query工具查询数据库表
+- 禁止虚构不存在的API（如order_statistics等），只能使用上面列出的真实API
+- 禁止使用api_fetch工具调用不存在的API
+
+请生成一个JSON格式的执行计划，包含以下字段：
+
+1. steps: 执行步骤列表，每个步骤包含：
+   - step_id: 步骤编号（从1开始）
+   - tool: 工具类型（"api_fetch" 用于调用API，"sql_query" 用于查询数据库表，"python_exec" 用于执行Python代码进行数学计算）
+   - api_id: API标识符（仅当tool为api_fetch时需要）
+   - params: 调用参数（字典格式）
+     * 对于 sql_query: 必须包含 "sql" 字段（完整的 SQL SELECT 语句）
+     * 对于 api_fetch: 包含 API 所需的参数
+     * 对于 python_exec: 必须包含 "code" 字段（Python代码字符串），可选 "context_keys" 字段（需要注入的前置步骤数据键列表）
+   - description: 步骤描述
+   - depends_on: 依赖的前置步骤ID列表（如果有）
+
+2. reasoning: 规划推理过程
+
+返回格式示例：
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "sql_query",
+            "api_id": "",
+            "params": {
+                "sql": "SELECT DATE(order_date) as date, COUNT(*) as order_count, SUM(amount) as total_amount FROM orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(order_date)"  # noqa: E501
+            },
+            "description": "查询订单表获取最近7天的订单统计数据",
+            "depends_on": []
+        },
+        {
+            "step_id": 2,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "result = sum(data['total_amount']) / len(data)",
+                "context_keys": ["step_1"]
+            },
+            "description": "计算平均订单金额",
+            "depends_on": [1]
+        }
+    ],
+    "reasoning": "用户想查询最近7天的订单统计并计算平均值，先用sql_query获取数据，再用python_exec计算"
+}
+
+规划原则：
+1. 【强制】如果"可用的API列表"显示"（无可用API）"，必须使用sql_query工具，禁止使用api_fetch
+2. 【强制】禁止虚构或假设不存在的API，只能使用"可用的API列表"中明确列出的API
+3. 如果有相关API且API列表非空，优先使用api_fetch工具调用API
+4. 使用sql_query时，params必须包含完整可执行的SQL SELECT语句（"sql"字段）
+5. SQL语句中的表名必须来自"可用的数据库表"列表，不可使用不存在的表
+6. SQL的WHERE条件只能使用"可用的数据库表"结构中列出的字段，禁止使用不存在的列
+7. 时间过滤条件必须基于表结构中真实存在的日期/时间字段
+8. 【python_exec使用场景】当需要进行数学计算（增长率、平均值、百分比等）
+2026-03-26 12:27:02 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 12:27:13 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 12:27:13 - ai_data_agent - INFO - Anthropic Content Length: 576
+2026-03-26 12:27:13 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "last_month = 10000\nthis_month = 12000\ngrowth_rate = (this_month - last_month) / last_month * 100\nresult = growth_rate"
+            },
+            "description": "计算销售额增长率",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户已经直接提供了上个月销售额（10000）和这个月销售额（12000），无需查询数据库或调用API。增长率的计算公式为：(本月销售额 - 上月销售额) / 上月销售额 * 100%，因此使用python_exec工具直接计算即可。计算结果为：(12000 - 10000) / 10000 * 100% = 20%"
+}
+```
+2026-03-26 12:27:13 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-26 12:27:46 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 上个月销售额10000，这个月12000，增长率是多少？
+2026-03-26 12:27:46 - ai_data_agent - INFO - [PlannerNode] Available APIs: 0, Tables: 0
+2026-03-26 12:27:46 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：上个月销售额10000，这个月12000，增长率是多少？
+
+提取的过滤条件：
+{}
+
+可用的API列表：
+（无可用API）
+
+
+可用的数据库表：
+（无可用数据库表）
+
+
+【重要约束】
+- 如果"可用的API列表"显示"（无可用API）"，则必须使用sql_query工具查询数据库表
+- 禁止虚构不存在的API（如order_statistics等），只能使用上面列出的真实API
+- 禁止使用api_fetch工具调用不存在的API
+
+请生成一个JSON格式的执行计划，包含以下字段：
+
+1. steps: 执行步骤列表，每个步骤包含：
+   - step_id: 步骤编号（从1开始）
+   - tool: 工具类型（"api_fetch" 用于调用API，"sql_query" 用于查询数据库表，"python_exec" 用于执行Python代码进行数学计算）
+   - api_id: API标识符（仅当tool为api_fetch时需要）
+   - params: 调用参数（字典格式）
+     * 对于 sql_query: 必须包含 "sql" 字段（完整的 SQL SELECT 语句）
+     * 对于 api_fetch: 包含 API 所需的参数
+     * 对于 python_exec: 必须包含 "code" 字段（Python代码字符串），可选 "context_keys" 字段（需要注入的前置步骤数据键列表）
+   - description: 步骤描述
+   - depends_on: 依赖的前置步骤ID列表（如果有）
+
+2. reasoning: 规划推理过程
+
+返回格式示例：
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "sql_query",
+            "api_id": "",
+            "params": {
+                "sql": "SELECT DATE(order_date) as date, COUNT(*) as order_count, SUM(amount) as total_amount FROM orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(order_date)"  # noqa: E501
+            },
+            "description": "查询订单表获取最近7天的订单统计数据",
+            "depends_on": []
+        },
+        {
+            "step_id": 2,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "result = sum(data['total_amount']) / len(data)",
+                "context_keys": ["step_1"]
+            },
+            "description": "计算平均订单金额",
+            "depends_on": [1]
+        }
+    ],
+    "reasoning": "用户想查询最近7天的订单统计并计算平均值，先用sql_query获取数据，再用python_exec计算"
+}
+
+规划原则：
+1. 【强制】如果"可用的API列表"显示"（无可用API）"，必须使用sql_query工具，禁止使用api_fetch
+2. 【强制】禁止虚构或假设不存在的API，只能使用"可用的API列表"中明确列出的API
+3. 如果有相关API且API列表非空，优先使用api_fetch工具调用API
+4. 使用sql_query时，params必须包含完整可执行的SQL SELECT语句（"sql"字段）
+5. SQL语句中的表名必须来自"可用的数据库表"列表，不可使用不存在的表
+6. SQL的WHERE条件只能使用"可用的数据库表"结构中列出的字段，禁止使用不存在的列
+7. 时间过滤条件必须基于表结构中真实存在的日期/时间字段
+8. 【python_exec使用场景】当需要进行数学计算（增长率、平均值、百分比等）
+2026-03-26 12:27:49 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 12:27:59 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 12:27:59 - ai_data_agent - INFO - Anthropic Content Length: 371
+2026-03-26 12:27:59 - ai_data_agent - INFO - [PlannerNode] LLM Response: {"steps":[{"step_id":1,"tool":"python_exec","api_id":"","params":{"code":"growth_rate = (12000 - 10000) / 10000 * 100\nresult = growth_rate","context_keys":[]},"description":"计算增长率：(本月销售额-上月销售额)/上月销售额*100%","depends_on":[]}],"reasoning":"用户已直接提供了上个月销售额10000和这个月销售额12000，无需查询数据库或API。增长率计算公式为：(本月-上月)/上月*100%，代入数据得(12000-10000)/10000*100%=20%。使用python_exec工具执行数学计算即可得出结果。"}
+2026-03-26 12:27:59 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-26 12:29:13 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: Calculate growth rate: last month 10000, this month 12000
+2026-03-26 12:29:13 - ai_data_agent - INFO - [PlannerNode] Available APIs: 0, Tables: 0
+2026-03-26 12:29:13 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：Calculate growth rate: last month 10000, this month 12000
+
+提取的过滤条件：
+{}
+
+可用的API列表：
+（无可用API）
+
+
+可用的数据库表：
+（无可用数据库表）
+
+
+【重要约束】
+- 如果"可用的API列表"显示"（无可用API）"，则必须使用sql_query工具查询数据库表
+- 禁止虚构不存在的API（如order_statistics等），只能使用上面列出的真实API
+- 禁止使用api_fetch工具调用不存在的API
+
+请生成一个JSON格式的执行计划，包含以下字段：
+
+1. steps: 执行步骤列表，每个步骤包含：
+   - step_id: 步骤编号（从1开始）
+   - tool: 工具类型（"api_fetch" 用于调用API，"sql_query" 用于查询数据库表，"python_exec" 用于执行Python代码进行数学计算）
+   - api_id: API标识符（仅当tool为api_fetch时需要）
+   - params: 调用参数（字典格式）
+     * 对于 sql_query: 必须包含 "sql" 字段（完整的 SQL SELECT 语句）
+     * 对于 api_fetch: 包含 API 所需的参数
+     * 对于 python_exec: 必须包含 "code" 字段（Python代码字符串），可选 "context_keys" 字段（需要注入的前置步骤数据键列表）
+   - description: 步骤描述
+   - depends_on: 依赖的前置步骤ID列表（如果有）
+
+2. reasoning: 规划推理过程
+
+返回格式示例：
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "sql_query",
+            "api_id": "",
+            "params": {
+                "sql": "SELECT DATE(order_date) as date, COUNT(*) as order_count, SUM(amount) as total_amount FROM orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(order_date)"  # noqa: E501
+            },
+            "description": "查询订单表获取最近7天的订单统计数据",
+            "depends_on": []
+        },
+        {
+            "step_id": 2,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "result = sum(data['total_amount']) / len(data)",
+                "context_keys": ["step_1"]
+            },
+            "description": "计算平均订单金额",
+            "depends_on": [1]
+        }
+    ],
+    "reasoning": "用户想查询最近7天的订单统计并计算平均值，先用sql_query获取数据，再用python_exec计算"
+}
+
+规划原则：
+1. 【强制】如果"可用的API列表"显示"（无可用API）"，必须使用sql_query工具，禁止使用api_fetch
+2. 【强制】禁止虚构或假设不存在的API，只能使用"可用的API列表"中明确列出的API
+3. 如果有相关API且API列表非空，优先使用api_fetch工具调用API
+4. 使用sql_query时，params必须包含完整可执行的SQL SELECT语句（"sql"字段）
+5. SQL语句中的表名必须来自"可用的数据库表"列表，不可使用不存在的表
+6. SQL的WHERE条件只能使用"可用的数据库表"结构中列出的字段，禁止使用不存在的列
+7. 时间过滤条件必须基于表结构中真实存在的日期/时间字段
+8. 【python_exe
+2026-03-26 12:29:18 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 12:29:31 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 12:29:31 - ai_data_agent - INFO - Anthropic Content Length: 438
+2026-03-26 12:29:31 - ai_data_agent - INFO - [PlannerNode] LLM Response: {"steps":[{"step_id":1,"tool":"python_exec","api_id":"","params":{"code":"last_month = 10000\nthis_month = 12000\ngrowth_rate = (this_month - last_month) / last_month * 100\nresult = growth_rate","context_keys":[]},"description":"计算增长率：(本月-上月)/上月*100，即(12000-10000)/10000*100=20%","depends_on":[]}],"reasoning":"用户查询提供了具体数值（上月10000，本月12000），无可用API和数据库表。由于需要计算增长率，这是一个简单的数学计算：(12000-10000)/10000*100=20%。因此直接使用python_exec工具执行计算，无需数据查询步骤。"}
+2026-03-26 12:29:31 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
