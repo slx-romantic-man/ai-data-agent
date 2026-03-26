@@ -182,24 +182,8 @@
       "passes": true
     },
     {
-      "id": "F-14",
-      "priority": 14,
-      "category": "testing",
-      "description": "端到端测试：人工审批网关场景",
-      "steps": [
-        "使用普通用户账号登录 (user1/user123)",
-        "输入触发 API 调用的查询 (如：查询今天的用户总数)",
-        "验证前端显示审批卡片并展示计划详情",
-        "点击批准按钮，验证流程恢复执行并返回最终结果",
-        "使用管理员账号登录 (admin/admin123)",
-        "输入相同查询，验证管理员直接执行无需审批",
-        "注意：test_approval.py 已实现自动化测试，可直接运行验证"
-      ],
-      "passes": false
-    },
-    {
       "id": "F-15",
-      "priority": 15,
+      "priority": 14,
       "category": "documentation",
       "description": "更新项目文档反映 v4 架构变更",
       "steps": [
@@ -208,11 +192,11 @@
         "更新 API 文档说明新的审批网关接口",
         "添加多轮对话和状态持久化的使用示例"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-16",
-      "priority": 16,
+      "priority": 15,
       "category": "architecture",
       "description": "实现 Python 代码执行工具 (python_exec_tool.py)",
       "steps": [
@@ -227,7 +211,7 @@
     },
     {
       "id": "F-17",
-      "priority": 17,
+      "priority": 16,
       "category": "architecture",
       "description": "更新 Planner 支持 python_exec 工具类型",
       "steps": [
@@ -241,7 +225,7 @@
     },
     {
       "id": "F-18",
-      "priority": 18,
+      "priority": 17,
       "category": "architecture",
       "description": "更新 Executor 路由支持 Python 代码执行",
       "steps": [
@@ -256,7 +240,7 @@
     },
     {
       "id": "F-19",
-      "priority": 19,
+      "priority": 18,
       "category": "testing",
       "description": "端到端测试：数学运算场景",
       "steps": [
