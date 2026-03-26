@@ -146,3 +146,9 @@ Traceback (most recent call last):
     raise Exception(f"LLM connection failed after {max_retries} retries: {str(e)}")
 Exception: LLM connection failed after 3 retries: Illegal header value b'Bearer '
 During task with name 'intent' and id '5bcae893-3e7e-0799-7715-151a274f6425'
+2026-03-26 12:46:18 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 计算销售额增长率
+2026-03-26 12:46:18 - ai_data_agent - INFO - [ExecutorNode] Python exec result: {'result': 20.0, 'stdout': '', 'stderr': ''}
+2026-03-26 12:46:18 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_python_exec']
+2026-03-26 12:47:08 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 计算订单平均金额
+2026-03-26 12:47:08 - ai_data_agent - INFO - [ExecutorNode] Python exec result: {'result': 200.0, 'stdout': '', 'stderr': ''}
+2026-03-26 12:47:08 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_python_exec']

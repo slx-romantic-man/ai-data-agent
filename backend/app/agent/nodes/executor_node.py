@@ -6,6 +6,7 @@ from typing import Dict, Any
 from app.agent.state import AgentState
 from app.agent.tools.sql_query_tool import get_sql_query_tool
 from app.agent.tools.api_fetch_tool import get_api_fetch_tool
+from app.agent.tools.python_exec_tool import get_python_exec_tool
 from app.models.permission import PermissionContext
 from app.utils.logger import get_logger
 
@@ -45,6 +46,8 @@ async def executor_node(state: AgentState, permission: PermissionContext) -> Age
         result = await _execute_sql_query(params, permission)
     elif tool_name == "api_fetch":
         result = await _execute_api_fetch(api_id, params, permission)
+    elif tool_name == "python_exec":
+        result = await _execute_python_exec(params, data_context, permission)
     else:
         logger.error(f"[ExecutorNode] Unknown tool: {tool_name}")
         result = {"success": False, "error": f"Unknown tool: {tool_name}"}
@@ -109,3 +112,37 @@ async def _execute_api_fetch(api_id: str, params: Dict[str, Any], permission: Pe
     except Exception as e:
         logger.error(f"[ExecutorNode] API fetch failed: {e}")
         return {"success": False, "error": str(e)}
+
+
+async def _execute_python_exec(params: Dict[str, Any], data_context: Dict[str, Any], permission: PermissionContext) -> Dict[str, Any]:
+    """执行 Python 代码工具"""
+    try:
+        tool = get_python_exec_tool()
+
+        # 从 data_context 提取数据注入到执行上下文
+        code = params.get("code", "")
+        context = params.get("context", {})
+
+        # 将 data_context 中的数据注入到执行环境
+        for key, value in data_context.items():
+            if isinstance(value, dict) and value.get("success") and value.get("data"):
+                context[key] = value["data"]
+
+        tool_params = {"code": code, "context": context}
+        result = await tool.execute(tool_params, permission)
+
+        from app.models.tool import ToolStatus
+        success = result.status == ToolStatus.SUCCESS
+
+        logger.info(f"[ExecutorNode] Python exec result: {result.data if success else result.error}")
+
+        return {
+            "success": success,
+            "data": result.data if success else None,
+            "error": result.error if not success else None,
+            "metadata": result.metadata
+        }
+    except Exception as e:
+        logger.error(f"[ExecutorNode] Python exec failed: {e}")
+        return {"success": False, "error": str(e)}
+

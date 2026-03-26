@@ -24384,3 +24384,17 @@ TABLE credit_logs (No description):
 2026-03-26 12:29:31 - ai_data_agent - INFO - Anthropic Content Length: 438
 2026-03-26 12:29:31 - ai_data_agent - INFO - [PlannerNode] LLM Response: {"steps":[{"step_id":1,"tool":"python_exec","api_id":"","params":{"code":"last_month = 10000\nthis_month = 12000\ngrowth_rate = (this_month - last_month) / last_month * 100\nresult = growth_rate","context_keys":[]},"description":"计算增长率：(本月-上月)/上月*100，即(12000-10000)/10000*100=20%","depends_on":[]}],"reasoning":"用户查询提供了具体数值（上月10000，本月12000），无可用API和数据库表。由于需要计算增长率，这是一个简单的数学计算：(12000-10000)/10000*100=20%。因此直接使用python_exec工具执行计算，无需数据查询步骤。"}
 2026-03-26 12:29:31 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-26 12:35:21 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-26 12:35:21 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-26 12:35:28 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-26 12:35:28 - ai_data_agent - INFO - Environment: development
+2026-03-26 12:35:28 - ai_data_agent - INFO - Debug mode: True
+2026-03-26 12:35:28 - ai_data_agent - INFO - Initializing database connection...
+2026-03-26 12:35:28 - ai_data_agent - INFO - Database connection established
+2026-03-26 12:35:28 - ai_data_agent - INFO - Initializing tool router...
+2026-03-26 12:35:28 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-26 12:35:28 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-26 12:35:28 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-26 12:35:28 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-26 12:35:28 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-26 12:35:28 - ai_data_agent - INFO - AI Data Agent started successfully

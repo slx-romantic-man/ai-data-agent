@@ -207,7 +207,7 @@
         "在 backend/app/agent/tools/__init__.py 中注册新工具",
         "编写单元测试 backend/tests/test_python_exec_tool.py 验证安全性和功能"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-17",
@@ -221,7 +221,7 @@
         "添加示例：计算增长率、求和、平均值等场景",
         "测试 Planner 能够识别数学运算需求并生成 python_exec 计划"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-18",
@@ -236,7 +236,7 @@
         "将执行结果存入 data_context，key 格式为 step_{idx}_python_exec",
         "测试 Executor 能正确执行 Python 代码并保存结果"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-19",

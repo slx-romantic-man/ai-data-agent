@@ -561,15 +561,75 @@ feature_list.json 共拆解了 19 个核心功能卡片：
 
 ---
 
-[后续会话请在此处追加进展记录]
+[2026-03-26] Coding Agent Session #1
+- 完成功能: F-16 实现 Python 代码执行工具
+- 修改文件:
+  * backend/app/agent/tools/python_exec_tool.py (新建)
+  * backend/tests/test_python_exec_tool.py (新建)
+- 测试结果: 5个单元测试全部通过
+  * ✅ 简单算术计算 (10 + 20 = 30)
+  * ✅ 百分比计算 (增长率 20%)
+  * ✅ 上下文变量注入 (平均值计算)
+  * ✅ 语法错误处理
+  * ✅ 未定义变量错误处理
+- 实现细节:
+  * 使用受限的 __builtins__ 白名单（abs, round, sum, len, min, max 等）
+  * 支持 context 参数注入外部数据
+  * 捕获 stdout/stderr 输出
+  * 结果通过 'result' 变量返回
+- Git commit: feat: F-16 实现 Python 代码执行工具
+- 下一步: F-17 更新 Planner 支持 python_exec 工具类型
 
-格式示例：
-[YYYY-MM-DD] 会话标识
-- 完成功能: F-XX 功能描述
-- 修改文件: 列出主要修改的文件
-- 测试结果: 简述测试通过情况
-- Git commit: commit message
-- 下一步: 下一个待实现的功能 ID
+---
+
+📅 会话时间: 2026-03-26
+🎯 任务: F-17 更新 Planner 支持 python_exec 工具类型
+✅ 状态: 已完成
+
+实现内容:
+- 修改 backend/app/agent/nodes/planner_node.py:
+  * 更新 PlanStep 模型的 tool 字段描述，支持 "python_exec"
+- 修改 backend/app/agent/prompts/planner_prompt.py:
+  * 在 PLANNER_PROMPT 中添加 python_exec 工具说明
+  * 添加 python_exec 参数规范 (code 字段必需，context_keys 可选)
+  * 添加完整示例展示如何生成 python_exec 步骤
+  * 新增规划原则 8-9: python_exec 使用场景和代码规范
+- 端到端测试验证:
+  * 测试场景: "上个月销售额10000，这个月12000，增长率是多少？"
+  * ✅ Planner 成功生成 python_exec 步骤
+  * ✅ JSON 格式包含所有必要字段 (step_id, tool, params.code, description)
+  * ✅ 代码正确赋值给 result 变量
+- Git commit: feat: F-17 更新 Planner 支持 python_exec 工具类型
+- 下一步: F-18 更新 Executor 路由支持 Python 代码执行
+
+---
+
+[2026-03-26 12:47] F-18 完成 - 更新 Executor 路由支持 Python 代码执行
+会话智能体: Coding Agent
+任务描述: 在 executor_node.py 中添加 python_exec 工具路由分支
+
+实现内容:
+- 修改文件: backend/app/agent/nodes/executor_node.py
+  * 导入 get_python_exec_tool
+  * 在路由逻辑中添加 elif tool_name == "python_exec" 分支
+  * 实现 _execute_python_exec() 函数
+- 数据注入机制:
+  * 从 data_context 提取所有成功的前序步骤数据
+  * 将 data_context 中的数据注入到 Python 执行环境的 context 参数
+  * 支持在 Python 代码中直接引用 step_X_api_Y 变量
+- 结果存储:
+  * 调用 PythonExecTool.execute() 执行代码
+  * 将结果存入 data_context，key 格式为 step_{idx}_python_exec
+- 测试验证:
+  * ✅ 单元测试: 简单计算 (10000->12000 增长率 20%)
+  * ✅ 数据注入测试: 从 data_context 读取订单数据计算平均值
+  * ✅ 所有断言通过，功能正常工作
+- Git commit: feat: F-18 更新 Executor 路由支持 Python 代码执行
+- 下一步: F-19 端到端测试：数学运算场景
+
+---
+
+[后续会话请在此处追加进展记录]
 
 ===========================================
 九、项目架构概览 (Quick Reference)
