@@ -45,7 +45,7 @@ async def verify_scenario(scenario_num, query, expected_tools):
     print(f"期望包含: {expected_tools}")
 
     success = all(tool in tools_used for tool in expected_tools)
-    print(f"结果: {'✅ 通过' if success else '❌ 失败'}")
+    print(f"结果: {'通过' if success else '失败'}")
 
     return success
 

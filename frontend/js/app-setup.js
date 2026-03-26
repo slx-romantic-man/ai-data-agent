@@ -682,7 +682,6 @@ window.AppSetup = function() {
             loadChatHistory
         });
 
-        console.log('Vue setup function finishing');
         return {
             isLoggedIn, user, currentView, userQuota,
             loginForm, loginLoading, loginError,

@@ -53,8 +53,8 @@ PLANNER_PROMPT = """你是一个数据查询规划师。根据用户查询和可
             "tool": "python_exec",
             "api_id": "",
             "params": {{
-                "code": "result = sum(data['total_amount']) / len(data)",
-                "context_keys": ["step_1"]
+                "code": "data = step_0_sql_query['data']; amounts = [row['total_amount'] for row in data]; result = sum(amounts) / len(amounts)",
+                "context_keys": ["step_0_sql_query"]
             }},
             "description": "计算平均订单金额",
             "depends_on": [1]
@@ -72,8 +72,9 @@ PLANNER_PROMPT = """你是一个数据查询规划师。根据用户查询和可
 6. SQL的WHERE条件只能使用"可用的数据库表"结构中列出的字段，禁止使用不存在的列
 7. 时间过滤条件必须基于表结构中真实存在的日期/时间字段
 8. 【python_exec使用场景】当需要进行数学计算（增长率、平均值、百分比等）时使用python_exec工具
-9. 【python_exec代码规范】代码必须将计算结果赋值给变量"result"，可通过context_keys引用前置步骤的数据
-10. 保持步骤简洁，避免冗余查询
+9. 【python_exec数据引用】前置步骤的数据通过变量名 "step_{{idx}}_{{tool}}" 注入，idx是执行顺序索引（从0开始，不是step_id）。例如：step_id=1的sql_query结果为 step_0_sql_query，step_id=2的api_fetch结果为 step_1_api_fetch，step_id=3的python_exec结果为 step_2_python_exec
+10. 【python_exec代码规范】代码必须将计算结果赋值给变量"result"，引用前置数据时使用完整变量名如 step_0_sql_query['data']。注意：step_id=1对应step_0，step_id=2对应step_1，以此类推。禁止使用import语句，只能使用内置函数（sum, len, round, min, max等）
+11. 保持步骤简洁，避免冗余查询
 
 请只返回JSON，不要包含其他内容。"""
 

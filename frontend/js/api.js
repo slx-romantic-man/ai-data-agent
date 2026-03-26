@@ -50,10 +50,8 @@ const api = {
         const formData = new FormData();
         formData.append('username', username);
         formData.append('password', password);
-        console.log('Attempting login to:', `${API_BASE}/auth/login`);
         try {
             const res = await axios.post(`${API_BASE}/auth/login`, formData);
-            console.log('Login response:', res.data);
             return res.data;
         } catch (error) {
             console.error('Login API error:', error.response?.status, error.response?.data || error.message);
