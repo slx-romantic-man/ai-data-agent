@@ -4,255 +4,130 @@
       "id": "F-01",
       "priority": 1,
       "category": "architecture",
-      "description": "引入 LangGraph 库并定义 AgentState 数据结构",
+      "description": "移除普通员工调用API需要人工审批的执行门槛，改为基于API权限直接放行或拒绝",
       "steps": [
-        "在 backend/requirements.txt 中添加 langgraph 依赖",
-        "在 backend/app/agent/ 下创建 state.py 定义 AgentState TypedDict",
-        "验证 AgentState 包含: messages, query, extracted_filters, plan, current_step, data_context 字段",
-        "运行 Python 导入测试确认无语法错误"
+        "使用普通员工账号登录系统",
+        "在管理后台为该员工授予股票API权限",
+        "发起股票查询请求（如：查询苹果美股最近7个交易日股价）",
+        "验证系统不进入审批流程，直接执行API调用",
+        "检查SSE流中无'等待审批'状态",
+        "检查未创建审批记录",
+        "验证最终返回股票数据分析结果"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": "F-02",
       "priority": 2,
-      "category": "architecture",
-      "description": "实现 Intent Clarification Node (意图澄清节点)",
+      "category": "bugfix",
+      "description": "增强Intent Node对股票实体与交易日语义的识别能力",
       "steps": [
-        "在 backend/app/agent/nodes/ 下创建 intent_node.py",
-        "实现函数接收 AgentState，调用 LLM 判断查询条件是否完备",
-        "如果条件缺失返回反问文本，如果完备则提取 extracted_filters",
-        "编写单元测试验证节点输入输出正确"
+        "发起查询：'苹果的美股股价最近7个交易日'",
+        "检查Intent Node日志输出",
+        "验证extracted_filters.entities中包含stock_symbol（如AAPL）",
+        "验证extracted_filters.entities中包含market（如US）",
+        "验证extracted_filters.entities中包含trading_day_count（如7）",
+        "确认AgentState顶层结构未变更",
+        "验证新增字段可被SQLite正常持久化"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": "F-03",
       "priority": 3,
-      "category": "architecture",
-      "description": "实现 API Retrieval Node (工具检索节点)",
+      "category": "bugfix",
+      "description": "修复Retrieval到Planner的API元数据传递缺失问题",
       "steps": [
-        "在 backend/app/agent/nodes/ 下创建 retrieval_node.py",
-        "复用现有的 api_retrieval_service.py 进行向量召回",
-        "将召回的 Top-10 API Schema 存入临时变量传递给下游",
-        "验证检索结果格式正确且不污染 AgentState"
+        "发起股票查询请求",
+        "检查Retrieval Node选中的API列表",
+        "检查Planner Node接收到的API元数据",
+        "验证API描述不为空",
+        "验证API参数定义不为空",
+        "验证Planner日志中显示完整的API信息（名称、用途、endpoint、参数）",
+        "确认Planner能基于API元信息生成有效计划"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": "F-04",
       "priority": 4,
       "category": "architecture",
-      "description": "实现 Planner Node (全局规划师节点)",
+      "description": "建立Planner输出校验和安全失败机制，禁止空计划触发伪执行",
       "steps": [
-        "在 backend/app/agent/nodes/ 下创建 planner_node.py",
-        "设计 Prompt 模板让 LLM 生成 JSON 格式的执行计划",
-        "添加 Pydantic 校验确保 JSON 格式正确",
-        "将生成的 plan 写入 state['plan']，重置 current_step 为 0",
-        "测试 Planner 能够根据用户查询生成合理的多步骤计划"
+        "构造一个无法生成有效计划的查询场景（如API配置缺失）",
+        "发起查询请求",
+        "验证Planner返回steps为空或失败状态",
+        "确认Executor不执行任何步骤",
+        "检查用户收到明确的失败原因说明",
+        "验证日志中不存在'Planner失败但仍执行步骤'的情况",
+        "确认SSE流正确传递失败信息"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": "F-05",
       "priority": 5,
-      "category": "architecture",
-      "description": "实现 Executor Node (无脑执行机节点)",
+      "category": "feature",
+      "description": "为股票时间序列分析补充专用规划模板和参数映射",
       "steps": [
-        "在 backend/app/agent/nodes/ 下创建 executor_node.py",
-        "实现遍历 state['plan'] 并根据 tool 字段路由到对应工具",
-        "复用现有的 api_fetch, sql_query 工具执行查询",
-        "将查询结果隔离存入 state['data_context'] 字典，key 为 step_{idx}_{api_id}",
-        "递增 state['current_step']",
-        "测试执行器能正确调用工具并保存数据到 data_context"
+        "发起查询：'去看看苹果的美股股价最近7个交易日的变化趋势，给出原因与后续投资建议'",
+        "验证Planner生成至少1个股票数据获取步骤",
+        "检查计划中API参数包含stock_symbol、trading_day_count等",
+        "如需计算涨跌幅或趋势指标，验证生成python_exec步骤",
+        "确认计划参数可直接被Executor消费",
+        "验证普通员工有权限时可直接执行",
+        "验证普通员工无权限时立即拒绝"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": "F-06",
       "priority": 6,
-      "category": "architecture",
-      "description": "实现 Analyzer Node (终局分析节点)",
+      "category": "bugfix",
+      "description": "规范化股票API返回结果，确保Analyzer能提取有效数据行",
       "steps": [
-        "在 backend/app/agent/nodes/ 下创建 analyzer_node.py",
-        "从 state['data_context'] 提取所有累积数据",
-        "复用现有的 DataAnalyzer 进行最终洞察生成",
-        "将分析报告追加到 state['messages']",
-        "测试分析节点能够综合多个数据源生成连贯的分析报告"
+        "成功调用股票API",
+        "检查data_context中存储的结果结构",
+        "验证结果包含规范化的行式数据（date/open/high/low/close/volume/pct_change）",
+        "验证data_context包含row_count、source、raw_summary等元信息",
+        "检查Analyzer能提取到有效交易日数据",
+        "验证不再出现'Stored result成功但Extracted 0 total rows'",
+        "对API失败场景，验证返回结构化错误对象"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": "F-07",
       "priority": 7,
-      "category": "architecture",
-      "description": "构建 LangGraph 工作流图并配置边与路由",
+      "category": "feature",
+      "description": "增强Analyzer的金融分析边界控制，输出基于证据的原因分析和建议",
       "steps": [
-        "在 backend/app/agent/ 下创建 graph.py",
-        "使用 StateGraph 定义节点: Intent -> Retrieval -> Planner -> Executor -> Analyzer",
-        "配置条件边: Intent 根据条件完备性路由，Executor 循环边判断 current_step",
-        "设置 interrupt_before=['Executor'] 实现人工审批网关",
-        "编译图并测试完整流程能够从用户查询到最终分析"
+        "完成股票数据获取和分析流程",
+        "检查最终分析报告结构",
+        "验证报告包含'事实总结'部分（基于实际数据）",
+        "验证报告包含'可能原因'部分（明确标注为推测）",
+        "验证报告包含'风险提示'部分",
+        "验证报告包含'非个性化建议'部分",
+        "确认无新闻或财报数据时，不伪造归因事件",
+        "验证输出结构稳定，可供前端展示"
       ],
-      "passes": true
+      "passes": false
     },
     {
       "id": "F-08",
       "priority": 8,
-      "category": "persistence",
-      "description": "接入 PostgresSaver 实现状态持久化",
-      "steps": [
-        "在 backend/requirements.txt 添加 langgraph-checkpoint-postgres",
-        "在 backend/app/config/ 配置数据库连接",
-        "在 graph.py 中初始化 PostgresSaver 作为 checkpointer",
-        "测试多轮对话能够正确保存和恢复 AgentState",
-        "验证 data_context 在第二轮对话中可以被正确读取"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-09",
-      "priority": 9,
-      "category": "integration",
-      "description": "更新 API 层接入新的 LangGraph 工作流",
-      "steps": [
-        "修改 backend/app/api/chat.py 的 /chat/stream 端点",
-        "将原有 ReAct 循环替换为 LangGraph 图调用",
-        "保持 SSE 流式输出格式不变",
-        "测试前端能够正常接收流式推理过程",
-        "验证会话持久化功能正常工作"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-10",
-      "priority": 10,
-      "category": "integration",
-      "description": "实现人工审批网关的前后端交互",
-      "steps": [
-        "在后端实现 interrupt 挂起时推送审批卡片的 SSE 事件",
-        "在前端 js/chat.js 中添加审批卡片 UI 组件",
-        "实现用户点击批准/拒绝后调用恢复执行的 API",
-        "测试高危 API 调用能够正确触发审批流程",
-        "验证审批通过后流程能够继续执行"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-11",
-      "priority": 11,
       "category": "testing",
-      "description": "端到端测试：简单查询场景",
+      "description": "更新端到端测试，覆盖RBAC直通替代审批和股票分析链路修复两大主线",
       "steps": [
-        "启动服务 bash init.sh",
-        "在前端输入简单查询如'查询最近七天订单统计'",
-        "验证 Intent Node 正确提取时间条件",
-        "验证 Planner 生成合理的单步计划",
-        "验证 Executor 调用正确的 API",
-        "验证 Analyzer 返回清晰的分析结果"
+        "运行测试场景1：普通员工已授权API直接执行",
+        "运行测试场景2：普通员工未授权API直接拒绝",
+        "运行测试场景3：股票分析成功链路",
+        "运行测试场景4：Planner无有效计划时安全失败",
+        "验证所有测试场景通过",
+        "检查SSE、权限、执行、分析各阶段日志正确",
+        "确认旧审批逻辑不再阻塞已授权API调用"
       ],
-      "passes": true
-    },
-    {
-      "id": "F-12",
-      "priority": 12,
-      "category": "testing",
-      "description": "端到端测试：复杂归因分析场景",
-      "steps": [
-        "输入复杂查询如'华东地区库存异常的原因是什么'",
-        "验证 Planner 生成多步骤计划(库存查询 + 订单查询 + 异常检测)",
-        "验证 Executor 按顺序执行所有步骤",
-        "验证 data_context 正确隔离存储多个 API 结果",
-        "验证 Analyzer 能够综合多个数据源进行归因分析"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-13",
-      "priority": 13,
-      "category": "testing",
-      "description": "端到端测试：多轮下钻场景",
-      "steps": [
-        "第一轮查询'查询华东地区销售数据'",
-        "验证结果正确返回并保存到 thread_id 对应的 checkpoint",
-        "第二轮追问'为什么上海的销售额下降了'",
-        "验证系统能够从 checkpoint 恢复 data_context",
-        "验证第二轮分析能够利用第一轮的数据无需重新查询"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-15",
-      "priority": 14,
-      "category": "documentation",
-      "description": "更新项目文档反映 v4 架构变更",
-      "steps": [
-        "更新 README.md 说明新的 LangGraph 架构",
-        "在 docs/ 下创建 architecture-v4.md 详细说明状态机设计",
-        "更新 API 文档说明新的审批网关接口",
-        "添加多轮对话和状态持久化的使用示例"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-16",
-      "priority": 15,
-      "category": "architecture",
-      "description": "实现 Python 代码执行工具 (python_exec_tool.py)",
-      "steps": [
-        "在 backend/app/agent/tools/ 下创建 python_exec_tool.py",
-        "实现 PythonExecTool 类继承 BaseTool",
-        "实现安全沙箱：白名单库（numpy, pandas, math, statistics）+ 黑名单函数（eval, exec, open, os）",
-        "添加执行超时限制（5秒）和异常处理",
-        "在 backend/app/agent/tools/__init__.py 中注册新工具",
-        "编写单元测试 backend/tests/test_python_exec_tool.py 验证安全性和功能"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-17",
-      "priority": 16,
-      "category": "architecture",
-      "description": "更新 Planner 支持 python_exec 工具类型",
-      "steps": [
-        "修改 backend/app/agent/nodes/planner_node.py 的 PlanStep 模型",
-        "扩展 tool 字段支持 'python_exec' 类型",
-        "修改 backend/app/agent/prompts/planner_prompt.py 添加 python_exec 工具说明",
-        "添加示例：计算增长率、求和、平均值等场景",
-        "测试 Planner 能够识别数学运算需求并生成 python_exec 计划"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-18",
-      "priority": 17,
-      "category": "architecture",
-      "description": "更新 Executor 路由支持 Python 代码执行",
-      "steps": [
-        "修改 backend/app/agent/nodes/executor_node.py",
-        "添加 elif tool_name == 'python_exec' 路由分支",
-        "实现数据注入逻辑：从 data_context 提取数据转为 Python 变量",
-        "调用 PythonExecTool 执行代码",
-        "将执行结果存入 data_context，key 格式为 step_{idx}_python_exec",
-        "测试 Executor 能正确执行 Python 代码并保存结果"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-19",
-      "priority": 18,
-      "category": "testing",
-      "description": "端到端测试：数学运算场景",
-      "steps": [
-        "场景1：简单计算 - 查询'上个月销售额10000，这个月12000，增长率是多少'",
-        "验证 Planner 生成 python_exec 步骤",
-        "验证 Executor 执行代码并计算出 20%",
-        "场景2：基于API数据计算 - 查询'最近7天订单数据的平均订单金额'",
-        "验证先 api_fetch 获取数据，再 python_exec 计算平均值",
-        "场景3：多步骤依赖 - 查询'销售数据和成本数据的利润率'",
-        "验证两次 api_fetch + 一次 python_exec 的完整流程"
-      ],
-      "passes": true
+      "passes": false
     }
   ]
 }
