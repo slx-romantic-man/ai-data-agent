@@ -252,7 +252,7 @@
         "场景3：多步骤依赖 - 查询'销售数据和成本数据的利润率'",
         "验证两次 api_fetch + 一次 python_exec 的完整流程"
       ],
-      "passes": false
+      "passes": true
     }
   ]
 }

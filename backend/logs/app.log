@@ -24398,3 +24398,498 @@ TABLE credit_logs (No description):
 2026-03-26 12:35:28 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
 2026-03-26 12:35:28 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
 2026-03-26 12:35:28 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-26 12:35:43 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-26 12:35:43 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-26 12:39:06 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/chat/stream
+2026-03-26 12:39:06 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/chat/stream - Status: 404
+2026-03-26 12:39:26 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-26 12:39:26 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-26 12:40:33 - ai_data_agent - INFO - Request: GET http://localhost:8002/openapi.json
+2026-03-26 12:40:34 - ai_data_agent - INFO - Response: GET http://localhost:8002/openapi.json - Status: 200
+2026-03-26 12:40:49 - ai_data_agent - INFO - Request: GET http://localhost:8002/openapi.json
+2026-03-26 12:40:49 - ai_data_agent - INFO - Response: GET http://localhost:8002/openapi.json - Status: 200
+2026-03-26 12:41:03 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-26 12:41:03 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 400
+2026-03-26 12:41:40 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-26 12:41:40 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 400
+2026-03-26 12:43:46 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-26 12:43:46 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-26 12:43:47 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 200
+2026-03-26 12:43:47 - ai_data_agent - INFO - [IntentNode] Processing query: 上个月销售额10000，这个月12000，增长率是多少？
+2026-03-26 12:43:50 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 12:44:05 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 12:44:05 - ai_data_agent - INFO - Anthropic Content Length: 297
+2026-03-26 12:44:05 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_analysis", "entities": {"time_range": {"description": "上个月与本月对比"}, "api_hint": "sales"}, "metrics": ["销售额", "增长率"], "dimensions": ["月份"], "confidence": 0.98, "missing_info": null, "clarification_question": null}
+2026-03-26 12:44:05 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "data_analysis", "entities": {"time_range": {"description": "上个月与本月对比"}, "api_hint": "sales"}, "metrics": ["销售额", "增长率"], "dimensions": ["月份"], "confidence": 0.98}
+2026-03-26 12:44:05 - ai_data_agent - INFO - [Retrieval Node] Processing query: 上个月销售额10000，这个月12000，增长率是多少？
+2026-03-26 12:44:05 - ai_data_agent - INFO - [Retrieval Node] Intent type: data_analysis
+2026-03-26 12:44:10 - ai_data_agent - INFO - Retrieved 4 candidates for user 1
+2026-03-26 12:44:14 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 12:44:19 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 12:44:19 - ai_data_agent - INFO - Anthropic Content Length: 27
+2026-03-26 12:44:19 - ai_data_agent - INFO - LLM raw response: {
+    "selected_apis": []
+}
+2026-03-26 12:44:19 - ai_data_agent - INFO - LLM selected 0 APIs
+2026-03-26 12:44:19 - ai_data_agent - INFO - [Retrieval Node] Retrieved 0 APIs
+2026-03-26 12:44:19 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-26 12:44:19 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 上个月销售额10000，这个月12000，增长率是多少？
+2026-03-26 12:44:19 - ai_data_agent - INFO - [PlannerNode] Available APIs: 0, Tables: 12
+2026-03-26 12:44:19 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：上个月销售额10000，这个月12000，增长率是多少？
+
+提取的过滤条件：
+{
+  "intent_type": "data_analysis",
+  "entities": {
+    "time_range": {
+      "description": "上个月与本月对比"
+    },
+    "api_hint": "sales"
+  },
+  "metrics": [
+    "销售额",
+    "增长率"
+  ],
+  "dimensions": [
+    "月份"
+  ],
+  "confidence": 0.98
+}
+
+可用的API列表：
+（无可用API）
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_id: string
+  - input_tokens: integer
+  - output_tokens: integer
+  - total_tokens: integer
+  - credits_deducted: integer
+  - balance_after: integer
+ 
+2026-03-26 12:44:20 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 12:44:43 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 12:44:43 - ai_data_agent - INFO - Anthropic Content Length: 656
+2026-03-26 12:44:43 - ai_data_agent - INFO - [PlannerNode] LLM Response: {"steps":[{"step_id":1,"tool":"sql_query","api_id":"","params":{"sql":"SELECT DATE_FORMAT(order_date, '%Y-%m') as month, SUM(amount) as total_sales FROM orders WHERE order_date >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 2 MONTH), '%Y-%m-01') AND order_date < DATE_FORMAT(CURDATE(), '%Y-%m-01') GROUP BY DATE_FORMAT(order_date, '%Y-%m') ORDER BY month"},"description":"查询最近两个月的销售额数据","depends_on":[]}],"reasoning":"用户查询需要计算环比增长率。根据可用的数据库表，orders表中包含amount（金额）和order_date（订单日期）字段，可以按月汇总销售额。SQL查询使用DATE_FORMAT函数按月份分组，计算每个月的销售总额。由于用户提到上个月和本月的数据，查询时间范围设定为最近两个月。增长率计算公式为：(本月销售额-上月销售额)/上月销售额*100%。如果用户已提供具体数值（上月10000，本月12000），则增长率为(12000-10000)/10000*100%=20%。"}
+2026-03-26 12:44:43 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-26 12:44:43 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 查询最近两个月的销售额数据
+2026-03-26 12:44:43 - ai_data_agent - INFO - [ExecutorNode] SQL params: {'sql': "SELECT DATE_FORMAT(order_date, '%Y-%m') as month, SUM(amount) as total_sales FROM orders WHERE order_date >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 2 MONTH), '%Y-%m-01') AND order_date < DATE_FORMAT(CURDATE(), '%Y-%m-01') GROUP BY DATE_FORMAT(order_date, '%Y-%m') ORDER BY month"}
+2026-03-26 12:44:43 - ai_data_agent - INFO - [ExecutorNode] SQL result status: ToolStatus.SUCCESS, data rows: 3
+2026-03-26 12:44:43 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_sql_query']
+2026-03-26 12:44:43 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-26 12:44:43 - ai_data_agent - INFO - [AnalyzerNode] Extracted 1 total rows from data_context
+2026-03-26 12:44:44 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 12:45:10 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 12:45:10 - ai_data_agent - INFO - Anthropic Content Length: 1608
+2026-03-26 12:45:10 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-26 12:51:23 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-26 12:51:23 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-26 12:51:28 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-26 12:51:28 - ai_data_agent - INFO - Environment: development
+2026-03-26 12:51:28 - ai_data_agent - INFO - Debug mode: True
+2026-03-26 12:51:28 - ai_data_agent - INFO - Initializing database connection...
+2026-03-26 12:51:28 - ai_data_agent - INFO - Database connection established
+2026-03-26 12:51:28 - ai_data_agent - INFO - Initializing tool router...
+2026-03-26 12:51:28 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-26 12:51:28 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-26 12:51:28 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-26 12:51:28 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-26 12:51:28 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-26 12:51:28 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-26 12:51:45 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-26 12:51:45 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-26 12:55:04 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-26 12:55:04 - ai_data_agent - INFO - [IntentNode] Processing query: 上个月销售额10000，这个月12000，增长率是多少
+2026-03-26 12:55:06 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 12:55:22 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 12:55:22 - ai_data_agent - INFO - Anthropic Content Length: 327
+2026-03-26 12:55:22 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_analysis", "entities": {"time_range": {"start": "上个月", "end": "这个月", "description": "上个月与这个月对比"}, "api_hint": "sales"}, "metrics": ["销售额", "增长率"], "dimensions": ["月份"], "confidence": 1.0, "missing_info": null, "clarification_question": null}
+2026-03-26 12:55:22 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "data_analysis", "entities": {"time_range": {"start": "上个月", "end": "这个月", "description": "上个月与这个月对比"}, "api_hint": "sales"}, "metrics": ["销售额", "增长率"], "dimensions": ["月份"], "confidence": 1.0}
+2026-03-26 12:55:22 - ai_data_agent - INFO - [Retrieval Node] Processing query: 上个月销售额10000，这个月12000，增长率是多少
+2026-03-26 12:55:22 - ai_data_agent - INFO - [Retrieval Node] Intent type: data_analysis
+2026-03-26 12:55:39 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-26 12:55:53 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-26 12:55:54 - ai_data_agent - ERROR - Failed to search embeddings: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-26 12:55:54 - ai_data_agent - INFO - Retrieved 0 candidates for user 1
+2026-03-26 12:55:54 - ai_data_agent - INFO - [Retrieval Node] Retrieved 0 APIs
+2026-03-26 12:55:54 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-26 12:55:54 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 上个月销售额10000，这个月12000，增长率是多少
+2026-03-26 12:55:54 - ai_data_agent - INFO - [PlannerNode] Available APIs: 0, Tables: 12
+2026-03-26 12:55:54 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：上个月销售额10000，这个月12000，增长率是多少
+
+提取的过滤条件：
+{
+  "intent_type": "data_analysis",
+  "entities": {
+    "time_range": {
+      "start": "上个月",
+      "end": "这个月",
+      "description": "上个月与这个月对比"
+    },
+    "api_hint": "sales"
+  },
+  "metrics": [
+    "销售额",
+    "增长率"
+  ],
+  "dimensions": [
+    "月份"
+  ],
+  "confidence": 1.0
+}
+
+可用的API列表：
+（无可用API）
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_id: string
+  - input_tokens: integer
+  - output_tokens: integer
+  - total_tokens: integer
+  - credits_deduc
+2026-03-26 12:55:55 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 12:56:09 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 12:56:09 - ai_data_agent - INFO - Anthropic Content Length: 670
+2026-03-26 12:56:09 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "last_month_sales = 10000\ncurrent_month_sales = 12000\ngrowth_rate = (current_month_sales - last_month_sales) / last_month_sales * 100\nresult = growth_rate"
+            },
+            "description": "计算销售额增长率：(这个月销售额 - 上个月销售额) / 上个月销售额 * 100%",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户已提供上个月销售额(10000)和这个月销售额(12000)，增长率计算是简单的数学运算：增长率 = (12000 - 10000) / 10000 * 100% = 20%。无需查询数据库，直接使用python_exec计算即可。可用API列表为空，且数据库中的orders表虽包含amount和order_date字段，但用户已明确给出数值，无需额外查询。"
+}
+```
+2026-03-26 12:56:09 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-26 12:56:09 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 计算销售额增长率：(这个月销售额 - 上个月销售额) / 上个月销售额 * 100%
+2026-03-26 12:56:09 - ai_data_agent - INFO - [ExecutorNode] Python exec result: {'result': 20.0, 'stdout': '', 'stderr': ''}
+2026-03-26 12:56:09 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_python_exec']
+2026-03-26 12:56:09 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-26 12:56:09 - ai_data_agent - INFO - [AnalyzerNode] Extracted 1 total rows from data_context
+2026-03-26 12:56:10 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 12:56:28 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 12:56:28 - ai_data_agent - INFO - Anthropic Content Length: 935
+2026-03-26 12:56:28 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-26 12:58:28 - ai_data_agent - INFO - Request: POST http://localhost:8002/chat/stream
+2026-03-26 12:58:28 - ai_data_agent - INFO - Response: POST http://localhost:8002/chat/stream - Status: 404
+2026-03-26 12:58:48 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-26 12:58:48 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-26 13:00:46 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-26 13:00:46 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 400
+2026-03-26 13:01:46 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat/stream
+2026-03-26 13:01:46 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat/stream - Status: 400
+2026-03-26 13:03:42 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-26 13:03:42 - ai_data_agent - INFO - [IntentNode] Processing query: 上个月销售额10000，这个月12000，增长率是多少
+2026-03-26 13:03:47 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 13:04:00 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 13:04:00 - ai_data_agent - INFO - Anthropic Content Length: 323
+2026-03-26 13:04:00 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "data_analysis", "entities": {"time_range": {"start": "relative: last_month", "end": "relative: this_month", "description": "上个月和这个月"}}, "metrics": ["增长率"], "dimensions": ["月份"], "confidence": 1.0, "missing_info": null, "clarification_question": null}
+2026-03-26 13:04:00 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "data_analysis", "entities": {"time_range": {"start": "relative: last_month", "end": "relative: this_month", "description": "上个月和这个月"}}, "metrics": ["增长率"], "dimensions": ["月份"], "confidence": 1.0}
+2026-03-26 13:04:00 - ai_data_agent - INFO - [Retrieval Node] Processing query: 上个月销售额10000，这个月12000，增长率是多少
+2026-03-26 13:04:00 - ai_data_agent - INFO - [Retrieval Node] Intent type: data_analysis
+2026-03-26 13:04:16 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-26 13:04:29 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-26 13:04:29 - ai_data_agent - ERROR - Failed to search embeddings: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-26 13:04:29 - ai_data_agent - INFO - Retrieved 0 candidates for user 1
+2026-03-26 13:04:29 - ai_data_agent - INFO - [Retrieval Node] Retrieved 0 APIs
+2026-03-26 13:04:30 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-26 13:04:30 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 上个月销售额10000，这个月12000，增长率是多少
+2026-03-26 13:04:30 - ai_data_agent - INFO - [PlannerNode] Available APIs: 0, Tables: 12
+2026-03-26 13:04:30 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：上个月销售额10000，这个月12000，增长率是多少
+
+提取的过滤条件：
+{
+  "intent_type": "data_analysis",
+  "entities": {
+    "time_range": {
+      "start": "relative: last_month",
+      "end": "relative: this_month",
+      "description": "上个月和这个月"
+    }
+  },
+  "metrics": [
+    "增长率"
+  ],
+  "dimensions": [
+    "月份"
+  ],
+  "confidence": 1.0
+}
+
+可用的API列表：
+（无可用API）
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_id: string
+  - input_tokens: integer
+  - output_tokens: integer
+  - total_tokens: integer
+  - credits_deducted:
+2026-03-26 13:04:31 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 13:04:46 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 13:04:46 - ai_data_agent - INFO - Anthropic Content Length: 550
+2026-03-26 13:04:46 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "last_month = 10000\nthis_month = 12000\ngrowth_rate = (this_month - last_month) / last_month * 100\nresult = round(growth_rate, 2)"
+            },
+            "description": "计算增长率：增长率 = (这个月 - 上个月) / 上个月 * 100",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户已提供了具体的销售额数据（上个月10000，这个月12000），无需查询数据库。直接使用python_exec工具进行数学计算：(12000-10000)/10000*100 = 20%"
+}
+```
+2026-03-26 13:04:46 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-26 13:04:46 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 计算增长率：增长率 = (这个月 - 上个月) / 上个月 * 100
+2026-03-26 13:04:46 - ai_data_agent - INFO - [ExecutorNode] Python exec result: {'result': 20.0, 'stdout': '', 'stderr': ''}
+2026-03-26 13:04:46 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_python_exec']
+2026-03-26 13:04:46 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-26 13:04:46 - ai_data_agent - INFO - [AnalyzerNode] Extracted 1 total rows from data_context
+2026-03-26 13:04:47 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-26 13:05:06 - ai_data_agent - INFO - Anthropic Response received
+2026-03-26 13:05:06 - ai_data_agent - INFO - Anthropic Content Length: 955
+2026-03-26 13:05:06 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
