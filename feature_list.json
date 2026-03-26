@@ -30,7 +30,7 @@
         "确认AgentState顶层结构未变更",
         "验证新增字段可被SQLite正常持久化"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-03",

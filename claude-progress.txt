@@ -218,3 +218,39 @@ feat: F-01 移除普通员工API调用审批门槛，改为基于权限直接放
 ===========================================
 【日志结束】初始化智能体任务完成
 ===========================================
+
+===========================================
+十、F-02 功能完成记录
+===========================================
+
+【完成时间】2026-03-26
+【完成智能体】编码智能体 (Coding Agent)
+【功能ID】F-02
+【功能描述】增强Intent Node对股票实体与交易日语义的识别能力
+
+【实现方案】
+1. 修改 intent_prompt.py：
+   - 在 entities 字段说明中新增 stock_symbol、market、trading_day_count 三个字段
+   - 添加股票查询示例，指导 LLM 正确提取股票相关实体
+   - 示例：苹果 → AAPL，美股 → US，最近7个交易日 → 7
+
+2. AgentState 结构保持不变：
+   - extracted_filters 仍为 Dict[str, Any] 类型
+   - 新增字段存储在 entities 子字典中
+   - 完全兼容现有 SQLite 持久化机制
+
+【测试结果】
+✅ Test: 查询"苹果的美股股价最近7个交易日" - PASSED
+✅ 成功提取 stock_symbol: AAPL
+✅ 成功提取 market: US
+✅ 成功提取 trading_day_count: 7
+
+【修改文件】
+- backend/app/agent/prompts/intent_prompt.py
+- backend/test_f02_intent_extraction.py (新增)
+- feature_list.json (F-02 passes=true)
+
+【Git 提交】
+feat: F-02 增强Intent Node对股票实体与交易日语义的识别能力
+
+===========================================
