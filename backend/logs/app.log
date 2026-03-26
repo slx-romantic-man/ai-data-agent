@@ -24098,3 +24098,19 @@ TABLE credit_logs (No description):
 2026-03-26 11:01:22 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
 2026-03-26 11:01:22 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
 2026-03-26 11:01:22 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-26 11:34:12 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-26 11:34:12 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-26 11:34:18 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-26 11:34:18 - ai_data_agent - INFO - Environment: development
+2026-03-26 11:34:18 - ai_data_agent - INFO - Debug mode: True
+2026-03-26 11:34:18 - ai_data_agent - INFO - Initializing database connection...
+2026-03-26 11:34:18 - ai_data_agent - INFO - Database connection established
+2026-03-26 11:34:18 - ai_data_agent - INFO - Initializing tool router...
+2026-03-26 11:34:18 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-26 11:34:18 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-26 11:34:18 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-26 11:34:18 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-26 11:34:18 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-26 11:34:18 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-26 11:34:35 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-26 11:34:35 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
