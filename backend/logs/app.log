@@ -31460,3 +31460,450 @@ TABL
 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉
 2026-03-27 10:10:36 - ai_data_agent - INFO - F-04 所有测试通过！
 2026-03-27 10:10:36 - ai_data_agent - INFO - 🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉
+2026-03-27 10:17:46 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-27 10:17:46 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-27 10:17:53 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-27 10:17:53 - ai_data_agent - INFO - Environment: development
+2026-03-27 10:17:53 - ai_data_agent - INFO - Debug mode: True
+2026-03-27 10:17:53 - ai_data_agent - INFO - Initializing database connection...
+2026-03-27 10:17:53 - ai_data_agent - INFO - Database connection established
+2026-03-27 10:17:53 - ai_data_agent - INFO - Initializing tool router...
+2026-03-27 10:17:53 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-27 10:17:53 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-27 10:17:53 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-27 10:17:53 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-27 10:17:53 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-27 10:17:53 - ai_data_agent - INFO - Building API vector index...
+2026-03-27 10:17:59 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-27 10:17:59 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-27 10:18:17 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-27 10:18:31 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-27 10:18:33 - ai_data_agent - INFO - Created Qdrant collection: api_embeddings
+2026-03-27 10:18:33 - ai_data_agent - DEBUG - Upserted embedding for API 4
+2026-03-27 10:18:33 - ai_data_agent - INFO - Built index for API 4: Alpha Vantage 股票查询
+2026-03-27 10:18:34 - ai_data_agent - DEBUG - Upserted embedding for API 3
+2026-03-27 10:18:34 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
+2026-03-27 10:18:34 - ai_data_agent - DEBUG - Upserted embedding for API 1
+2026-03-27 10:18:34 - ai_data_agent - INFO - Built index for API 1: Weather API
+2026-03-27 10:18:34 - ai_data_agent - DEBUG - Upserted embedding for API 2
+2026-03-27 10:18:34 - ai_data_agent - INFO - Built index for API 2: Weather API V2
+2026-03-27 10:18:34 - ai_data_agent - DEBUG - Upserted embedding for API 6
+2026-03-27 10:18:34 - ai_data_agent - INFO - Built index for API 6: 畅捷通IP定位服务
+2026-03-27 10:18:34 - ai_data_agent - INFO - API vector index built: 5 APIs indexed
+2026-03-27 10:18:34 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-27 10:21:56 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 去看看苹果的美股股价最近7个交易日的变化趋势，给出原因与后续投资建议
+2026-03-27 10:21:56 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 0
+2026-03-27 10:21:56 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：去看看苹果的美股股价最近7个交易日的变化趋势，给出原因与后续投资建议
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "stock_symbol": "AAPL",
+    "market": "US",
+    "trading_day_count": 7,
+    "api_hint": "stock_price"
+  },
+  "metrics": [
+    "股价",
+    "涨跌幅"
+  ],
+  "dimensions": [
+    "日期"
+  ],
+  "confidence": 0.95
+}
+
+可用的API列表：
+1. API ID: alpha_vantage_stock
+   名称: Alpha Vantage 股票查询
+   描述: 查询特定股票数据
+   可用端点:
+     - get_stock: 获取股票时间序列数据 (路径: /query)
+       参数: {"symbol": "股票代码", "apikey": "API密钥", "function": "查询功能", "outputsize": "数据量大小(compact/full)"}
+
+
+
+可用的数据库表：
+（无可用数据库表）
+
+
+【重要约束】
+- 如果"可用的API列表"显示"（无可用API）"，则必须使用sql_query工具查询数据库表
+- 禁止虚构不存在的API（如order_statistics等），只能使用上面列出的真实API
+- 禁止使用api_fetch工具调用不存在的API
+
+请生成一个JSON格式的执行计划，包含以下字段：
+
+1. steps: 执行步骤列表，每个步骤包含：
+   - step_id: 步骤编号（从1开始）
+   - tool: 工具类型（"api_fetch" 用于调用API，"sql_query" 用于查询数据库表，"python_exec" 用于执行Python代码进行数学计算）
+   - api_id: API标识符（仅当tool为api_fetch时需要）
+   - params: 调用参数（字典格式）
+     * 对于 sql_query: 必须包含 "sql" 字段（完整的 SQL SELECT 语句）
+     * 对于 api_fetch: 包含 API 所需的参数
+     * 对于 python_exec: 必须包含 "code" 字段（Python代码字符串），可选 "context_keys" 字段（需要注入的前置步骤数据键列表）
+   - description: 步骤描述
+   - depends_on: 依赖的前置步骤ID列表（如果有）
+
+2. reasoning: 规划推理过程
+
+返回格式示例：
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "sql_query",
+            "api_id": "",
+            "params": {
+                "sql": "SELECT DATE(order_date) as date, COUNT(*) as order_count, SUM(amount) as total_amount FROM orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(order_date)"  # noqa: E501
+            },
+            "description": "查询订单表获取最近7天的订单统计数据",
+            "depends_on": []
+        },
+        {
+            "step_id": 2,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "data = step_0_sql_query['data']; amounts = [row['total_amount'] for row in data]; result = sum(amounts) / len(amounts)",
+                "context_keys": ["
+2026-03-27 10:22:02 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-27 10:22:45 - ai_data_agent - INFO - Anthropic Response received
+2026-03-27 10:22:45 - ai_data_agent - INFO - Anthropic Content Length: 3567
+2026-03-27 10:22:45 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "alpha_vantage_stock",
+            "params": {
+                "symbol": "AAPL",
+                "outputsize": "compact"
+            },
+            "description": "获取苹果股票(AAPL)最近的交易数据",
+            "depends_on": []
+        },
+        {
+            "step_id": 2,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "import json\ndata = step_0_api_fetch['data']\ntime_series = data.get('Time Series (Daily)', {})\ndates = sorted(time_series.keys(), reverse=True)[:7]\nprice_data = []\nfor date in dates:\n    entry = time_series[date]\n    price_data.append({\n        'date': date,\n        'open': float(entry.get('1. open', 0)),\n        'high': float(entry.get('2. high', 0)),\n        'low': float(entry.get('3. low', 0)),\n        'close': float(entry.get('4. close', 0)),\n        'volume': int(entry.get('5. volume', 0))\
+2026-03-27 10:22:45 - ai_data_agent - INFO - [PlannerNode] Generated plan with 3 steps
+2026-03-27 10:23:34 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 去看看苹果的美股股价最近7个交易日的变化趋势，给出原因与后续投资建议
+2026-03-27 10:23:34 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 0
+2026-03-27 10:23:34 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：去看看苹果的美股股价最近7个交易日的变化趋势，给出原因与后续投资建议
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "stock_symbol": "AAPL",
+    "market": "US",
+    "trading_day_count": 7,
+    "api_hint": "stock_price"
+  },
+  "metrics": [
+    "股价",
+    "涨跌幅"
+  ],
+  "dimensions": [
+    "日期"
+  ],
+  "confidence": 0.95
+}
+
+可用的API列表：
+1. API ID: alpha_vantage_stock
+   名称: Alpha Vantage 股票查询
+   描述: 查询特定股票数据
+   可用端点:
+     - get_stock: 获取股票时间序列数据 (路径: /query)
+       参数: {"symbol": "股票代码", "apikey": "API密钥", "function": "查询功能", "outputsize": "数据量大小(compact/full)"}
+
+
+
+可用的数据库表：
+（无可用数据库表）
+
+
+【重要约束】
+- 如果"可用的API列表"显示"（无可用API）"，则必须使用sql_query工具查询数据库表
+- 禁止虚构不存在的API（如order_statistics等），只能使用上面列出的真实API
+- 禁止使用api_fetch工具调用不存在的API
+
+请生成一个JSON格式的执行计划，包含以下字段：
+
+1. steps: 执行步骤列表，每个步骤包含：
+   - step_id: 步骤编号（从1开始）
+   - tool: 工具类型（"api_fetch" 用于调用API，"sql_query" 用于查询数据库表，"python_exec" 用于执行Python代码进行数学计算）
+   - api_id: API标识符（仅当tool为api_fetch时需要）
+   - params: 调用参数（字典格式）
+     * 对于 sql_query: 必须包含 "sql" 字段（完整的 SQL SELECT 语句）
+     * 对于 api_fetch: 包含 API 所需的参数
+     * 对于 python_exec: 必须包含 "code" 字段（Python代码字符串），可选 "context_keys" 字段（需要注入的前置步骤数据键列表）
+   - description: 步骤描述
+   - depends_on: 依赖的前置步骤ID列表（如果有）
+
+2. reasoning: 规划推理过程
+
+返回格式示例：
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "sql_query",
+            "api_id": "",
+            "params": {
+                "sql": "SELECT DATE(order_date) as date, COUNT(*) as order_count, SUM(amount) as total_amount FROM orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(order_date)"  # noqa: E501
+            },
+            "description": "查询订单表获取最近7天的订单统计数据",
+            "depends_on": []
+        },
+        {
+            "step_id": 2,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "data = step_0_sql_query['data']; amounts = [row['total_amount'] for row in data]; result = sum(amounts) / len(amounts)",
+                "context_keys": ["
+2026-03-27 10:23:36 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-27 10:23:58 - ai_data_agent - INFO - Anthropic Response received
+2026-03-27 10:23:58 - ai_data_agent - INFO - Anthropic Content Length: 2073
+2026-03-27 10:23:58 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "alpha_vantage_stock",
+            "params": {
+                "symbol": "AAPL",
+                "outputsize": "compact"
+            },
+            "description": "获取苹果股票(AAPL)最近7个交易日的历史交易数据",
+            "depends_on": []
+        },
+        {
+            "step_id": 2,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "import json\ndata = step_0_api_fetch['data']\nif 'Time Series (Daily)' in data:\n    ts = data['Time Series (Daily)']\n    dates = sorted(ts.keys(), reverse=True)[:7]\n    prices = [(d, float(ts[d]['4. close']), float(ts[d]['1. open']), float(ts[d]['2. high']), float(ts[d]['3. low']), float(ts[d]['5. volume'])) for d in dates]\n    results = []\n    for i, (date, close, open_p, high, low, vol) in enumerate(prices):\n        change_pct = 0\n        if i < len(prices) - 1:\n            prev_close = pri
+2026-03-27 10:23:58 - ai_data_agent - INFO - [PlannerNode] Generated plan with 2 steps
+2026-03-27 10:25:58 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 去看看苹果的美股股价最近7个交易日的变化趋势，给出原因与后续投资建议
+2026-03-27 10:25:58 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 0
+2026-03-27 10:25:58 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：去看看苹果的美股股价最近7个交易日的变化趋势，给出原因与后续投资建议
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "stock_symbol": "AAPL",
+    "market": "US",
+    "trading_day_count": 7,
+    "api_hint": "stock_price"
+  },
+  "metrics": [
+    "股价",
+    "涨跌幅"
+  ],
+  "dimensions": [
+    "日期"
+  ],
+  "confidence": 0.95
+}
+
+可用的API列表：
+1. API ID: alpha_vantage_stock
+   名称: Alpha Vantage 股票查询
+   描述: 查询特定股票数据
+   可用端点:
+     - get_stock: 获取股票时间序列数据 (路径: /query)
+       参数: {"symbol": "股票代码", "apikey": "API密钥", "function": "查询功能", "outputsize": "数据量大小(compact/full)"}
+
+
+
+可用的数据库表：
+（无可用数据库表）
+
+
+【重要约束】
+- 如果"可用的API列表"显示"（无可用API）"，则必须使用sql_query工具查询数据库表
+- 禁止虚构不存在的API（如order_statistics等），只能使用上面列出的真实API
+- 禁止使用api_fetch工具调用不存在的API
+
+请生成一个JSON格式的执行计划，包含以下字段：
+
+1. steps: 执行步骤列表，每个步骤包含：
+   - step_id: 步骤编号（从1开始）
+   - tool: 工具类型（"api_fetch" 用于调用API，"sql_query" 用于查询数据库表，"python_exec" 用于执行Python代码进行数学计算）
+   - api_id: API标识符（仅当tool为api_fetch时需要）
+   - params: 调用参数（字典格式）
+     * 对于 sql_query: 必须包含 "sql" 字段（完整的 SQL SELECT 语句）
+     * 对于 api_fetch: 包含 API 所需的参数
+     * 对于 python_exec: 必须包含 "code" 字段（Python代码字符串），可选 "context_keys" 字段（需要注入的前置步骤数据键列表）
+   - description: 步骤描述
+   - depends_on: 依赖的前置步骤ID列表（如果有）
+
+2. reasoning: 规划推理过程
+
+返回格式示例：
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "sql_query",
+            "api_id": "",
+            "params": {
+                "sql": "SELECT DATE(order_date) as date, COUNT(*) as order_count, SUM(amount) as total_amount FROM orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(order_date)"  # noqa: E501
+            },
+            "description": "查询订单表获取最近7天的订单统计数据",
+            "depends_on": []
+        },
+        {
+            "step_id": 2,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "data = step_0_sql_query['data']; amounts = [row['total_amount'] for row in data]; result = sum(amounts) / len(amounts)",
+                "context_keys": ["
+2026-03-27 10:26:02 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-27 10:26:31 - ai_data_agent - INFO - Anthropic Response received
+2026-03-27 10:26:31 - ai_data_agent - INFO - Anthropic Content Length: 2187
+2026-03-27 10:26:31 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "alpha_vantage_stock",
+            "params": {
+                "symbol": "AAPL",
+                "outputsize": "compact"
+            },
+            "description": "获取苹果(AAPL)股票最近7个交易日的时间序列数据",
+            "depends_on": []
+        },
+        {
+            "step_id": 2,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "data = step_0_api_fetch['data']; records = data.get('Time Series (Daily)', []); dates = sorted(records.keys(), reverse=True)[:7]; prices = [{'date': d, 'open': float(records[d]['1. open']), 'high': float(records[d]['2. high']), 'low': float(records[d]['3. low']), 'close': float(records[d]['4. close']), 'volume': int(records[d]['5. volume'])} for d in dates]; first_close = prices[-1]['close']; last_close = prices[0]['close']; total_change_pct = round((last_close - first_close) / first_close * 100, 2);
+2026-03-27 10:26:31 - ai_data_agent - INFO - [PlannerNode] Generated plan with 2 steps
+2026-03-27 10:26:54 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 去看看苹果的美股股价最近7个交易日的变化趋势，给出原因与后续投资建议
+2026-03-27 10:26:54 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 0
+2026-03-27 10:26:54 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：去看看苹果的美股股价最近7个交易日的变化趋势，给出原因与后续投资建议
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "stock_symbol": "AAPL",
+    "market": "US",
+    "trading_day_count": 7,
+    "api_hint": "stock_price"
+  },
+  "metrics": [
+    "股价",
+    "涨跌幅"
+  ],
+  "dimensions": [
+    "日期"
+  ],
+  "confidence": 0.95
+}
+
+可用的API列表：
+1. API ID: alpha_vantage_stock
+   名称: Alpha Vantage 股票查询
+   描述: 查询特定股票数据
+   可用端点:
+     - get_stock: 获取股票时间序列数据 (路径: /query)
+       参数: {"symbol": "股票代码", "apikey": "API密钥", "function": "查询功能", "outputsize": "数据量大小(compact/full)"}
+
+
+
+可用的数据库表：
+（无可用数据库表）
+
+
+【重要约束】
+- 如果"可用的API列表"显示"（无可用API）"，则必须使用sql_query工具查询数据库表
+- 禁止虚构不存在的API（如order_statistics等），只能使用上面列出的真实API
+- 禁止使用api_fetch工具调用不存在的API
+
+请生成一个JSON格式的执行计划，包含以下字段：
+
+1. steps: 执行步骤列表，每个步骤包含：
+   - step_id: 步骤编号（从1开始）
+   - tool: 工具类型（"api_fetch" 用于调用API，"sql_query" 用于查询数据库表，"python_exec" 用于执行Python代码进行数学计算）
+   - api_id: API标识符（仅当tool为api_fetch时需要）
+   - params: 调用参数（字典格式）
+     * 对于 sql_query: 必须包含 "sql" 字段（完整的 SQL SELECT 语句）
+     * 对于 api_fetch: 包含 API 所需的参数
+     * 对于 python_exec: 必须包含 "code" 字段（Python代码字符串），可选 "context_keys" 字段（需要注入的前置步骤数据键列表）
+   - description: 步骤描述
+   - depends_on: 依赖的前置步骤ID列表（如果有）
+
+2. reasoning: 规划推理过程
+
+返回格式示例：
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "sql_query",
+            "api_id": "",
+            "params": {
+                "sql": "SELECT DATE(order_date) as date, COUNT(*) as order_count, SUM(amount) as total_amount FROM orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(order_date)"  # noqa: E501
+            },
+            "description": "查询订单表获取最近7天的订单统计数据",
+            "depends_on": []
+        },
+        {
+            "step_id": 2,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "data = step_0_sql_query['data']; amounts = [row['total_amount'] for row in data]; result = sum(amounts) / len(amounts)",
+                "context_keys": ["
+2026-03-27 10:26:56 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-27 10:27:31 - ai_data_agent - INFO - Anthropic Response received
+2026-03-27 10:27:31 - ai_data_agent - INFO - Anthropic Content Length: 3590
+2026-03-27 10:27:31 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "alpha_vantage_stock",
+            "params": {
+                "symbol": "AAPL",
+                "outputsize": "compact"
+            },
+            "description": "获取苹果股票(AAPL)最近的交易数据",
+            "depends_on": []
+        },
+        {
+            "step_id": 2,
+            "tool": "python_exec",
+            "api_id": "",
+            "params": {
+                "code": "data = step_0_api_fetch['data']; data_sorted = sorted(data, key=lambda x: x['date']); results = []; for i, item in enumerate(data_sorted): result_item = {'date': item['date'], 'open': float(item['open']), 'high': float(item['high']), 'low': float(item['low']), 'close': float(item['close']), 'volume': int(item['volume'])}; if i > 0: prev_close = float(data_sorted[i-1]['close']); curr_close = result_item['close']; change = curr_close - prev_close; pct_change = round((change / prev_close) * 100, 2); result_ite
+2026-03-27 10:27:31 - ai_data_agent - INFO - [PlannerNode] Generated plan with 3 steps
