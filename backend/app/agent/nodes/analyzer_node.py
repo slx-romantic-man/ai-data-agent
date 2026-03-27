@@ -93,8 +93,16 @@ def _extract_all_data(data_context: Dict[str, Any]) -> List[Dict[str, Any]]:
 
         if result.get("success") and result.get("data"):
             data = result["data"]
-            if isinstance(data, list):
+
+            # 处理规范化的股票数据格式
+            if isinstance(data, dict) and "rows" in data:
+                rows = data.get("rows", [])
+                if isinstance(rows, list):
+                    all_data.extend(rows)
+            # 处理普通列表数据
+            elif isinstance(data, list):
                 all_data.extend(data)
+            # 处理单个字典数据
             elif isinstance(data, dict):
                 all_data.append(data)
 

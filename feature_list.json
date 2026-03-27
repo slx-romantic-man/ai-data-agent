@@ -94,7 +94,7 @@
         "验证不再出现'Stored result成功但Extracted 0 total rows'",
         "对API失败场景，验证返回结构化错误对象"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-07",

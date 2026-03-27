@@ -459,3 +459,141 @@ feat: F-05 为股票时间序列分析补充专用规划模板和参数映射
 
 ===========================================
 
+
+===========================================
+【会话时间】2026-03-27
+【执行智能体】编码智能体 (Coding Agent)
+【完成功能】F-06 - 规范化股票API返回结果
+===========================================
+
+一、任务目标
+===========================================
+
+【功能ID】F-06
+【优先级】6
+【类型】bugfix
+【描述】规范化股票API返回结果，确保Analyzer能提取有效数据行
+
+【问题背景】
+Alpha Vantage股票API返回的是嵌套的时间序列数据：
+```json
+{
+  "Meta Data": {...},
+  "Time Series (Daily)": {
+    "2024-03-27": {"1. open": "...", "2. high": "...", ...},
+    "2024-03-26": {...}
+  }
+}
+```
+
+当前代码直接将原始JSON存入data_context，导致Analyzer的_extract_all_data()
+只能提取到1个dict对象，而不是多行交易日数据，出现"Stored result成功但Extracted 0 total rows"问题。
+
+===========================================
+二、实现方案
+===========================================
+
+【核心修改】
+1. 在api_fetch_tool.py中添加_normalize_stock_data()方法
+2. 在返回数据前对股票API进行特殊处理
+3. 更新analyzer_node.py的_extract_all_data()识别规范化格式
+
+【规范化数据结构】
+```python
+{
+  "rows": [
+    {
+      "date": "2026-03-26",
+      "open": 252.115,
+      "high": 257.0,
+      "low": 250.77,
+      "close": 252.89,
+      "volume": 41486694.0,
+      "pct_change": 0.31  # 自动计算涨跌幅
+    },
+    ...
+  ],
+  "row_count": 100,
+  "source": "alpha_vantage",
+  "symbol": "AAPL",
+  "raw_summary": "Retrieved 100 trading days"
+}
+```
+
+【关键逻辑】
+- 自动识别"Time Series (Daily)"等时间序列键
+- 清理字段名（"1. open" -> "open"）
+- 按日期倒序排列（最新日期在前）
+- 自动计算pct_change = (close - open) / open * 100
+- 失败时返回结构化错误对象
+
+===========================================
+三、代码修改清单
+===========================================
+
+【修改文件1】backend/app/agent/tools/api_fetch_tool.py
+- 第288行：在返回前添加股票API规范化处理
+- 第550行：新增_normalize_stock_data()方法（48行）
+
+【修改文件2】backend/app/agent/nodes/analyzer_node.py
+- 第78-103行：更新_extract_all_data()识别"rows"字段
+
+【新增测试文件】
+- backend/test_f06_before.py：验证问题存在
+- backend/test_f06_after.py：验证修复效果
+- backend/test_f06_complete.py：完整的7步验证
+
+===========================================
+四、测试验证
+===========================================
+
+【测试结果】全部通过 ✓
+
+[Step 1] Call stock API successfully
+  PASS: API call successful
+
+[Step 2] Check stored result structure in data_context
+  PASS: Data is stored as dict
+
+[Step 3] Verify normalized row-based data structure
+  PASS: Contains 'rows' field with 100 items
+  PASS: Each row contains required fields
+  PASS: pct_change calculated: 0.31%
+
+[Step 4] Verify metadata in data_context
+  PASS: row_count=100
+  PASS: source=alpha_vantage
+  PASS: symbol=AAPL
+
+[Step 5] Verify Analyzer can extract valid trading day data
+  PASS: Analyzer extracted 100 rows
+
+[Step 6] Verify no 'Stored success but Extracted 0 rows' issue
+  PASS: Stored count matches extracted count: 100
+
+[Step 7] Verify structured error for API failure
+  PASS: API returned normalized structure with 0 rows
+
+【关键指标】
+- 修复前：Analyzer提取0行
+- 修复后：Analyzer提取100行
+- 数据完整性：包含所有必需字段
+- 计算字段：自动生成pct_change
+
+===========================================
+五、Git提交
+===========================================
+
+【提交信息】
+fix: F-06 规范化股票API返回结果，确保Analyzer能提取有效数据行
+
+【提交文件】
+- backend/app/agent/tools/api_fetch_tool.py (修改)
+- backend/app/agent/nodes/analyzer_node.py (修改)
+- backend/test_f06_before.py (新增)
+- backend/test_f06_after.py (新增)
+- backend/test_f06_complete.py (新增)
+- feature_list.json (F-06 passes=true)
+- claude-progress.txt (本记录)
+
+===========================================

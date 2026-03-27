@@ -284,6 +284,10 @@ class APIFetchTool(BaseTool):
             if response_field_mapping:
                 data = self._apply_field_mapping(data, response_field_mapping)
 
+            # 股票API特殊处理：规范化时间序列数据
+            if api_id == "alpha_vantage_stock" and isinstance(data, dict):
+                data = self._normalize_stock_data(data)
+
             return self._success(
                 data=data,
                 metadata={
@@ -547,6 +551,50 @@ class APIFetchTool(BaseTool):
         elif isinstance(data, list):
             return [self._apply_field_mapping(item, mapping) for item in data]
         return data
+
+    def _normalize_stock_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """规范化股票API返回数据为Analyzer可消费的格式"""
+        time_series_key = None
+        for key in data.keys():
+            if "Time Series" in key:
+                time_series_key = key
+                break
+
+        if not time_series_key:
+            return {
+                "rows": [],
+                "row_count": 0,
+                "source": "alpha_vantage",
+                "error": "未找到时间序列数据",
+                "raw_summary": str(data)[:200]
+            }
+
+        time_series = data[time_series_key]
+        rows = []
+
+        for date_str, values in time_series.items():
+            row = {"date": date_str}
+            for k, v in values.items():
+                clean_key = k.split(". ")[-1] if ". " in k else k
+                try:
+                    row[clean_key] = float(v)
+                except (ValueError, TypeError):
+                    row[clean_key] = v
+
+            if "close" in row and "open" in row and row["open"] != 0:
+                row["pct_change"] = ((row["close"] - row["open"]) / row["open"]) * 100
+
+            rows.append(row)
+
+        rows.sort(key=lambda x: x["date"], reverse=True)
+
+        return {
+            "rows": rows,
+            "row_count": len(rows),
+            "source": "alpha_vantage",
+            "symbol": data.get("Meta Data", {}).get("2. Symbol", "Unknown"),
+            "raw_summary": f"Retrieved {len(rows)} trading days"
+        }
 
     async def close(self):
         """关闭HTTP客户端"""
