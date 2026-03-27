@@ -306,10 +306,10 @@ INFO:     127.0.0.1:63148 - "POST /api/v1/chat HTTP/1.1" 400 Bad Request
 2026-03-27 19:21:54 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 400
 INFO:     127.0.0.1:63276 - "POST /api/v1/chat HTTP/1.1" 400 Bad Request
 WARNING:  StatReload detected changes in 'test_f10_fallback.py'. Reloading...
- 026-03-27 19:18:28 - ai_data_agent - DEBUG - Upserted embedding for API 4
-2026-03-27 19:18:28 - ai_data_agent - INFO - Built index for API 4: Alpha Vantage 股票查询
-2026-03-27 19:18:28 - ai_data_agent - DEBUG - Upserted embedding for API 3
-2026-03-27 19:18:28 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
+ 2026-03-27 19:35:45 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-27 19:35:45 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+INFO:     127.0.0.1:50533 - "GET /health HTTP/1.1" 200 OK
+6-03-27 19:18:28 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
 2026-03-27 19:18:28 - ai_data_agent - DEBUG - Upserted embedding for API 1
 2026-03-27 19:18:28 - ai_data_agent - INFO - Built index for API 1: Weather API
 2026-03-27 19:18:28 - ai_data_agent - DEBUG - Upserted embedding for API 2
@@ -495,3 +495,96 @@ WARNING:  StatReload detected changes in 'test_f10_fallback.py'. Reloading...
 2026-03-27 19:29:12 - ai_data_agent - ERROR - [PlannerNode] Fallback: API missing config_id, cannot generate safe plan
 2026-03-27 19:29:12 - ai_data_agent - ERROR - [PlannerNode] Fallback: Invalid api_id 'unknown_api', refusing to generate plan
 2026-03-27 19:29:12 - ai_data_agent - ERROR - [PlannerNode] No JSON found in response
+2026-03-27 19:35:45 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-27 19:35:45 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-27 19:38:28 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取AAPL股票数据
+2026-03-27 19:38:29 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_stock_alpha_vantage']
+2026-03-27 19:39:11 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取AAPL股票数据
+2026-03-27 19:39:11 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_stock_alpha_vantage']
+2026-03-27 19:39:11 - ai_data_agent - INFO - [AnalyzerNode] Extracted 2 total rows from data_context
+2026-03-27 19:46:14 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:46:16 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:46:16 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-27 19:46:16 - ai_data_agent - INFO - [AnalyzerNode] Extracted 100 total rows from data_context
+2026-03-27 19:46:19 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-27 19:47:18 - ai_data_agent - INFO - Anthropic Response received
+2026-03-27 19:47:18 - ai_data_agent - INFO - Anthropic Content Length: 3340
+2026-03-27 19:47:18 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-27 19:47:18 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 查询订单表
+2026-03-27 19:47:18 - ai_data_agent - INFO - [ExecutorNode] SQL params: {'query': 'SELECT * FROM orders LIMIT 5'}
+2026-03-27 19:47:18 - ai_data_agent - INFO - [ExecutorNode] SQL result status: ToolStatus.FAILED, data rows: 0
+2026-03-27 19:47:18 - ai_data_agent - ERROR - [ExecutorNode] SQL error: Invalid SQL: Missing required parameter: sql
+2026-03-27 19:47:18 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_orders']
+2026-03-27 19:48:36 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:48:38 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:48:38 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 查询库存表
+2026-03-27 19:48:38 - ai_data_agent - INFO - [ExecutorNode] SQL params: {'query': 'SELECT * FROM inventory LIMIT 5'}
+2026-03-27 19:48:38 - ai_data_agent - INFO - [ExecutorNode] SQL result status: ToolStatus.FAILED, data rows: 0
+2026-03-27 19:48:38 - ai_data_agent - ERROR - [ExecutorNode] SQL error: Invalid SQL: Missing required parameter: sql
+2026-03-27 19:48:38 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_inventory_query']
+2026-03-27 19:48:38 - ai_data_agent - INFO - [AnalyzerNode] Extracted 100 total rows from data_context
+2026-03-27 19:48:38 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:48:38 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:48:38 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-27 19:48:38 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-27 19:48:38 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-27 19:48:38 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-27 19:49:02 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:49:04 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:49:04 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 查询库存表
+2026-03-27 19:49:04 - ai_data_agent - INFO - [ExecutorNode] SQL params: {'query': 'SELECT * FROM inventory LIMIT 5'}
+2026-03-27 19:49:04 - ai_data_agent - INFO - [ExecutorNode] SQL result status: ToolStatus.FAILED, data rows: 0
+2026-03-27 19:49:04 - ai_data_agent - ERROR - [ExecutorNode] SQL error: Invalid SQL: Missing required parameter: sql
+2026-03-27 19:49:04 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_inventory_query']
+2026-03-27 19:49:04 - ai_data_agent - INFO - [AnalyzerNode] Extracted 100 total rows from data_context
+2026-03-27 19:49:04 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:49:04 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:49:04 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-27 19:49:04 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-27 19:49:04 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-27 19:49:04 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-27 19:49:18 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:49:19 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:49:19 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 查询库存表
+2026-03-27 19:49:19 - ai_data_agent - INFO - [ExecutorNode] SQL params: {'query': 'SELECT * FROM inventory LIMIT 5'}
+2026-03-27 19:49:19 - ai_data_agent - INFO - [ExecutorNode] SQL result status: ToolStatus.FAILED, data rows: 0
+2026-03-27 19:49:19 - ai_data_agent - ERROR - [ExecutorNode] SQL error: Invalid SQL: Missing required parameter: sql
+2026-03-27 19:49:19 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_inventory_query']
+2026-03-27 19:49:19 - ai_data_agent - INFO - [AnalyzerNode] Extracted 100 total rows from data_context
+2026-03-27 19:49:19 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:49:20 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:49:20 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-27 19:49:20 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-27 19:49:20 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-27 19:49:20 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-27 19:50:15 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:50:17 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:50:17 - ai_data_agent - INFO - [AnalyzerNode] Extracted 100 total rows from data_context
+2026-03-27 19:50:41 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:50:42 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:50:42 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 查询库存表
+2026-03-27 19:50:42 - ai_data_agent - INFO - [ExecutorNode] SQL params: {'query': 'SELECT * FROM inventory LIMIT 5'}
+2026-03-27 19:50:42 - ai_data_agent - INFO - [ExecutorNode] SQL result status: ToolStatus.FAILED, data rows: 0
+2026-03-27 19:50:42 - ai_data_agent - ERROR - [ExecutorNode] SQL error: Invalid SQL: Missing required parameter: sql
+2026-03-27 19:50:42 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_inventory_query']
+2026-03-27 19:50:42 - ai_data_agent - INFO - [AnalyzerNode] Extracted 100 total rows from data_context
+2026-03-27 19:50:42 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:50:43 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:50:43 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-27 19:50:43 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-27 19:50:43 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-27 19:50:43 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-27 19:50:59 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:51:01 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:51:01 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 查询库存表
+2026-03-27 19:51:01 - ai_data_agent - INFO - [ExecutorNode] SQL params: {'query': 'SELECT * FROM inventory LIMIT 5'}
+2026-03-27 19:51:01 - ai_data_agent - INFO - [ExecutorNode] SQL result status: ToolStatus.FAILED, data rows: 0
+2026-03-27 19:51:01 - ai_data_agent - ERROR - [ExecutorNode] SQL error: Invalid SQL: Missing required parameter: sql
+2026-03-27 19:51:01 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_inventory_query']
+2026-03-27 19:51:01 - ai_data_agent - INFO - [AnalyzerNode] Extracted 100 total rows from data_context
+2026-03-27 19:51:01 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取IBM股票数据
+2026-03-27 19:51:01 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-27 19:51:01 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-27 19:51:01 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-27 19:51:01 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-27 19:51:01 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages

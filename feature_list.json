@@ -43,7 +43,7 @@
         "验证Analyzer能正确读取并提取结构化数据",
         "验证日志中不再出现结果已写入但Analyzer提取为0 rows的异常"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-12",
