@@ -254,3 +254,50 @@ feat: F-01 移除普通员工API调用审批门槛，改为基于权限直接放
 feat: F-02 增强Intent Node对股票实体与交易日语义的识别能力
 
 ===========================================
+十一、F-03 功能完成记录
+===========================================
+
+【完成时间】2026-03-27
+【完成智能体】编码智能体 (Coding Agent)
+【功能ID】F-03
+【功能描述】修复Retrieval到Planner的API元数据传递缺失问题
+
+【问题分析】
+1. Qdrant 使用 file:// 存储模式导致并发访问冲突
+   - 服务器启动时锁定存储文件
+   - 查询时无法访问向量库，导致检索返回 0 个 API
+2. 服务器启动时未构建 API 向量索引
+3. Endpoint 结构使用 params_mapping，但 Planner 期望 params 字段
+
+【实现方案】
+1. 修改 settings.py：
+   - 将 QDRANT_URL 从 "file://./data/qdrant" 改为 ":memory:"
+   - 解决并发访问问题，每个进程独立内存存储
+
+2. 修改 main.py：
+   - 在 lifespan 启动阶段添加 API 向量索引构建
+   - 遍历所有 API 并调用 build_index_for_api()
+   - 确保服务器启动后索引可用
+
+3. 修改 api_retrieval_service.py：
+   - 在 _enrich_with_full_metadata() 中规范化 endpoint 结构
+   - 将 params_mapping 复制到 params 字段
+   - 确保 Planner 能正确读取参数信息
+
+【测试结果】
+✅ API 向量索引成功构建（5 个 API）
+✅ 检索服务返回完整 API 元数据
+✅ API ID、名称、endpoints 正确传递
+✅ Endpoint params 从 0 增加到 5 个参数
+
+【修改文件】
+- backend/app/config/settings.py
+- backend/app/main.py
+- backend/app/services/api_retrieval_service.py
+- backend/test_f03_simple.py (新增)
+- feature_list.json (F-03 passes=true)
+
+【Git 提交】
+feat: F-03 修复Retrieval到Planner的API元数据传递缺失问题
+
+===========================================
