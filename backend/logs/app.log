@@ -31937,3 +31937,40 @@ TABL
 2026-03-27 10:35:13 - ai_data_agent - INFO - API vector index built: 5 APIs indexed
 2026-03-27 10:35:13 - ai_data_agent - INFO - AI Data Agent started successfully
 2026-03-27 10:43:57 - ai_data_agent - INFO - [AnalyzerNode] Extracted 100 total rows from data_context
+2026-03-27 10:51:17 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-27 10:51:17 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-27 10:51:23 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-27 10:51:23 - ai_data_agent - INFO - Environment: development
+2026-03-27 10:51:23 - ai_data_agent - INFO - Debug mode: True
+2026-03-27 10:51:23 - ai_data_agent - INFO - Initializing database connection...
+2026-03-27 10:51:23 - ai_data_agent - INFO - Database connection established
+2026-03-27 10:51:23 - ai_data_agent - INFO - Initializing tool router...
+2026-03-27 10:51:23 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-27 10:51:23 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-27 10:51:23 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-27 10:51:23 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-27 10:51:23 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-27 10:51:23 - ai_data_agent - INFO - Building API vector index...
+2026-03-27 10:51:44 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-27 10:51:44 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-27 10:51:44 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-27 10:52:02 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-27 10:52:04 - ai_data_agent - INFO - Created Qdrant collection: api_embeddings
+2026-03-27 10:52:04 - ai_data_agent - DEBUG - Upserted embedding for API 4
+2026-03-27 10:52:04 - ai_data_agent - INFO - Built index for API 4: Alpha Vantage 股票查询
+2026-03-27 10:52:04 - ai_data_agent - DEBUG - Upserted embedding for API 3
+2026-03-27 10:52:04 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
+2026-03-27 10:52:04 - ai_data_agent - DEBUG - Upserted embedding for API 1
+2026-03-27 10:52:04 - ai_data_agent - INFO - Built index for API 1: Weather API
+2026-03-27 10:52:04 - ai_data_agent - DEBUG - Upserted embedding for API 2
+2026-03-27 10:52:04 - ai_data_agent - INFO - Built index for API 2: Weather API V2
+2026-03-27 10:52:04 - ai_data_agent - DEBUG - Upserted embedding for API 6
+2026-03-27 10:52:04 - ai_data_agent - INFO - Built index for API 6: 畅捷通IP定位服务
+2026-03-27 10:52:04 - ai_data_agent - INFO - API vector index built: 5 APIs indexed
+2026-03-27 10:52:04 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-27 10:53:41 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-27 10:55:11 - ai_data_agent - INFO - Anthropic Response received
+2026-03-27 10:55:11 - ai_data_agent - INFO - Anthropic Content Length: 1863
+2026-03-27 10:55:49 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-27 10:56:34 - ai_data_agent - INFO - Anthropic Response received
+2026-03-27 10:56:34 - ai_data_agent - INFO - Anthropic Content Length: 2074
