@@ -301,3 +301,48 @@ feat: F-02 增强Intent Node对股票实体与交易日语义的识别能力
 feat: F-03 修复Retrieval到Planner的API元数据传递缺失问题
 
 ===========================================
+十二、F-04 功能完成记录
+===========================================
+
+【完成时间】2026-03-27
+【完成智能体】编码智能体 (Coding Agent)
+【功能ID】F-04
+【功能描述】建立Planner输出校验和安全失败机制，禁止空计划触发伪执行
+
+【问题分析】
+1. Planner在无法生成有效计划时返回空列表，但没有明确的失败状态标记
+2. graph.py中设置的error字段没有被analyzer读取和使用
+3. Executor虽然有空计划检查，但缺少上游的明确失败信号
+4. 用户无法获得清晰的失败原因说明
+
+【实现方案】
+1. 修改 planner_node.py：
+   - 在_parse_and_validate_plan失败且fallback也返回空时
+   - 设置state["error"]字段，记录失败原因
+   - 明确标记state["plan"] = []
+
+2. 修改 analyzer_node.py：
+   - 优先检查state.get("error")字段
+   - 如果存在error，直接使用该错误信息生成用户友好的失败说明
+   - 保留原有的空计划兜底逻辑
+
+3. 验证 graph.py 的路由逻辑：
+   - should_require_approval在检测到空计划时跳转到analyzer
+   - 确保Executor不会被执行
+
+【测试结果】
+✅ 测试1：无API时fallback返回空计划
+✅ 测试2：Analyzer正确处理空计划并返回错误信息
+✅ 测试3：Analyzer正确读取并使用error字段
+✅ 验证：Executor不会执行空计划（已有第31行检查）
+
+【修改文件】
+- backend/app/agent/nodes/planner_node.py
+- backend/app/agent/nodes/analyzer_node.py
+- backend/test_f04_simple.py (新增)
+- feature_list.json (F-04 passes=true)
+
+【Git 提交】
+feat: F-04 建立Planner输出校验和安全失败机制
+
+===========================================

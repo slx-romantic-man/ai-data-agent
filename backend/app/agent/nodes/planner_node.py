@@ -72,6 +72,14 @@ async def planner_node(state: AgentState, retrieved_apis: list, retrieved_tables
         logger.error("[PlannerNode] Failed to generate valid plan, using fallback")
         plan_data = _create_fallback_plan(query, retrieved_apis)
 
+    # 校验计划有效性
+    if not plan_data:
+        logger.error("[PlannerNode] Cannot generate valid plan - no tools available")
+        state["plan"] = []
+        state["error"] = "无法生成有效的执行计划，可能是因为没有可用的API或数据源。"
+        state["current_step"] = 0
+        return state
+
     logger.info(f"[PlannerNode] Generated plan with {len(plan_data)} steps")
 
     # 更新状态

@@ -62,7 +62,7 @@
         "验证日志中不存在'Planner失败但仍执行步骤'的情况",
         "确认SSE流正确传递失败信息"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-05",

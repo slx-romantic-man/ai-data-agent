@@ -24,14 +24,19 @@ async def analyzer_node(state: AgentState) -> AgentState:
     query = state.get("query", "")
     messages = state.get("messages", [])
     plan = state.get("plan", [])
+    error = state.get("error")
 
     logger.info(
         f"[AnalyzerNode] Starting analysis with "
         f"{len(data_context)} data sources"
     )
 
+    # 检查是否有明确的错误信息
+    if error:
+        logger.warning(f"[AnalyzerNode] Error detected: {error}")
+        analysis_report = f"抱歉，无法执行您的请求。\n\n原因：{error}"
     # 检查是否有权限错误（plan 为空但没有数据）
-    if not plan and not data_context:
+    elif not plan and not data_context:
         logger.warning("[AnalyzerNode] Empty plan, checking for errors")
         # 这可能是权限检查失败导致的
         analysis_report = (
