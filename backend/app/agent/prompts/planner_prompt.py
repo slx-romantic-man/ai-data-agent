@@ -64,7 +64,7 @@ PLANNER_PROMPT = """你是一个数据查询规划师。根据用户查询和可
     "reasoning": "用户想查询最近7天的订单统计并计算平均值，先用sql_query获取数据，再用python_exec计算"
 }}
 
-股票查询示例（当extracted_filters包含stock_symbol="AAPL", trading_day_count=7时）：
+API调用示例：
 {{
     "steps": [
         {{
@@ -82,7 +82,7 @@ PLANNER_PROMPT = """你是一个数据查询规划师。根据用户查询和可
             "depends_on": []
         }}
     ],
-    "reasoning": "用户查询苹果股票最近7个交易日数据，使用股票API获取数据，trading_day_count<=100使用compact模式"
+    "reasoning": "用户查询苹果股票数据，使用股票API的获取日线数据端点"
 }}
 
 规划原则：
@@ -97,12 +97,6 @@ PLANNER_PROMPT = """你是一个数据查询规划师。根据用户查询和可
 9. 【python_exec数据引用】前置步骤的数据通过变量名 "step_{{idx}}_{{tool}}" 注入，idx是执行顺序索引（从0开始，不是step_id）。例如：step_id=1的sql_query结果为 step_0_sql_query，step_id=2的api_fetch结果为 step_1_api_fetch，step_id=3的python_exec结果为 step_2_python_exec
 10. 【python_exec代码规范】代码必须将计算结果赋值给变量"result"，引用前置数据时使用完整变量名如 step_0_sql_query['data']。注意：step_id=1对应step_0，step_id=2对应step_1，以此类推。【严格禁止】使用import语句（包括import json、import pandas等），只能使用Python内置函数（sum, len, round, min, max, sorted, float, int, str, list, dict等）
 11. 保持步骤简洁，避免冗余查询
-12. 【股票查询专用规则】当extracted_filters包含stock_symbol、market、trading_day_count时：
-    - 必须生成api_fetch步骤调用股票API
-    - params必须包含endpoint字段（选择合适的端点，如"获取日线数据"）和params字段（包含symbol等参数）
-    - params.params必须包含symbol参数（使用stock_symbol值）
-    - 如果API需要outputsize参数，根据trading_day_count设置：trading_day_count<=100用"compact"，>100用"full"
-    - 如果需要计算涨跌幅、趋势等指标，生成python_exec步骤处理股票数据
 
 请只返回JSON，不要包含其他内容。"""
 
