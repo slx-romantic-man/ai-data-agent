@@ -101,12 +101,36 @@ def get_planner_prompt(
     apis_str = ""
     if apis:
         for idx, api in enumerate(apis, 1):
-            api_id = api.get('api_id', 'unknown')
+            api_id = api.get('api_id') or api.get('id', 'unknown')
+            name = api.get('name', 'N/A')
             desc = api.get('description', 'N/A')
-            params = json.dumps(api.get('params', {}), ensure_ascii=False)
+
             apis_str += f"{idx}. API ID: {api_id}\n"
+            apis_str += f"   名称: {name}\n"
             apis_str += f"   描述: {desc}\n"
-            apis_str += f"   参数: {params}\n\n"
+
+            # 添加 endpoints 信息
+            endpoints = api.get('endpoints', {})
+            if endpoints:
+                apis_str += f"   可用端点:\n"
+                for endpoint_name, endpoint_config in endpoints.items():
+                    if isinstance(endpoint_config, dict):
+                        endpoint_desc = endpoint_config.get('description', 'N/A')
+                        endpoint_path = endpoint_config.get('path', 'N/A')
+                        apis_str += f"     - {endpoint_name}: {endpoint_desc} (路径: {endpoint_path})\n"
+
+                        # 添加参数信息
+                        endpoint_params = endpoint_config.get('params', {})
+                        if endpoint_params:
+                            apis_str += f"       参数: {json.dumps(endpoint_params, ensure_ascii=False)}\n"
+
+            # 如果没有 endpoints，尝试显示 params
+            if not endpoints:
+                params = api.get('params', {})
+                if params:
+                    apis_str += f"   参数: {json.dumps(params, ensure_ascii=False)}\n"
+
+            apis_str += "\n"
     else:
         apis_str = "（无可用API）\n"
 

@@ -58,6 +58,17 @@ async def lifespan(app: FastAPI):
         llm = get_llm()
         logger.info(f"LLM client initialized: {llm.__class__.__name__}")
 
+        # Build API vector index
+        logger.info("Building API vector index...")
+        from app.services.api_retrieval_service import get_api_retrieval_service
+        from app.services.api_permission_service import get_api_permission_service
+        retrieval_service = get_api_retrieval_service()
+        permission_service = await get_api_permission_service()
+        all_apis = await permission_service.get_all_apis()
+        for api in all_apis:
+            await retrieval_service.build_index_for_api(api.id)
+        logger.info(f"API vector index built: {retrieval_service.get_indexed_count()} APIs indexed")
+
         logger.info(f"{settings.APP_NAME} started successfully")
 
     except Exception as e:

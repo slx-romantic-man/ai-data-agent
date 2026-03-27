@@ -392,12 +392,70 @@ class APIRetrievalService:
 
             logger.info(f"LLM selected {len(enriched)} APIs")
 
+            # Enrich with full API metadata from database
+            enriched = await self._enrich_with_full_metadata(enriched)
+
             return enriched
 
         except Exception as e:
             logger.error(f"Failed to select APIs with LLM: {e}")
             # Fallback: return top candidates
-            return candidates[:3]
+            fallback = candidates[:3]
+            return await self._enrich_with_full_metadata(fallback)
+
+    async def _enrich_with_full_metadata(self, apis: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Enrich API list with full metadata from database.
+
+        Args:
+            apis: List of APIs with basic info (api_id, name, description)
+
+        Returns:
+            List of APIs with full metadata (endpoints, params, etc.)
+        """
+        if not apis:
+            return []
+
+        try:
+            permission_service = await self._get_permission_service()
+            enriched = []
+
+            for api in apis:
+                api_id = api.get("api_id")
+                if not api_id:
+                    continue
+
+                # Fetch full API config from database
+                full_api = await permission_service.get_api_by_id(api_id)
+
+                if full_api:
+                    # Convert Pydantic model to dict
+                    full_dict = full_api.model_dump() if hasattr(full_api, 'model_dump') else full_api
+
+                    # Normalize endpoints: convert params_mapping to params for planner
+                    endpoints = full_dict.get('endpoints', {})
+                    if isinstance(endpoints, dict):
+                        for ep_name, ep_config in endpoints.items():
+                            if isinstance(ep_config, dict) and 'params_mapping' in ep_config:
+                                ep_config['params'] = ep_config.get('params_mapping', {})
+
+                    # Merge with existing data (preserve reason, call_order, score)
+                    enriched.append({
+                        **full_dict,
+                        "reason": api.get("reason", ""),
+                        "call_order": api.get("call_order", 1),
+                        "score": api.get("score", 0.0)
+                    })
+                else:
+                    logger.warning(f"Failed to load full metadata for API {api_id}")
+                    enriched.append(api)
+
+            logger.info(f"Enriched {len(enriched)} APIs with full metadata")
+            return enriched
+
+        except Exception as e:
+            logger.error(f"Failed to enrich APIs with full metadata: {e}")
+            return apis
 
     @lru_cache(maxsize=128)
     def _get_cache_key(self, query: str, user_id: str, top_k: int) -> str:

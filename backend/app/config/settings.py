@@ -46,7 +46,7 @@ class Settings(BaseSettings):
 
     # Vector Store Configuration (Qdrant)
     # Use file:// for persistent storage, or :memory: for in-memory mode
-    QDRANT_URL: str = "file://./data/qdrant"
+    QDRANT_URL: str = ":memory:"
     QDRANT_COLLECTION: str = "api_embeddings"
 
     # API Retrieval Configuration
