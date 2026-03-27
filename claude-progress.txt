@@ -257,3 +257,34 @@ Intent → Retrieval → Planner → Executor → Analyzer
 - Git提交：待提交
 - 功能进度：F-09完成，标记为passes=true
 ---
+
+【2026-03-27】Coding Agent - Session 3
+- 任务：完成F-10功能 - Planner Fallback安全化与可执行化
+- 状态：成功
+- 完成功能：F-10 - Planner Fallback安全化
+- 功能实现：
+  1. 重构_create_fallback_plan函数，添加严格的安全验证
+  2. 禁止生成包含"unknown"的api_id或存储key
+  3. 强制要求API必须有config_id字段，否则拒绝生成计划
+  4. 当元数据不足时，返回空计划并由调用方明确报错
+  5. 改进错误消息，明确说明失败原因（无API或元数据不完整）
+  6. 添加详细的日志记录，便于追踪fallback触发原因
+- 修改文件：
+  - backend/app/agent/nodes/planner_node.py (_create_fallback_plan函数重构)
+  - backend/test_f10_simple.py (新增6个单元测试)
+  - backend/test_f10_fallback.py (新增端到端测试)
+- 测试结果：全部通过
+  - Test 1: Fallback with valid API - PASS
+  - Test 2: Fallback without API - PASS
+  - Test 3: Fallback with missing config_id - PASS
+  - Test 4: Fallback rejects unknown - PASS
+  - Test 5: Parse valid JSON - PASS
+  - Test 6: Parse invalid JSON - PASS
+- 验证要点：
+  - ✓ Fallback不会生成unknown的api_id
+  - ✓ 有足够元数据时生成最小合法计划
+  - ✓ 元数据不足时明确失败并返回空计划
+  - ✓ 不会进入伪执行+空分析的无效链路
+- Git提交：待提交
+- 功能进度：F-10完成，标记为passes=true
+---

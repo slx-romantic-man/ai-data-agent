@@ -69,14 +69,14 @@ async def planner_node(state: AgentState, retrieved_apis: list, retrieved_tables
     plan_data = _parse_and_validate_plan(response)
 
     if not plan_data:
-        logger.error("[PlannerNode] Failed to generate valid plan, using fallback")
+        logger.warning("[PlannerNode] LLM plan parsing failed, attempting fallback")
         plan_data = _create_fallback_plan(query, retrieved_apis)
 
     # 校验计划有效性
     if not plan_data:
-        logger.error("[PlannerNode] Cannot generate valid plan - no tools available")
+        logger.error("[PlannerNode] Cannot generate valid plan - insufficient metadata or no tools available")
         state["plan"] = []
-        state["error"] = "无法生成有效的执行计划，可能是因为没有可用的API或数据源。"
+        state["error"] = "无法生成有效的执行计划。可能原因：没有找到合适的API或数据源，或API元数据不完整。"
         state["current_step"] = 0
         return state
 
@@ -118,15 +118,33 @@ def _parse_and_validate_plan(response: str) -> list:
 
 
 def _create_fallback_plan(query: str, retrieved_apis: list) -> list:
-    """创建降级计划（当LLM生成失败时）"""
+    """
+    创建降级计划（当LLM生成失败时）
+
+    安全原则：
+    1. 禁止生成 unknown 的 api_id 或存储 key
+    2. 必须基于可信的 API 元数据
+    3. 若元数据不足，返回空计划（由调用方处理失败）
+    """
     if not retrieved_apis:
+        logger.warning("[PlannerNode] Fallback: No APIs available, cannot generate plan")
         return []
 
     # 使用第一个检索到的API创建简单计划
     first_api = retrieved_apis[0]
 
-    # 使用 config_id (字符串) 而非 api_id (整数)
-    api_identifier = first_api.get("config_id") or str(first_api.get("api_id", "unknown"))
+    # 严格验证：必须有 config_id，禁止使用 unknown
+    api_identifier = first_api.get("config_id")
+    if not api_identifier:
+        logger.error("[PlannerNode] Fallback: API missing config_id, cannot generate safe plan")
+        return []
+
+    # 验证 api_identifier 不包含 unknown
+    if "unknown" in str(api_identifier).lower():
+        logger.error(f"[PlannerNode] Fallback: Invalid api_id '{api_identifier}', refusing to generate plan")
+        return []
+
+    logger.info(f"[PlannerNode] Fallback: Generating minimal plan with API '{api_identifier}'")
 
     return [{
         "step_id": 1,
