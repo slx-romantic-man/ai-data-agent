@@ -1,315 +1,207 @@
-================================================================================
-AI-DATA-AGENT v4.2 - CLAUDE AGENT HANDOFF LOG
-================================================================================
-Last Updated: 2026-03-27
-Current Status: INITIALIZATION COMPLETE - READY FOR FEATURE IMPLEMENTATION
+===========================================
+AI-Data-Agent v4.2 - Agent Handoff Protocol
+===========================================
 
-================================================================================
-📋 PROJECT OVERVIEW
-================================================================================
-This is an AI-powered data analysis agent system that uses LangGraph to orchestrate
-a multi-node workflow: Intent → Retrieval → Planner → Executor → Analyzer.
+【创建时间】2026-03-27
+【创建智能体】Initializer Agent (初始化智能体)
+【使命】建立 v4.2 基线基础设施，支持长期跨会话智能体接力
 
-Current Issue: Users report "Agent cannot answer any questions" - a critical
-usability failure affecting the entire chain from Planner output validation
-through Executor data storage to Analyzer result generation.
+===========================================
+一、基础设施清单
+===========================================
 
-================================================================================
-🏗️ INFRASTRUCTURE BASELINE (Established by Initializer Agent)
-================================================================================
+本轮创建的三大"基建事实载体"：
 
-✅ Created Files:
-  - feature_list.json       : 11 atomic features (F-09 to F-19), priority-sorted
-  - claude-progress.txt     : This handoff log
-  - init.sh                 : Already exists, verified functional
+1. init.sh (根目录)
+   - 用途：防御性环境启动脚本
+   - 功能：依赖检查、虚拟环境、端口检查、健康检查
+   - 使用：bash init.sh (任何智能体接手时首先运行)
 
-✅ Environment Configuration:
-  - Backend: FastAPI + LangGraph + AsyncSqliteSaver
-  - Frontend: Vue 3 + Tailwind CSS + SSE (Server-Sent Events)
-  - Database: SQLite (checkpoints), MySQL/PostgreSQL (business data)
-  - LLM: OpenAI-compatible API (configured via .env)
+2. feature_list.json (根目录)
+   - 用途：项目功能进度的唯一真相来源
+   - 格式：严格 JSON (禁止 Markdown)
+   - 结构：11个原子化功能卡片 (F-09 到 F-19)
+   - 状态：每个功能带 passes 布尔值标记
 
-✅ Git Repository:
-  - Initialized with comprehensive .gitignore
-  - Initial baseline commit created
-  - Branch: master (main branch: main)
+3. claude-progress.txt (本文件，根目录)
+   - 用途：智能体交接日志，人类/机器双读
+   - 内容：技术栈、工作纪律、进度记录、失败模式警告
 
-================================================================================
-🔧 TECHNOLOGY STACK & ARCHITECTURAL IRON LAWS
-================================================================================
+===========================================
+二、技术栈与铁律
+===========================================
 
-Backend Framework:
-  - FastAPI (uvicorn on port 8002)
-  - LangGraph for workflow orchestration
-  - Pydantic v2 for data validation
-  - AsyncSqliteSaver for state persistence
+【后端技术栈】
+- 框架：FastAPI (REST API)
+- 工作流引擎：LangGraph (Agent 编排)
+- ORM：SQLAlchemy
+- LLM 客户端：OpenAI SDK
+- 数据库：SQLite (checkpoints.db)
+- 会话存储：JSON 文件 (sessions.json)
 
-Frontend Stack:
-  - Vue 3 (CDN-based, no build step)
-  - Tailwind CSS for styling
-  - Axios for HTTP requests
-  - Native EventSource for SSE streaming
+【前端技术栈】
+- 纯静态：HTML + CSS + JavaScript
+- 禁止引入：React、Vue、Angular 等框架
 
-Agent Workflow Nodes:
-  1. Intent Node       : backend/app/agent/nodes/intent_node.py
-  2. Retrieval Node    : backend/app/agent/nodes/retrieval_node.py
-  3. Planner Node      : backend/app/agent/nodes/planner_node.py
-  4. Executor Node     : backend/app/agent/nodes/executor_node.py
-  5. Analyzer Node     : backend/app/agent/nodes/analyzer_node.py
+【Agent 架构】
+Intent → Retrieval → Planner → Executor → Analyzer
 
-State Management:
-  - AgentState (backend/app/agent/state.py) - TypedDict with:
-    * messages, query, extracted_filters
-    * plan, current_step, data_context
-    * requires_approval
+【核心节点】
+- Intent Node: 意图澄清与实体提取
+- Retrieval Node: API 向量召回与 LLM 精排
+- Planner Node: 全局规划生成 JSON 执行计划
+- Executor Node: 工具路由与执行
+- Analyzer Node: 终局分析与答案生成
 
-Graph Definition:
-  - backend/app/agent/graph.py
-  - Conditional edges for approval gates and execution loops
+【工具集】
+- api_fetch_tool.py: 外部 API 调用
+- sql_query_tool.py: SQL 查询
+- python_exec_tool.py: Python 代码执行
+- analysis_tool.py: 数据分析
+- export_tool.py: Excel 导出
 
-API Endpoints:
-  - backend/app/api/v1/chat.py (SSE streaming endpoint)
-  - backend/app/api/v1/api_management.py
-  - backend/app/api/v1/auth.py, user_management.py, etc.
+【铁律】
+🚫 禁止更换技术栈 (如用 Django 替换 FastAPI)
+🚫 禁止引入同类替代库 (如同时用 requests 和 httpx)
+🚫 禁止修改 Agent 架构的五节点流程
+🚫 禁止在前端引入 npm 框架
 
-🚫 ARCHITECTURAL IRON LAWS (DO NOT VIOLATE):
-  1. All state MUST pass through AgentState - no global variables for workflow data
-  2. All user-facing events MUST emit via SSE - no silent failures
-  3. All API calls MUST go through RBAC permission checks
-  4. All LLM outputs MUST be validated against Pydantic schemas
-  5. Frontend uses Vue 3 + Tailwind - DO NOT introduce React/Angular/other frameworks
-  6. Backend uses FastAPI + LangGraph - DO NOT introduce Flask/Django
-  7. DO NOT add new npm dependencies - frontend is CDN-based
-  8. DO NOT replace existing libraries (axios, marked, chart.js) with alternatives
+===========================================
+三、标准启动序列
+===========================================
 
-================================================================================
-📊 FEATURE CHECKLIST (feature_list.json)
-================================================================================
+任何接替工作的智能体必须按以下顺序执行：
 
-Total Features: 11 (F-09 to F-19)
-Completed: 0
-Remaining: 11
+1. pwd
+   → 确认当前工作目录
 
-Priority 10 (Critical - Fix Agent Failure):
-  - F-09: Planner api_id type validation fix
-  - F-10: Planner fallback safety
-  - F-13: API comprehensive test coverage
-  - F-18: E2E final answer validation
+2. cat claude-progress.txt
+   → 读取本文件，了解项目状态与工作纪律
 
-Priority 9 (High - Data Flow & UX):
-  - F-11: Executor data_context standardization
-  - F-12: Analyzer empty data handling
-  - F-15: SSE event protocol standardization
-  - F-16: Frontend dual-area streaming display
+3. cat feature_list.json
+   → 读取功能清单，确定下一个待完成功能
 
-Priority 8 (Medium - Testing & Observability):
-  - F-14: API capability inventory
-  - F-17: Node-level event emission
+4. bash init.sh
+   → 启动环境，进入可测试状态
 
-Priority 7 (Low - Error Handling):
-  - F-19: Failure classification system
+5. 选择功能
+   → 从 feature_list.json 中选择 priority 最高且 passes=false 的功能
 
-================================================================================
-🚀 STANDARD STARTUP SEQUENCE (FOR ALL FUTURE AGENTS)
-================================================================================
+6. 实现功能
+   → 只做一个功能，不贪多
 
-Step 1: Verify Working Directory
-  $ pwd
-  Expected: d:\Users\Desktop\实习工作\week3\ai-data-agent - v4.2
+7. 更新状态
+   → 修改 feature_list.json 中对应功能的 passes=true
+   → 在本文件末尾追加进度记录
 
-Step 2: Read Handoff Context
-  $ cat claude-progress.txt
-  (You're reading it now!)
+8. Git 提交
+   → git add .
+   → git commit -m "feat/fix/test: 功能描述"
 
-Step 3: Check Feature Status
-  $ cat feature_list.json
-  Identify the highest priority feature where "passes": false
+===========================================
+四、工作纪律
+===========================================
 
-Step 4: Start Environment
-  $ bash init.sh
-  Wait for: "🎯 Application is now in TESTABLE STATE"
-  Backend: http://localhost:8002/docs
-  Frontend: Open frontend/index.html in browser
+【单功能原则】
+- 每次会话只做一个功能
+- 按 priority 从小到大选择 (priority 越小越优先)
+- 同优先级按 id 顺序选择
 
-Step 5: Verify Git Status
-  $ git status
-  $ git log --oneline -5
+【验收标准】
+- 不以代码存在为准
+- 不以接口返回 200 为准
+- 必须以 feature_list.json 中的 steps 全部通过为准
+- 对于用户交互功能，必须等待 Agent 给出最终回答才算通过
 
-================================================================================
-⚙️ WORK DISCIPLINE (MANDATORY FOR ALL CODING AGENTS)
-================================================================================
+【状态更新】
+- 完成功能后立即更新 feature_list.json
+- 在本文件末尾追加进度记录
+- Git 提交必须包含清晰的 commit message
 
-🎯 ONE FEATURE PER SESSION:
-  - Select the highest priority feature where "passes": false
-  - Implement ONLY that feature
-  - Do NOT batch multiple features in one session
+【失败模式警告】
+🚫 禁止一次性实现多个功能 (会导致测试不充分、回滚困难)
+🚫 禁止仅凭代码存在就判断项目完成 (必须以 feature_list.json 为准)
+🚫 禁止跳过 feature_list.json 更新 (会导致进度混乱)
+🚫 禁止修改已完成功能的代码 (除非该功能被标记为 passes=false)
 
-✅ COMPLETION CHECKLIST:
-  1. Implement the feature according to its "steps" in feature_list.json
-  2. Run manual tests to verify all steps pass
-  3. Update feature_list.json: set "passes": true for that feature
-  4. Update this file (claude-progress.txt) with:
-     - What was implemented
-     - Files modified
-     - Test results
-     - Any blockers or notes for next agent
-  5. Git commit with clear message:
-     Format: "feat: F-XX <short description>"
-     Example: "feat: F-09 fix Planner api_id type validation"
+===========================================
+五、当前项目状态
+===========================================
 
-🚫 FAILURE MODES TO AVOID:
-  - ❌ Implementing multiple features at once
-  - ❌ Marking feature as "passes": true without running tests
-  - ❌ Judging completion by "code exists" instead of "tests pass"
-  - ❌ Skipping git commits
-  - ❌ Not updating this handoff log
-  - ❌ Introducing new frameworks/libraries not in tech stack
-  - ❌ Breaking existing passing features
+【功能总览】
+- 总功能数：11 个 (F-09 到 F-19)
+- 已完成：0 个
+- 待完成：11 个
 
-================================================================================
-🧪 TESTING REQUIREMENTS
-================================================================================
+【优先级分布】
+- Priority 1 (最高优先级)：5 个功能
+  - F-09: Planner 计划结构强校验修复
+  - F-10: Planner Fallback 安全化
+  - F-11: Executor 数据存储键标准化
+  - F-12: Analyzer 空数据兜底
+  - F-18: 端到端最终回答判定机制
 
-Manual Testing:
-  - Start backend: bash init.sh
-  - Open frontend: frontend/index.html
-  - Test with real user queries
-  - Verify SSE events in browser DevTools Network tab
+- Priority 2 (中优先级)：3 个功能
+  - F-13: API 全量复杂问题覆盖测试集
+  - F-15: SSE 流式事件协议标准化
+  - F-16: 前端思考过程与回答结果双区域流式展示
 
-Automated Testing:
-  - E2E tests: tests/e2e/
-  - Run: pytest tests/e2e/ -v
-  - ALL tests must pass before marking feature complete
+- Priority 3 (低优先级)：3 个功能
+  - F-14: API 能力清单与测试映射表生成
+  - F-17: 节点级流式埋点补齐
+  - F-19: 失败分类与可观测性增强
 
-Acceptance Criteria:
-  - Feature MUST pass all "steps" listed in feature_list.json
-  - Agent MUST return final_answer text (not empty, not silent failure)
-  - Frontend MUST display user-visible result (answer or error message)
-  - No regressions in previously passing features
+【下一步推荐】
+→ F-09: Planner 计划结构强校验修复 (priority=1, bugfix)
 
-================================================================================
-📁 CRITICAL FILE LOCATIONS
-================================================================================
+【已知问题】
+根据历史日志，系统存在以下主链路问题：
+1. Planner 生成的 api_id 为 int 而非 string
+2. Planner fallback 后生成 unknown step
+3. Executor 写入 data_context 的 key 不可追踪
+4. Analyzer 提取 0 rows 但用户无可见回答
+5. 前端缺少流式思考与结果展示
 
-Configuration:
-  - .env (LLM API keys, database URLs)
-  - .env.example (template)
-  - init.sh (startup script)
+===========================================
+六、环境与配置
+===========================================
 
-Agent Core:
-  - backend/app/agent/graph.py (workflow definition)
-  - backend/app/agent/state.py (state schema)
-  - backend/app/agent/nodes/*.py (5 node implementations)
+【环境要求】
+- Python 3.8+
+- pip
+- curl
+- .env 文件 (必须配置 LLM_API_KEY)
 
-API Layer:
-  - backend/app/api/v1/chat.py (SSE streaming endpoint)
-  - backend/app/tools/api_fetch_tool.py (external API calls)
+【端口】
+- 后端服务：8002
+- 前端：直接打开 frontend/index.html
 
-Frontend:
-  - frontend/index.html (entry point)
-  - frontend/js/features/chat.js (chat UI & SSE handling)
-  - frontend/js/api.js (backend API client)
+【数据库】
+- backend/data/checkpoints.db (LangGraph 检查点)
+- backend/data/users.json (用户数据)
+- backend/data/credit_logs.json (积分日志)
 
-Testing:
-  - tests/e2e/ (end-to-end tests)
-  - tests/fixtures/ (test data)
+【日志】
+- backend/logs/app.log
 
-Data:
-  - backend/data/checkpoints.db (LangGraph state persistence)
-  - backend/sessions.json (user sessions)
-  - backend/logs/app.log (application logs)
+【会话】
+- backend/sessions.json
 
-================================================================================
-🔍 KNOWN ISSUES (From Historical Logs)
-================================================================================
+===========================================
+七、进度记录
+===========================================
 
-Issue 1: Planner outputs api_id as int instead of string
-  - Error: "ExecutionPlan.steps.0.api_id Input should be a valid string"
-  - Impact: Validation fails, triggers fallback with broken plan
-  - Related: F-09
+【2026-03-27】Initializer Agent
+- 创建 init.sh (增强版，防御性启动)
+- 创建 feature_list.json (11 个功能卡片)
+- 创建 claude-progress.txt (本文件)
+- Git 基线提交：chore: v4.2 baseline - establish agent handoff infrastructure and feature roadmap
 
-Issue 2: Fallback generates "unknown" API identifier
-  - Error: KeyError: "data_context['step_0_unknown']"
-  - Impact: Executor cannot store results, Analyzer gets empty data
-  - Related: F-10
-
-Issue 3: Analyzer returns "No data available for analysis"
-  - Impact: User sees no answer, no explanation
-  - Root cause: Empty data_context or non-standard key naming
-  - Related: F-11, F-12
-
-Issue 4: No comprehensive API test coverage
-  - Impact: Cannot verify each API works end-to-end
-  - Related: F-13, F-14, F-18
-
-Issue 5: Frontend lacks streaming process visibility
-  - Impact: User cannot see Agent thinking/execution progress
-  - Related: F-15, F-16, F-17
-
-================================================================================
-📝 IMPLEMENTATION HISTORY
-================================================================================
-
-[2026-03-27] Session 1 - Initializer Agent
-  Status: ✅ COMPLETE
-  Agent: Initializer (Infrastructure Setup)
-
-  Actions Taken:
-    - Created feature_list.json (11 features, F-09 to F-19)
-    - Created claude-progress.txt (this file)
-    - Verified init.sh exists and is functional
-    - Verified .gitignore is comprehensive
-    - Established tech stack iron laws
-    - Prepared for git baseline commit
-
-  Files Created:
-    - feature_list.json
-    - claude-progress.txt
-
-  Files Verified:
-    - init.sh (already exists, functional)
-    - .gitignore (already exists, comprehensive)
-    - backend/requirements.txt (dependencies confirmed)
-    - frontend/index.html (Vue 3 + Tailwind confirmed)
-
-  Next Steps:
-    - Execute git init (if not already initialized)
-    - Execute git add .
-    - Execute git commit -m "chore: initial scaffold and establish agent baselines"
-    - Next agent should start with F-09 (highest priority)
-
-  Notes:
-    - Project already has substantial codebase
-    - Focus is on fixing existing bugs, not building from scratch
-    - All 11 features are currently failing (passes: false)
-    - Priority 10 features (F-09, F-10, F-13, F-18) are critical path
-
-================================================================================
-🎯 NEXT AGENT INSTRUCTIONS
-================================================================================
-
-Welcome, Coding Agent! Your mission:
-
-1. Read this entire file to understand context
-2. Read feature_list.json to see all features
-3. Select the highest priority feature where "passes": false
-   (Start with F-09: Planner api_id type validation)
-4. Run: bash init.sh (to start the environment)
-5. Implement ONLY that one feature
-6. Test thoroughly against the "steps" in feature_list.json
-7. Update feature_list.json: set "passes": true
-8. Update this file with your implementation notes
-9. Git commit with format: "feat: F-XX <description>"
-10. Exit - let the next agent handle the next feature
-
-Remember: ONE FEATURE PER SESSION. Quality over speed.
-
-The single source of truth is feature_list.json.
-If a feature's "passes" is false, it's not done.
-If all steps pass, only then set "passes": true.
-
-Good luck! 🚀
-
-================================================================================
-END OF HANDOFF LOG
-================================================================================
+---
+后续智能体请在此处追加进度记录，格式：
+【日期】智能体角色
+- 完成功能：F-XX
+- 修改文件：列表
+- 测试结果：通过/失败
+- Git 提交：commit message
+---

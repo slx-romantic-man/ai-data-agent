@@ -2,160 +2,161 @@
   "project_features": [
     {
       "id": "F-09",
-      "priority": 10,
+      "priority": 1,
       "category": "bugfix",
-      "description": "Planner 计划结构强校验修复 - 修复 api_id 类型错误，确保 ExecutionPlan 字段类型符合执行器要求",
+      "description": "Planner计划结构强校验修复：修复api_id类型错误，确保为字符串且与API元数据一致，禁止隐式转换",
       "steps": [
-        "构造股票类问题、订单类问题及无权限问题各一条",
-        "观察 Planner 输出的计划结构",
-        "验证 steps[*].api_id 全部为字符串",
-        "验证 steps[*] 必须包含执行器所需字段",
-        "验证不再出现 ExecutionPlan 的类型校验报错",
-        "验证日志中不再出现由 api_id 类型错误触发的 fallback"
+        "准备股票查询、订单查询、权限拒绝三类问题",
+        "逐条触发Planner生成计划",
+        "检查每个steps[*].api_id是否为字符串",
+        "检查step结构是否包含执行所需字段且字段名正确",
+        "验证不再出现ExecutionPlan的Pydantic校验错误",
+        "验证日志中不再出现api_id为int导致的fallback"
       ],
       "passes": false
     },
     {
       "id": "F-10",
-      "priority": 10,
+      "priority": 1,
       "category": "bugfix",
-      "description": "Planner Fallback 计划安全化与可执行化 - 重构 fallback 逻辑，禁止生成未知 API 或伪计划",
+      "description": "Planner Fallback安全化与可执行化：重构fallback策略，禁止生成unknown step，必须基于可信API元数据或安全失败",
       "steps": [
-        "人为制造 Planner 输出不合法场景",
-        "验证 fallback 不会产出 unknown 标识",
-        "验证 fallback 产出的最小计划中 api_id、参数映射、数据存储 key 均明确",
-        "若无法生成最小计划，验证系统终止执行并给出明确失败说明",
-        "验证日志中不再出现 data_context['step_0_unknown']"
+        "人为构造Planner非法输出场景",
+        "观察fallback是否触发",
+        "验证fallback不会生成unknown的api_id或存储key",
+        "若Retrieval提供足够元数据，验证fallback可生成最小合法计划并继续执行",
+        "若元数据不足，验证系统明确终止并输出失败原因",
+        "验证不会再进入伪执行+空分析的无效链路"
       ],
       "passes": false
     },
     {
       "id": "F-11",
-      "priority": 9,
+      "priority": 1,
       "category": "bugfix",
-      "description": "Executor 数据存储键标准化与结果完整性修复 - 统一 data_context 命名规范，确保 Analyzer 能稳定提取数据",
+      "description": "Executor数据存储键标准化与结果完整性修复：统一data_context写入规范，禁止不可溯源key，确保Analyzer可稳定识别",
       "steps": [
-        "执行股票 API 查询",
-        "检查 data_context 的 key 命名是否符合规范，如 step_0_<api_id>",
-        "检查 value 中是否包含原始响应、标准化数据、元信息、错误信息",
-        "执行订单 API 查询并重复校验",
-        "验证 Analyzer 能从上述标准结构中提取出有效数据",
-        "验证日志中不再出现数据已存储但 Analyzer 提取为 0 rows 的异常情况"
+        "触发股票API调用",
+        "检查data_context中的key是否符合step_<index>_<api_id>等命名规范",
+        "检查value是否包含原始响应与标准化结果",
+        "再触发订单API调用并重复检查",
+        "验证Analyzer能正确读取并提取结构化数据",
+        "验证日志中不再出现结果已写入但Analyzer提取为0 rows的异常"
       ],
       "passes": false
     },
     {
       "id": "F-12",
-      "priority": 9,
+      "priority": 1,
       "category": "bugfix",
-      "description": "Analyzer 空数据兜底与用户可理解答复增强 - 当无数据/执行失败/权限拒绝时输出结构化用户可理解结果",
+      "description": "Analyzer空数据兜底与用户可理解答复增强：增强对空数据、权限拒绝、执行失败、计划无效等异常的兜底能力，必须输出用户可理解的正式答复",
       "steps": [
-        "提交一个真实有数据的问题，验证 Analyzer 正常生成结论",
-        "提交一个无数据问题，验证返回'未查询到数据'而非空白回答",
-        "提交一个无权限问题，验证明确提示权限拒绝",
-        "提交一个 Planner 无法形成合法计划的问题，验证明确提示系统无法执行",
-        "检查前端最终回答区始终有用户可见文本"
-      ],
-      "passes": false
-    },
-    {
-      "id": "F-13",
-      "priority": 10,
-      "category": "testing",
-      "description": "API 全量复杂问题覆盖测试集建设 - 针对系统中已有全部 API 建立复杂真实问题测试集",
-      "steps": [
-        "盘点当前系统已接入的全部 API 清单",
-        "为每个 API 设计复杂测试问句",
-        "对每条问句运行完整 Agent 链路",
-        "等待系统返回最终答案文本",
-        "校验答案中包含与问题匹配的关键实体、时间范围、核心指标或结论",
-        "若任何 API 对应问题未得到最终回答，则判定该 API 链路测试失败",
-        "形成测试报告，列明通过/失败原因"
-      ],
-      "passes": false
-    },
-    {
-      "id": "F-14",
-      "priority": 8,
-      "category": "testing",
-      "description": "API 能力清单与测试映射表生成 - 建立 API 元数据到测试问题的映射表",
-      "steps": [
-        "提取现有 API 注册表或元数据源",
-        "为每个 API 建立唯一标识、用途说明、参数能力、权限要求",
-        "为每个 API 绑定复杂问句与期望返回类型",
-        "验证测试框架能按映射自动遍历执行",
-        "验证新增 API 后可增量补充测试样例"
-      ],
-      "passes": false
-    },
-    {
-      "id": "F-15",
-      "priority": 9,
-      "category": "feature",
-      "description": "SSE 流式事件协议标准化 - 统一后端 SSE 事件模型，确保前端实时收到节点流转事件",
-      "steps": [
-        "前端发起一次查询",
-        "抓取 SSE 事件流",
-        "验证至少能收到 status 和 final_answer",
-        "若问题涉及检索、规划、执行，验证可收到对应 thinking/tool_call/tool_result",
-        "若执行失败，验证收到 error 且前端可见",
-        "验证事件顺序符合工作流流转"
-      ],
-      "passes": false
-    },
-    {
-      "id": "F-16",
-      "priority": 9,
-      "category": "feature",
-      "description": "前端思考过程与回答结果双区域流式展示 - 新增思考/过程区和最终回答区",
-      "steps": [
-        "用户输入问题并发送",
-        "验证页面实时出现过程区滚动更新",
-        "验证最终回答区在流结束后展示完整答案",
-        "连续发送两次问题，验证两次输出不会相互污染",
-        "执行失败场景下，验证思考区和回答区均有可见反馈",
-        "刷新页面后重新提问，验证前端仍能正常订阅 SSE"
-      ],
-      "passes": false
-    },
-    {
-      "id": "F-17",
-      "priority": 8,
-      "category": "refactor",
-      "description": "节点级流式埋点补齐 - 为 Intent、Retrieval、Planner、Executor、Analyzer 五个节点补齐统一事件发射接口",
-      "steps": [
-        "分别触发完整链路查询",
-        "验证每个节点均有至少一条 SSE 事件",
-        "验证节点失败时前端可收到对应失败事件",
-        "验证事件内容不泄露敏感信息，不直接暴露完整 Prompt 或密钥"
+        "提交一个有真实数据的问题，验证能得到分析结果",
+        "提交一个无数据问题，验证回答区显示未查询到符合条件的数据",
+        "提交一个无权限问题，验证回答区明确提示权限不足",
+        "提交一个Planner无法形成计划的问题，验证回答区明确提示无法执行原因",
+        "验证任何情况下前端最终回答区都不为空白"
       ],
       "passes": false
     },
     {
       "id": "F-18",
-      "priority": 10,
+      "priority": 1,
       "category": "testing",
-      "description": "端到端最终回答判定机制 - 测试通过标准必须以 Agent 输出最终回答文本且内容非空、与问题语义一致为准",
+      "description": "端到端最终回答判定机制：重新定义测试标准，必须以Agent生成最终回答文本且内容有效为准，不以接口成功或流程结束为准",
       "steps": [
-        "执行现有 E2E 测试集",
-        "验证每条样例必须断言 final_answer 非空",
-        "验证回答文本包含预期关键词",
-        "对于权限拒绝类问题，断言拒绝文本明确",
-        "对于无数据类问题，断言说明文本明确",
-        "若仅有中间过程无最终回答，测试应失败"
+        "执行现有E2E测试集",
+        "调整断言为必须存在final_answer且非空",
+        "对复杂问题校验回答中的关键业务要素",
+        "对权限拒绝问题断言拒绝文本明确",
+        "对无数据问题断言说明文本明确",
+        "若只有中间过程而无最终回答，则测试必须失败"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-13",
+      "priority": 2,
+      "category": "testing",
+      "description": "API全量复杂问题覆盖测试集建设：针对系统当前已接入的全部API建立复杂自然语言问题测试集，每个API至少1-3条真实复杂问题",
+      "steps": [
+        "盘点系统中的全部API",
+        "为每个API设计复杂问句",
+        "逐条运行完整Agent链路",
+        "等待最终回答完成返回",
+        "校验回答与问题语义相匹配",
+        "若某API的问题无法获得最终答案，则该API测试失败",
+        "输出API维度测试报告"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-15",
+      "priority": 2,
+      "category": "feature",
+      "description": "SSE流式事件协议标准化：定义并统一后端SSE事件协议，确保前端可稳定接收节点状态、过程摘要、工具调用、最终回答和错误信息",
+      "steps": [
+        "发起一次普通问题查询",
+        "捕获SSE事件流",
+        "验证至少包含status与final_answer",
+        "若涉及工具调用，验证包含tool_call与tool_result",
+        "若发生失败，验证包含error事件",
+        "验证事件顺序与LangGraph工作流一致"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-16",
+      "priority": 2,
+      "category": "feature",
+      "description": "前端思考过程与回答结果双区域流式展示：升级前端静态页面，增加思考/过程区和最终回答区双区域显示能力",
+      "steps": [
+        "用户输入问题并发送",
+        "验证过程区实时滚动显示状态与过程信息",
+        "验证回答区在结束时显示正式回答",
+        "连续发送两个问题，验证两轮输出互不污染",
+        "构造失败场景，验证过程区与回答区都能显示失败信息",
+        "刷新页面后再次提问，验证SSE订阅仍可正常工作"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-14",
+      "priority": 3,
+      "category": "testing",
+      "description": "API能力清单与测试映射表生成：建立系统API能力清单，生成API元数据→测试问题→权限要求→期望回答类型的映射表",
+      "steps": [
+        "从API注册表或Retrieval元数据源中提取全部API",
+        "为每个API建立唯一标识、用途说明、参数能力、权限要求",
+        "为每个API绑定至少一条复杂测试问题",
+        "验证测试框架可读取映射表并自动执行",
+        "验证新增API后可以方便地增量补充"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-17",
+      "priority": 3,
+      "category": "refactor",
+      "description": "节点级流式埋点补齐：为Intent、Retrieval、Planner、Executor、Analyzer五个节点补齐统一的流式事件发射机制",
+      "steps": [
+        "触发一条完整链路查询",
+        "检查每个节点是否至少输出一条事件",
+        "触发节点失败场景，检查失败事件是否被前端接收",
+        "验证事件内容不泄露敏感系统Prompt、密钥或内部推理细节"
       ],
       "passes": false
     },
     {
       "id": "F-19",
-      "priority": 7,
+      "priority": 3,
       "category": "refactor",
-      "description": "失败分类与可观测性增强 - 建立统一错误码/错误类型，便于测试归因与前端展示",
+      "description": "失败分类与可观测性增强：为Planner校验失败、RBAC拒绝、Executor异常、Analyzer空数据、SSE中断等场景定义统一错误类型、错误码和前端可展示消息模板",
       "steps": [
-        "分别构造计划错误、权限错误、执行错误、空数据错误",
-        "验证日志中可识别错误类别",
-        "验证 SSE error 事件携带错误类型",
-        "验证前端可按错误类型展示友好提示"
+        "分别构造计划错误、权限错误、执行错误、空数据错误、流式错误",
+        "验证日志中有明确错误分类",
+        "验证SSE error事件携带错误类别",
+        "验证前端按不同错误类型展示不同友好提示"
       ],
       "passes": false
     }
