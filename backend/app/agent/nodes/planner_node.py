@@ -144,13 +144,28 @@ def _create_fallback_plan(query: str, retrieved_apis: list) -> list:
         logger.error(f"[PlannerNode] Fallback: Invalid api_id '{api_identifier}', refusing to generate plan")
         return []
 
-    logger.info(f"[PlannerNode] Fallback: Generating minimal plan with API '{api_identifier}'")
+    # 提取第一个可用的endpoint
+    endpoints = first_api.get("endpoints", {})
+    if not endpoints:
+        logger.error(f"[PlannerNode] Fallback: API '{api_identifier}' has no endpoints, cannot generate plan")
+        return []
+
+    first_endpoint_name = list(endpoints.keys())[0]
+    first_endpoint = endpoints[first_endpoint_name]
+
+    logger.info(f"[PlannerNode] Fallback: Generating minimal plan with API '{api_identifier}', endpoint '{first_endpoint_name}'")
+
+    # 构造params，包含endpoint和必要的参数
+    params = {
+        "endpoint": first_endpoint_name,
+        "params": first_endpoint.get("params_mapping", {})
+    }
 
     return [{
         "step_id": 1,
         "tool": "api_fetch",
         "api_id": api_identifier,
-        "params": {},
+        "params": params,
         "description": f"查询 {first_api.get('description', 'data')}",
         "depends_on": []
     }]

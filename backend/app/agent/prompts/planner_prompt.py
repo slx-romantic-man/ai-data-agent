@@ -29,7 +29,7 @@ PLANNER_PROMPT = """你是一个数据查询规划师。根据用户查询和可
    - api_id: API标识符（仅当tool为api_fetch时需要）
    - params: 调用参数（字典格式）
      * 对于 sql_query: 必须包含 "sql" 字段（完整的 SQL SELECT 语句）
-     * 对于 api_fetch: 包含 API 所需的参数
+     * 对于 api_fetch: 必须包含 "endpoint" 字段（从API的"可用端点"列表中选择）和 "params" 字段（包含API调用所需的参数）
      * 对于 python_exec: 必须包含 "code" 字段（Python代码字符串），可选 "context_keys" 字段（需要注入的前置步骤数据键列表）
    - description: 步骤描述
    - depends_on: 依赖的前置步骤ID列表（如果有）
@@ -72,8 +72,11 @@ PLANNER_PROMPT = """你是一个数据查询规划师。根据用户查询和可
             "tool": "api_fetch",
             "api_id": "alpha_vantage_stock",
             "params": {{
-                "symbol": "AAPL",
-                "outputsize": "compact"
+                "endpoint": "获取日线数据",
+                "params": {{
+                    "symbol": "AAPL",
+                    "outputsize": "compact"
+                }}
             }},
             "description": "获取苹果股票最近的交易数据",
             "depends_on": []
@@ -96,7 +99,8 @@ PLANNER_PROMPT = """你是一个数据查询规划师。根据用户查询和可
 11. 保持步骤简洁，避免冗余查询
 12. 【股票查询专用规则】当extracted_filters包含stock_symbol、market、trading_day_count时：
     - 必须生成api_fetch步骤调用股票API
-    - params必须包含symbol参数（使用stock_symbol值）
+    - params必须包含endpoint字段（选择合适的端点，如"获取日线数据"）和params字段（包含symbol等参数）
+    - params.params必须包含symbol参数（使用stock_symbol值）
     - 如果API需要outputsize参数，根据trading_day_count设置：trading_day_count<=100用"compact"，>100用"full"
     - 如果需要计算涨跌幅、趋势等指标，生成python_exec步骤处理股票数据
 
