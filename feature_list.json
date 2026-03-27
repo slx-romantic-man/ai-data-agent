@@ -1,133 +1,163 @@
 {
   "project_features": [
     {
-      "id": "F-01",
-      "priority": 1,
-      "category": "architecture",
-      "description": "移除普通员工调用API需要人工审批的执行门槛，改为基于API权限直接放行或拒绝",
-      "steps": [
-        "使用普通员工账号登录系统",
-        "在管理后台为该员工授予股票API权限",
-        "发起股票查询请求（如：查询苹果美股最近7个交易日股价）",
-        "验证系统不进入审批流程，直接执行API调用",
-        "检查SSE流中无'等待审批'状态",
-        "检查未创建审批记录",
-        "验证最终返回股票数据分析结果"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-02",
-      "priority": 2,
+      "id": "F-09",
+      "priority": 10,
       "category": "bugfix",
-      "description": "增强Intent Node对股票实体与交易日语义的识别能力",
+      "description": "Planner 计划结构强校验修复 - 修复 api_id 类型错误，确保 ExecutionPlan 字段类型符合执行器要求",
       "steps": [
-        "发起查询：'苹果的美股股价最近7个交易日'",
-        "检查Intent Node日志输出",
-        "验证extracted_filters.entities中包含stock_symbol（如AAPL）",
-        "验证extracted_filters.entities中包含market（如US）",
-        "验证extracted_filters.entities中包含trading_day_count（如7）",
-        "确认AgentState顶层结构未变更",
-        "验证新增字段可被SQLite正常持久化"
+        "构造股票类问题、订单类问题及无权限问题各一条",
+        "观察 Planner 输出的计划结构",
+        "验证 steps[*].api_id 全部为字符串",
+        "验证 steps[*] 必须包含执行器所需字段",
+        "验证不再出现 ExecutionPlan 的类型校验报错",
+        "验证日志中不再出现由 api_id 类型错误触发的 fallback"
       ],
-      "passes": true
+      "passes": false
     },
     {
-      "id": "F-03",
-      "priority": 3,
+      "id": "F-10",
+      "priority": 10,
       "category": "bugfix",
-      "description": "修复Retrieval到Planner的API元数据传递缺失问题",
+      "description": "Planner Fallback 计划安全化与可执行化 - 重构 fallback 逻辑，禁止生成未知 API 或伪计划",
       "steps": [
-        "发起股票查询请求",
-        "检查Retrieval Node选中的API列表",
-        "检查Planner Node接收到的API元数据",
-        "验证API描述不为空",
-        "验证API参数定义不为空",
-        "验证Planner日志中显示完整的API信息（名称、用途、endpoint、参数）",
-        "确认Planner能基于API元信息生成有效计划"
+        "人为制造 Planner 输出不合法场景",
+        "验证 fallback 不会产出 unknown 标识",
+        "验证 fallback 产出的最小计划中 api_id、参数映射、数据存储 key 均明确",
+        "若无法生成最小计划，验证系统终止执行并给出明确失败说明",
+        "验证日志中不再出现 data_context['step_0_unknown']"
       ],
-      "passes": true
+      "passes": false
     },
     {
-      "id": "F-04",
-      "priority": 4,
-      "category": "architecture",
-      "description": "建立Planner输出校验和安全失败机制，禁止空计划触发伪执行",
-      "steps": [
-        "构造一个无法生成有效计划的查询场景（如API配置缺失）",
-        "发起查询请求",
-        "验证Planner返回steps为空或失败状态",
-        "确认Executor不执行任何步骤",
-        "检查用户收到明确的失败原因说明",
-        "验证日志中不存在'Planner失败但仍执行步骤'的情况",
-        "确认SSE流正确传递失败信息"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-05",
-      "priority": 5,
-      "category": "feature",
-      "description": "为股票时间序列分析补充专用规划模板和参数映射",
-      "steps": [
-        "发起查询：'去看看苹果的美股股价最近7个交易日的变化趋势，给出原因与后续投资建议'",
-        "验证Planner生成至少1个股票数据获取步骤",
-        "检查计划中API参数包含stock_symbol、trading_day_count等",
-        "如需计算涨跌幅或趋势指标，验证生成python_exec步骤",
-        "确认计划参数可直接被Executor消费",
-        "验证普通员工有权限时可直接执行",
-        "验证普通员工无权限时立即拒绝"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-06",
-      "priority": 6,
+      "id": "F-11",
+      "priority": 9,
       "category": "bugfix",
-      "description": "规范化股票API返回结果，确保Analyzer能提取有效数据行",
+      "description": "Executor 数据存储键标准化与结果完整性修复 - 统一 data_context 命名规范，确保 Analyzer 能稳定提取数据",
       "steps": [
-        "成功调用股票API",
-        "检查data_context中存储的结果结构",
-        "验证结果包含规范化的行式数据（date/open/high/low/close/volume/pct_change）",
-        "验证data_context包含row_count、source、raw_summary等元信息",
-        "检查Analyzer能提取到有效交易日数据",
-        "验证不再出现'Stored result成功但Extracted 0 total rows'",
-        "对API失败场景，验证返回结构化错误对象"
+        "执行股票 API 查询",
+        "检查 data_context 的 key 命名是否符合规范，如 step_0_<api_id>",
+        "检查 value 中是否包含原始响应、标准化数据、元信息、错误信息",
+        "执行订单 API 查询并重复校验",
+        "验证 Analyzer 能从上述标准结构中提取出有效数据",
+        "验证日志中不再出现数据已存储但 Analyzer 提取为 0 rows 的异常情况"
       ],
-      "passes": true
+      "passes": false
     },
     {
-      "id": "F-07",
-      "priority": 7,
-      "category": "feature",
-      "description": "增强Analyzer的金融分析边界控制，输出基于证据的原因分析和建议",
+      "id": "F-12",
+      "priority": 9,
+      "category": "bugfix",
+      "description": "Analyzer 空数据兜底与用户可理解答复增强 - 当无数据/执行失败/权限拒绝时输出结构化用户可理解结果",
       "steps": [
-        "完成股票数据获取和分析流程",
-        "检查最终分析报告结构",
-        "验证报告包含'事实总结'部分（基于实际数据）",
-        "验证报告包含'可能原因'部分（明确标注为推测）",
-        "验证报告包含'风险提示'部分",
-        "验证报告包含'非个性化建议'部分",
-        "确认无新闻或财报数据时，不伪造归因事件",
-        "验证输出结构稳定，可供前端展示"
+        "提交一个真实有数据的问题，验证 Analyzer 正常生成结论",
+        "提交一个无数据问题，验证返回'未查询到数据'而非空白回答",
+        "提交一个无权限问题，验证明确提示权限拒绝",
+        "提交一个 Planner 无法形成合法计划的问题，验证明确提示系统无法执行",
+        "检查前端最终回答区始终有用户可见文本"
       ],
-      "passes": true
+      "passes": false
     },
     {
-      "id": "F-08",
+      "id": "F-13",
+      "priority": 10,
+      "category": "testing",
+      "description": "API 全量复杂问题覆盖测试集建设 - 针对系统中已有全部 API 建立复杂真实问题测试集",
+      "steps": [
+        "盘点当前系统已接入的全部 API 清单",
+        "为每个 API 设计复杂测试问句",
+        "对每条问句运行完整 Agent 链路",
+        "等待系统返回最终答案文本",
+        "校验答案中包含与问题匹配的关键实体、时间范围、核心指标或结论",
+        "若任何 API 对应问题未得到最终回答，则判定该 API 链路测试失败",
+        "形成测试报告，列明通过/失败原因"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-14",
       "priority": 8,
       "category": "testing",
-      "description": "更新端到端测试，覆盖RBAC直通替代审批和股票分析链路修复两大主线",
+      "description": "API 能力清单与测试映射表生成 - 建立 API 元数据到测试问题的映射表",
       "steps": [
-        "运行测试场景1：普通员工已授权API直接执行",
-        "运行测试场景2：普通员工未授权API直接拒绝",
-        "运行测试场景3：股票分析成功链路",
-        "运行测试场景4：Planner无有效计划时安全失败",
-        "验证所有测试场景通过",
-        "检查SSE、权限、执行、分析各阶段日志正确",
-        "确认旧审批逻辑不再阻塞已授权API调用"
+        "提取现有 API 注册表或元数据源",
+        "为每个 API 建立唯一标识、用途说明、参数能力、权限要求",
+        "为每个 API 绑定复杂问句与期望返回类型",
+        "验证测试框架能按映射自动遍历执行",
+        "验证新增 API 后可增量补充测试样例"
       ],
-      "passes": true
+      "passes": false
+    },
+    {
+      "id": "F-15",
+      "priority": 9,
+      "category": "feature",
+      "description": "SSE 流式事件协议标准化 - 统一后端 SSE 事件模型，确保前端实时收到节点流转事件",
+      "steps": [
+        "前端发起一次查询",
+        "抓取 SSE 事件流",
+        "验证至少能收到 status 和 final_answer",
+        "若问题涉及检索、规划、执行，验证可收到对应 thinking/tool_call/tool_result",
+        "若执行失败，验证收到 error 且前端可见",
+        "验证事件顺序符合工作流流转"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-16",
+      "priority": 9,
+      "category": "feature",
+      "description": "前端思考过程与回答结果双区域流式展示 - 新增思考/过程区和最终回答区",
+      "steps": [
+        "用户输入问题并发送",
+        "验证页面实时出现过程区滚动更新",
+        "验证最终回答区在流结束后展示完整答案",
+        "连续发送两次问题，验证两次输出不会相互污染",
+        "执行失败场景下，验证思考区和回答区均有可见反馈",
+        "刷新页面后重新提问，验证前端仍能正常订阅 SSE"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-17",
+      "priority": 8,
+      "category": "refactor",
+      "description": "节点级流式埋点补齐 - 为 Intent、Retrieval、Planner、Executor、Analyzer 五个节点补齐统一事件发射接口",
+      "steps": [
+        "分别触发完整链路查询",
+        "验证每个节点均有至少一条 SSE 事件",
+        "验证节点失败时前端可收到对应失败事件",
+        "验证事件内容不泄露敏感信息，不直接暴露完整 Prompt 或密钥"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-18",
+      "priority": 10,
+      "category": "testing",
+      "description": "端到端最终回答判定机制 - 测试通过标准必须以 Agent 输出最终回答文本且内容非空、与问题语义一致为准",
+      "steps": [
+        "执行现有 E2E 测试集",
+        "验证每条样例必须断言 final_answer 非空",
+        "验证回答文本包含预期关键词",
+        "对于权限拒绝类问题，断言拒绝文本明确",
+        "对于无数据类问题，断言说明文本明确",
+        "若仅有中间过程无最终回答，测试应失败"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F-19",
+      "priority": 7,
+      "category": "refactor",
+      "description": "失败分类与可观测性增强 - 建立统一错误码/错误类型，便于测试归因与前端展示",
+      "steps": [
+        "分别构造计划错误、权限错误、执行错误、空数据错误",
+        "验证日志中可识别错误类别",
+        "验证 SSE error 事件携带错误类型",
+        "验证前端可按错误类型展示友好提示"
+      ],
+      "passes": false
     }
   ]
 }
