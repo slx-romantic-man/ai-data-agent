@@ -46,7 +46,7 @@
         "验证Planner日志中显示完整的API信息（名称、用途、endpoint、参数）",
         "确认Planner能基于API元信息生成有效计划"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-04",
