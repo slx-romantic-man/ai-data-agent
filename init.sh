@@ -67,29 +67,10 @@ if lsof -Pi :8002 -sTCP:LISTEN -t >/dev/null 2>&1 || netstat -an 2>/dev/null | g
 fi
 echo "✅ Port 8002 available"
 
-# Create/activate virtual environment
-echo ""
-echo "📦 Setting up virtual environment..."
-if [ ! -d "venv" ]; then
-    echo "Creating virtual environment..."
-    python -m venv venv
-fi
-
-# Activate virtual environment
-if [ -f "venv/bin/activate" ]; then
-    source venv/bin/activate
-elif [ -f "venv/Scripts/activate" ]; then
-    source venv/Scripts/activate
-else
-    echo "❌ Cannot find virtual environment activation script"
-    exit 1
-fi
-echo "✅ Virtual environment activated"
-
 # Navigate to backend directory
 cd backend
 
-# Check and install Python dependencies only if needed
+# Check and install Python dependencies only if needed (use global Python)
 echo ""
 echo "📦 Checking backend dependencies..."
 MISSING_DEPS=0
@@ -99,7 +80,7 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ $MISSING_DEPS -eq 1 ]; then
-    echo "⚠️  Missing dependencies detected. Installing..."
+    echo "⚠️  Missing dependencies detected. Installing to global Python..."
     pip install -r requirements.txt --quiet
     if [ $? -ne 0 ]; then
         echo "❌ Failed to install dependencies"
