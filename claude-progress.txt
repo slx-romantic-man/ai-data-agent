@@ -205,3 +205,29 @@ Intent → Retrieval → Planner → Executor → Analyzer
 - 测试结果：通过/失败
 - Git 提交：commit message
 ---
+
+【2026-03-27】Coding Agent - Session 1
+- 任务：尝试启动环境并认领第一个功能
+- 状态：失败 - 基础设施破损
+- 问题描述：
+  1. 应用启动失败，缺少关键Python依赖：qdrant-client, cryptography, sentence-transformers
+  2. 尝试安装依赖时遇到pip哈希校验错误（Expected sha256 vs Got sha256不匹配）
+  3. requirements.txt本身不包含哈希约束，但pip持续报告哈希不匹配
+  4. 尝试的解决方案：
+     - 安装qdrant-client: 成功
+     - 安装cryptography: 成功
+     - 安装sentence-transformers: 失败（哈希校验）
+     - 使用--no-deps安装: 失败（哈希校验）
+     - 使用官方PyPI源: 失败（哈希校验）
+     - 使用--no-cache-dir: 失败（哈希校验）
+  5. 根本原因未明：可能是pip配置、镜像源问题或环境污染
+- 修改文件：
+  - backend/requirements.txt (添加了qdrant-client, cryptography, sentence-transformers)
+- 下一步建议：
+  1. 检查系统级pip配置文件（可能在C:\ProgramData\pip\pip.ini）
+  2. 尝试完全删除venv并重建
+  3. 考虑使用conda环境替代venv
+  4. 或者手动下载wheel文件并本地安装
+- Git提交：未提交（应用无法启动，无法进入功能开发阶段）
+- 功能进度：未开始（F-09及后续功能均未触及）
+---
