@@ -321,3 +321,41 @@ Intent → Retrieval → Planner → Executor → Analyzer
 - Git提交：待提交
 - 功能进度：F-11完成，标记为passes=true
 ---
+
+【2026-03-27】Coding Agent - Session 5
+- 任务：修复Planner生成计划缺少endpoint参数的根本问题
+- 状态：成功
+- 问题描述：
+  1. 用户反馈所有查询都返回"未能获取到有效数据进行分析"
+  2. 根本原因：Planner生成的api_fetch计划缺少endpoint参数
+  3. api_fetch_tool要求必须提供url或(api_id + endpoint)
+  4. LLM生成的计划只有params字段，没有endpoint字段
+  5. 导致Executor调用api_fetch_tool时被拒绝
+- 功能实现：
+  1. 修改planner_prompt.py第30-33行，明确要求api_fetch必须包含endpoint和params字段
+  2. 更新股票查询示例（第67-83行），展示正确的嵌套结构：
+     ```
+     "params": {
+         "endpoint": "获取日线数据",
+         "params": {"symbol": "AAPL", ...}
+     }
+     ```
+  3. 更新规划原则第12条，明确说明股票查询必须包含endpoint字段
+  4. 验证fallback计划生成已正确实现（F-10中已修复）
+- 修改文件：
+  - backend/app/agent/prompts/planner_prompt.py (3处修改)
+  - test_planner_fix.py (新增验证测试)
+  - test_f12_scenarios.py (修复graph.ainvoke调用方式)
+- 测试结果：
+  - Fallback计划生成测试：通过
+  - 计划结构包含endpoint字段：通过
+  - 嵌套params结构正确：通过
+  - LLM prompt更新验证：通过
+- 验证要点：
+  - ✓ Prompt明确指示LLM生成endpoint参数
+  - ✓ 示例代码展示正确的嵌套结构
+  - ✓ Fallback函数生成包含endpoint的计划
+  - ✓ 修复了"缺少必要参数：需要提供 url 或 (api_id + endpoint)"错误
+- Git提交：已提交 (768ae5f)
+- 功能进度：根本问题已修复，F-12测试需要等待LLM完整链路验证
+---
