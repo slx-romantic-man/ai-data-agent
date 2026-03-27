@@ -89,15 +89,26 @@ echo "✅ Virtual environment activated"
 # Navigate to backend directory
 cd backend
 
-# Install Python dependencies
+# Check and install Python dependencies only if needed
 echo ""
-echo "📦 Installing backend dependencies..."
-pip install -r requirements.txt --quiet
+echo "📦 Checking backend dependencies..."
+MISSING_DEPS=0
+python -c "import fastapi, uvicorn, langchain, langgraph, sqlalchemy, openai, qdrant_client, sentence_transformers" 2>/dev/null
 if [ $? -ne 0 ]; then
-    echo "❌ Failed to install dependencies"
-    exit 1
+    MISSING_DEPS=1
 fi
-echo "✅ Dependencies installed"
+
+if [ $MISSING_DEPS -eq 1 ]; then
+    echo "⚠️  Missing dependencies detected. Installing..."
+    pip install -r requirements.txt --quiet
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to install dependencies"
+        exit 1
+    fi
+    echo "✅ Dependencies installed"
+else
+    echo "✅ All dependencies already installed"
+fi
 
 # Start backend server
 echo ""
