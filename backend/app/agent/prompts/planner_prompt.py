@@ -19,6 +19,7 @@ PLANNER_PROMPT = """你是一个数据查询规划师。根据用户查询和可
 - 如果"可用的API列表"显示"（无可用API）"，则必须使用sql_query工具查询数据库表
 - 禁止虚构不存在的API（如order_statistics等），只能使用上面列出的真实API
 - 禁止使用api_fetch工具调用不存在的API
+- 【强制】api_id字段必须是字符串类型，使用"可用的API列表"中显示的API ID（如"alpha_vantage_stock"），禁止使用数字
 
 请生成一个JSON格式的执行计划，包含以下字段：
 
@@ -124,11 +125,15 @@ def get_planner_prompt(
     apis_str = ""
     if apis:
         for idx, api in enumerate(apis, 1):
-            api_id = api.get('api_id') or api.get('id', 'unknown')
+            # 使用 config_id (字符串) 作为 API 标识符
+            config_id = api.get('config_id')
+            if not config_id:
+                # 如果没有 config_id，使用 api_id 转为字符串
+                config_id = str(api.get('api_id') or api.get('id', 'unknown'))
             name = api.get('name', 'N/A')
             desc = api.get('description', 'N/A')
 
-            apis_str += f"{idx}. API ID: {api_id}\n"
+            apis_str += f"{idx}. API ID: {config_id}\n"
             apis_str += f"   名称: {name}\n"
             apis_str += f"   描述: {desc}\n"
 

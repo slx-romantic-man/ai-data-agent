@@ -100,6 +100,12 @@ def _parse_and_validate_plan(response: str) -> list:
 
         plan_dict = json.loads(json_match.group())
 
+        # 强制转换 api_id 为字符串（修复类型错误）
+        if "steps" in plan_dict:
+            for step in plan_dict["steps"]:
+                if "api_id" in step and step["api_id"] is not None:
+                    step["api_id"] = str(step["api_id"])
+
         # Pydantic 验证
         execution_plan = ExecutionPlan(**plan_dict)
 
@@ -119,10 +125,13 @@ def _create_fallback_plan(query: str, retrieved_apis: list) -> list:
     # 使用第一个检索到的API创建简单计划
     first_api = retrieved_apis[0]
 
+    # 使用 config_id (字符串) 而非 api_id (整数)
+    api_identifier = first_api.get("config_id") or str(first_api.get("api_id", "unknown"))
+
     return [{
         "step_id": 1,
         "tool": "api_fetch",
-        "api_id": first_api.get("api_id", "unknown"),
+        "api_id": api_identifier,
         "params": {},
         "description": f"查询 {first_api.get('description', 'data')}",
         "depends_on": []

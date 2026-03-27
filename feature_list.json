@@ -13,7 +13,7 @@
         "验证不再出现ExecutionPlan的Pydantic校验错误",
         "验证日志中不再出现api_id为int导致的fallback"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-10",
