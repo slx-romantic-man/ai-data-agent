@@ -88,7 +88,7 @@
         "若某API的问题无法获得最终答案，则该API测试失败",
         "输出API维度测试报告"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-15",
