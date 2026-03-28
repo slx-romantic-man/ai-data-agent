@@ -13,12 +13,13 @@ from app.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-async def retrieval_node(state: AgentState) -> Dict[str, Any]:
+async def retrieval_node(state: AgentState, permission=None) -> Dict[str, Any]:
     """
     API 检索节点：根据用户查询召回相关 API Schema 和数据库表
 
     Args:
         state: 当前 AgentState
+        permission: 用户权限上下文
 
     Returns:
         包含 retrieved_apis 和 retrieved_tables 的字典
@@ -30,13 +31,17 @@ async def retrieval_node(state: AgentState) -> Dict[str, Any]:
     logger.info(f"[Retrieval Node] Processing query: {query}")
     logger.info(f"[Retrieval Node] Intent type: {intent_type}")
 
+    # 获取用户ID
+    user_id = permission.user_id if permission else "1"
+    logger.info(f"[Retrieval Node] Using user_id: {user_id}")
+
     # 获取检索服务实例
     retrieval_service = get_api_retrieval_service()
 
     # 执行两阶段检索（向量召回 + LLM 精排）
     retrieved_apis = await retrieval_service.get_apis_for_query(
         query=query,
-        user_id="1",
+        user_id=user_id,
         top_k=10
     )
 

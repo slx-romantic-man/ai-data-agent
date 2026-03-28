@@ -67,7 +67,7 @@ async def create_graph(permission: PermissionContext):
     async def retrieval_wrapper(state: AgentState) -> AgentState:
         """Retrieval 节点包装器，缓存检索结果"""
         global _retrieved_apis_cache, _retrieved_tables_cache
-        result = await _retrieval_node(state)
+        result = await _retrieval_node(state, permission)
         _retrieved_apis_cache = result.get("retrieved_apis", [])
         _retrieved_tables_cache = result.get("retrieved_tables", [])
         return state

@@ -81,3 +81,4 @@ backend/sessions.json
 # OS
 Thumbs.db
 .DS_Store
+backend/data/qdrant/
