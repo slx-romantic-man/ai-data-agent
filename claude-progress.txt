@@ -359,3 +359,35 @@ Intent → Retrieval → Planner → Executor → Analyzer
 - Git提交：已提交 (768ae5f)
 - 功能进度：根本问题已修复，F-12测试需要等待LLM完整链路验证
 ---
+
+【2026-03-27】Coding Agent - Session 6
+- 任务：移除Planner Prompt中的硬编码股票规则，使系统通用化
+- 状态：成功
+- 问题描述：
+  1. 用户反馈："不可以在系统提示词中专门针对股票话题进行加固，这属于硬编码"
+  2. planner_prompt.py中存在针对股票的特殊规则（规则12）
+  3. 示例代码标题为"股票查询示例（当extracted_filters包含stock_symbol...）"
+  4. 这种硬编码方式无法扩展到其他API类型
+- 功能实现：
+  1. 删除规则12中的股票特定约束（stock_symbol、trading_day_count等）
+  2. 将"股票查询示例"改为通用的"API调用示例"
+  3. 保持endpoint参数要求和嵌套结构示例，但不限定于股票场景
+  4. 使prompt适用于所有类型的API，不针对特定领域
+- 修改文件：
+  - backend/app/agent/prompts/planner_prompt.py (删除规则12，修改示例标题)
+  - test_planner_prompt_verification.py (新增5项验证测试)
+  - test_stock_query.py (新增端到端测试，因LLM连接问题未完成)
+- 测试结果：
+  - Test 1: Prompt要求endpoint字段 - PASS
+  - Test 2: 示例展示嵌套结构 - PASS
+  - Test 3: 无硬编码股票规则 - PASS
+  - Test 4: 示例是通用的 - PASS
+  - Test 5: get_planner_prompt函数正常工作 - PASS
+- 验证要点：
+  - ✓ 移除了所有股票特定的硬编码规则
+  - ✓ 示例改为通用API调用示例
+  - ✓ 保持了endpoint参数要求的通用性
+  - ✓ 系统现在可扩展到任意类型的API
+- Git提交：已提交 (a277415)
+- 功能进度：Prompt通用化完成，端到端测试因LLM连接问题待验证
+---

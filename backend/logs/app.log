@@ -2093,3 +2093,720 @@ TABLE credit_lo
 2026-03-27 21:32:48 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
 2026-03-27 21:32:51 - ai_data_agent - INFO - Anthropic Response received
 2026-03-27 21:32:51 - ai_data_agent - INFO - Anthropic Content Length: 20
+2026-03-27 21:40:10 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-27 21:40:10 - ai_data_agent - INFO - [IntentNode] Processing query: 查询IBM股票最近的数据
+2026-03-27 21:40:12 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-27 21:40:30 - ai_data_agent - INFO - Anthropic Response received
+2026-03-27 21:40:30 - ai_data_agent - INFO - Anthropic Content Length: 341
+2026-03-27 21:40:30 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"stock_symbol": "IBM", "market": "US", "trading_day_count": 7, "api_hint": "stock_price"}, "metrics": ["股价", "涨跌幅", "成交量"], "dimensions": ["日期"], "confidence": 0.95, "missing_info": null, "clarification_question": null}
+2026-03-27 21:40:30 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"stock_symbol": "IBM", "market": "US", "trading_day_count": 7, "api_hint": "stock_price"}, "metrics": ["股价", "涨跌幅", "成交量"], "dimensions": ["日期"], "confidence": 0.95}
+2026-03-27 21:40:30 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询IBM股票最近的数据
+2026-03-27 21:40:30 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-27 21:40:43 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-27 21:40:56 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-27 21:40:57 - ai_data_agent - INFO - Created Qdrant collection: api_embeddings
+2026-03-27 21:40:57 - ai_data_agent - INFO - Retrieved 0 candidates for user 1
+2026-03-27 21:40:57 - ai_data_agent - INFO - [Retrieval Node] Retrieved 0 APIs
+2026-03-27 21:40:57 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-27 21:40:57 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询IBM股票最近的数据
+2026-03-27 21:40:57 - ai_data_agent - INFO - [PlannerNode] Available APIs: 0, Tables: 12
+2026-03-27 21:40:57 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：查询IBM股票最近的数据
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "stock_symbol": "IBM",
+    "market": "US",
+    "trading_day_count": 7,
+    "api_hint": "stock_price"
+  },
+  "metrics": [
+    "股价",
+    "涨跌幅",
+    "成交量"
+  ],
+  "dimensions": [
+    "日期"
+  ],
+  "confidence": 0.95
+}
+
+可用的API列表：
+（无可用API）
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_id: string
+  - input_tokens: integer
+  - output_tokens: integer
+  - total_tokens: integer
+  - credits_deducted: integer
+  - balance_afte
+2026-03-27 21:40:57 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-27 21:42:43 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-27 21:42:53 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-27 21:42:53 - ai_data_agent - INFO - Created Qdrant collection: api_embeddings
+2026-03-27 21:42:53 - ai_data_agent - DEBUG - Upserted embedding for API 4
+2026-03-27 21:42:53 - ai_data_agent - INFO - Built index for API 4: Alpha Vantage 股票查询
+2026-03-27 21:42:53 - ai_data_agent - DEBUG - Upserted embedding for API 3
+2026-03-27 21:42:53 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
+2026-03-27 21:42:53 - ai_data_agent - DEBUG - Upserted embedding for API 1
+2026-03-27 21:42:53 - ai_data_agent - INFO - Built index for API 1: Weather API
+2026-03-27 21:42:53 - ai_data_agent - DEBUG - Upserted embedding for API 2
+2026-03-27 21:42:53 - ai_data_agent - INFO - Built index for API 2: Weather API V2
+2026-03-27 21:42:53 - ai_data_agent - DEBUG - Upserted embedding for API 6
+2026-03-27 21:42:53 - ai_data_agent - INFO - Built index for API 6: 畅捷通IP定位服务
+2026-03-27 21:44:07 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-27 21:44:16 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-27 21:44:17 - ai_data_agent - INFO - Created Qdrant collection: api_embeddings
+2026-03-27 21:44:17 - ai_data_agent - DEBUG - Upserted embedding for API 4
+2026-03-27 21:44:17 - ai_data_agent - INFO - Built index for API 4: Alpha Vantage 股票查询
+2026-03-27 21:44:17 - ai_data_agent - DEBUG - Upserted embedding for API 3
+2026-03-27 21:44:17 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
+2026-03-27 21:44:17 - ai_data_agent - DEBUG - Upserted embedding for API 1
+2026-03-27 21:44:17 - ai_data_agent - INFO - Built index for API 1: Weather API
+2026-03-27 21:44:17 - ai_data_agent - DEBUG - Upserted embedding for API 2
+2026-03-27 21:44:17 - ai_data_agent - INFO - Built index for API 2: Weather API V2
+2026-03-27 21:44:17 - ai_data_agent - DEBUG - Upserted embedding for API 6
+2026-03-27 21:44:17 - ai_data_agent - INFO - Built index for API 6: 畅捷通IP定位服务
+2026-03-27 21:44:17 - ai_data_agent - INFO - Retrieved 5 candidates for user 1
+2026-03-27 21:44:18 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-27 21:44:26 - ai_data_agent - INFO - Anthropic Response received
+2026-03-27 21:44:26 - ai_data_agent - INFO - Anthropic Content Length: 182
+2026-03-27 21:44:26 - ai_data_agent - INFO - LLM raw response: {
+    "selected_apis": [
+        {
+            "api_id": 4,
+            "reason": "Alpha Vantage 股票查询是专门用于查询股票信息的API，与用户查询IBM股票的需求直接相关",
+            "call_order": 1
+        }
+    ]
+}
+2026-03-27 21:44:26 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-27 21:44:26 - ai_data_agent - INFO - Enriched 1 APIs with full metadata
+2026-03-28 15:24:41 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-28 15:24:41 - ai_data_agent - INFO - Environment: development
+2026-03-28 15:24:41 - ai_data_agent - INFO - Debug mode: True
+2026-03-28 15:24:41 - ai_data_agent - INFO - Initializing database connection...
+2026-03-28 15:24:41 - ai_data_agent - INFO - Database connection established
+2026-03-28 15:24:41 - ai_data_agent - INFO - Initializing tool router...
+2026-03-28 15:24:41 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-28 15:24:41 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-28 15:24:41 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-28 15:24:41 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-28 15:24:41 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-28 15:24:41 - ai_data_agent - INFO - Building API vector index...
+2026-03-28 15:25:07 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-28 15:25:22 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-28 15:25:23 - ai_data_agent - INFO - Created Qdrant collection: api_embeddings
+2026-03-28 15:25:23 - ai_data_agent - DEBUG - Upserted embedding for API 4
+2026-03-28 15:25:23 - ai_data_agent - INFO - Built index for API 4: Alpha Vantage 股票查询
+2026-03-28 15:25:24 - ai_data_agent - DEBUG - Upserted embedding for API 3
+2026-03-28 15:25:24 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
+2026-03-28 15:25:24 - ai_data_agent - DEBUG - Upserted embedding for API 1
+2026-03-28 15:25:24 - ai_data_agent - INFO - Built index for API 1: Weather API
+2026-03-28 15:25:24 - ai_data_agent - DEBUG - Upserted embedding for API 2
+2026-03-28 15:25:24 - ai_data_agent - INFO - Built index for API 2: Weather API V2
+2026-03-28 15:25:24 - ai_data_agent - DEBUG - Upserted embedding for API 6
+2026-03-28 15:25:24 - ai_data_agent - INFO - Built index for API 6: 畅捷通IP定位服务
+2026-03-28 15:25:24 - ai_data_agent - INFO - API vector index built: 5 APIs indexed
+2026-03-28 15:25:24 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-28 15:26:54 - ai_data_agent - INFO - Request: POST http://localhost:8000/api/v1/agent/query
+2026-03-28 15:26:54 - ai_data_agent - INFO - Response: POST http://localhost:8000/api/v1/agent/query - Status: 404
+2026-03-28 15:27:31 - ai_data_agent - INFO - Request: GET http://localhost:8000/docs
+2026-03-28 15:27:31 - ai_data_agent - INFO - Response: GET http://localhost:8000/docs - Status: 200
+2026-03-28 15:27:54 - ai_data_agent - INFO - Request: GET http://localhost:8000/openapi.json
+2026-03-28 15:27:54 - ai_data_agent - INFO - Response: GET http://localhost:8000/openapi.json - Status: 200
+2026-03-28 15:29:06 - ai_data_agent - INFO - Request: GET http://localhost:8000/openapi.json
+2026-03-28 15:29:06 - ai_data_agent - INFO - Response: GET http://localhost:8000/openapi.json - Status: 200
+2026-03-28 15:29:26 - ai_data_agent - INFO - Request: POST http://localhost:8000/api/v1/chat
+2026-03-28 15:29:26 - ai_data_agent - INFO - Response: POST http://localhost:8000/api/v1/chat - Status: 400
+2026-03-28 15:30:05 - ai_data_agent - INFO - Request: POST http://localhost:8000/api/v1/chat
+2026-03-28 15:30:05 - ai_data_agent - INFO - Response: POST http://localhost:8000/api/v1/chat - Status: 400
+2026-03-28 15:31:21 - ai_data_agent - INFO - Request: POST http://localhost:8000/api/v1/chat
+2026-03-28 15:31:21 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-28 15:31:21 - ai_data_agent - INFO - [IntentNode] Processing query: 查询苹果公司AAPL股票最近的价格数据
+2026-03-28 15:31:24 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:31:37 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:31:37 - ai_data_agent - INFO - Anthropic Content Length: 355
+2026-03-28 15:31:37 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"stock_symbol": "AAPL", "market": "US", "trading_day_count": 7, "api_hint": "stock_price"}, "metrics": ["股价", "开盘价", "收盘价", "涨跌幅", "成交量"], "dimensions": ["日期"], "confidence": 0.9, "missing_info": null, "clarification_question": null}
+2026-03-28 15:31:37 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"stock_symbol": "AAPL", "market": "US", "trading_day_count": 7, "api_hint": "stock_price"}, "metrics": ["股价", "开盘价", "收盘价", "涨跌幅", "成交量"], "dimensions": ["日期"], "confidence": 0.9}
+2026-03-28 15:31:38 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询苹果公司AAPL股票最近的价格数据
+2026-03-28 15:31:38 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-28 15:31:38 - ai_data_agent - INFO - Retrieved 5 candidates for user 1
+2026-03-28 15:31:39 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:31:49 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:31:49 - ai_data_agent - INFO - Anthropic Content Length: 210
+2026-03-28 15:31:49 - ai_data_agent - INFO - LLM raw response: ```json
+{
+    "selected_apis": [
+        {
+            "api_id": 4,
+            "reason": "Alpha Vantage 股票查询专门用于查询美股股票的实时价格、历史数据和技术指标，完全符合用户查询苹果公司AAPL股票价格的需求",
+            "call_order": 1
+        }
+    ]
+}
+```
+2026-03-28 15:31:49 - ai_data_agent - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2026-03-28 15:31:49 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-28 15:31:49 - ai_data_agent - INFO - Enriched 1 APIs with full metadata
+2026-03-28 15:31:49 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-28 15:31:49 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-28 15:31:49 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询苹果公司AAPL股票最近的价格数据
+2026-03-28 15:31:49 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-28 15:31:49 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：查询苹果公司AAPL股票最近的价格数据
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "stock_symbol": "AAPL",
+    "market": "US",
+    "trading_day_count": 7,
+    "api_hint": "stock_price"
+  },
+  "metrics": [
+    "股价",
+    "开盘价",
+    "收盘价",
+    "涨跌幅",
+    "成交量"
+  ],
+  "dimensions": [
+    "日期"
+  ],
+  "confidence": 0.9
+}
+
+可用的API列表：
+1. API ID: alpha_vantage_stock
+   名称: Alpha Vantage 股票查询
+   描述: 查询美股股票的实时价格、历史数据、技术指标等信息
+   可用端点:
+     - 获取日线数据:  (路径: /query)
+       参数: {"function": "function", "symbol": "symbol", "outputsize": "outputsize", "datatype": "datatype", "apikey": "apikey"}
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_l
+2026-03-28 15:31:50 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:32:05 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:32:05 - ai_data_agent - INFO - Anthropic Content Length: 693
+2026-03-28 15:32:05 - ai_data_agent - INFO - [PlannerNode] LLM Response: {
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "alpha_vantage_stock",
+            "params": {
+                "endpoint": "获取日线数据",
+                "params": {
+                    "function": "TIME_SERIES_DAILY",
+                    "symbol": "AAPL",
+                    "outputsize": "compact",
+                    "datatype": "json"
+                }
+            },
+            "description": "获取苹果公司(AAPL)股票的日线数据",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户查询苹果公司AAPL股票最近的价格数据，包括股价、开盘价、收盘价、涨跌幅、成交量等信息。根据可用的API列表，Alpha Vantage股票查询API提供了获取日线数据的端点，可以满足用户的需求。使用compact模式获取最近100个交易日的数据点，然后可以从返回数据中提取最近7天的数据。"
+}
+2026-03-28 15:32:05 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-28 15:32:05 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取苹果公司(AAPL)股票的日线数据
+2026-03-28 15:32:08 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-28 15:32:08 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-28 15:32:08 - ai_data_agent - INFO - [AnalyzerNode] Extracted 100 total rows from data_context
+2026-03-28 15:32:10 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:33:45 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:33:45 - ai_data_agent - INFO - Anthropic Content Length: 2531
+2026-03-28 15:33:45 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-28 15:33:46 - ai_data_agent - INFO - Response: POST http://localhost:8000/api/v1/chat - Status: 200
+2026-03-28 15:34:00 - ai_data_agent - INFO - Request: POST http://localhost:8000/api/v1/chat
+2026-03-28 15:34:00 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-28 15:34:01 - ai_data_agent - INFO - [IntentNode] Processing query: 查询苹果公司AAPL股票最近的价格数据
+2026-03-28 15:34:03 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:34:22 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:34:22 - ai_data_agent - INFO - Anthropic Content Length: 380
+2026-03-28 15:34:22 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"stock_symbol": "AAPL", "company_name": "苹果公司", "market": "US", "trading_day_count": 7, "api_hint": "stock_price"}, "metrics": ["股价", "收盘价", "涨跌幅", "成交量"], "dimensions": ["日期"], "confidence": 0.9, "missing_info": null, "clarification_question": null}
+2026-03-28 15:34:22 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"stock_symbol": "AAPL", "company_name": "苹果公司", "market": "US", "trading_day_count": 7, "api_hint": "stock_price"}, "metrics": ["股价", "收盘价", "涨跌幅", "成交量"], "dimensions": ["日期"], "confidence": 0.9}
+2026-03-28 15:34:22 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询苹果公司AAPL股票最近的价格数据
+2026-03-28 15:34:22 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-28 15:34:22 - ai_data_agent - INFO - Retrieved 5 candidates for user 1
+2026-03-28 15:34:23 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:34:32 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:34:32 - ai_data_agent - INFO - Anthropic Content Length: 214
+2026-03-28 15:34:32 - ai_data_agent - INFO - LLM raw response: {
+    "selected_apis": [
+        {
+            "api_id": 4,
+            "reason": "用户需要查询苹果公司AAPL股票的价格数据，API ID 4 (Alpha Vantage 股票查询)专门提供美股股票的实时价格、历史数据查询服务，与用户需求完全匹配",
+            "call_order": 1
+        }
+    ]
+}
+2026-03-28 15:34:32 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-28 15:34:32 - ai_data_agent - INFO - Enriched 1 APIs with full metadata
+2026-03-28 15:34:32 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-28 15:34:32 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-28 15:34:32 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询苹果公司AAPL股票最近的价格数据
+2026-03-28 15:34:32 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-28 15:34:32 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：查询苹果公司AAPL股票最近的价格数据
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "stock_symbol": "AAPL",
+    "company_name": "苹果公司",
+    "market": "US",
+    "trading_day_count": 7,
+    "api_hint": "stock_price"
+  },
+  "metrics": [
+    "股价",
+    "收盘价",
+    "涨跌幅",
+    "成交量"
+  ],
+  "dimensions": [
+    "日期"
+  ],
+  "confidence": 0.9
+}
+
+可用的API列表：
+1. API ID: alpha_vantage_stock
+   名称: Alpha Vantage 股票查询
+   描述: 查询美股股票的实时价格、历史数据、技术指标等信息
+   可用端点:
+     - 获取日线数据:  (路径: /query)
+       参数: {"function": "function", "symbol": "symbol", "outputsize": "outputsize", "datatype": "datatype", "apikey": "apikey"}
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描
+2026-03-28 15:34:34 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:34:47 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:34:47 - ai_data_agent - INFO - Anthropic Content Length: 760
+2026-03-28 15:34:47 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "alpha_vantage_stock",
+            "params": {
+                "endpoint": "获取日线数据",
+                "params": {
+                    "function": "TIME_SERIES_DAILY",
+                    "symbol": "AAPL",
+                    "outputsize": "compact",
+                    "datatype": "json"
+                }
+            },
+            "description": "获取苹果股票(AAPL)最近的日线交易数据，包括股价、收盘价、成交量等信息",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户需要查询苹果公司AAPL股票最近的价格数据（包含股价、收盘价、涨跌幅、成交量等指标），可用的API列表中存在alpha_vantage_stock股票查询API，其获取日线数据端点可提供股票的历史日线数据。使用compact模式可获取最近100个交易日的数据，足以覆盖用户需要的最近7天数据。通过调用该API即可获取所需信息，无需额外数据库查询或Python计算。"
+}
+```
+2026-03-28 15:34:47 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-28 15:34:47 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取苹果股票(AAPL)最近的日线交易数据，包括股价、收盘价、成交量等信息
+2026-03-28 15:34:49 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-28 15:34:49 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-28 15:34:49 - ai_data_agent - INFO - [AnalyzerNode] Extracted 100 total rows from data_context
+2026-03-28 15:34:50 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:35:41 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:35:41 - ai_data_agent - INFO - Anthropic Content Length: 2458
+2026-03-28 15:35:41 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-28 15:35:42 - ai_data_agent - INFO - Response: POST http://localhost:8000/api/v1/chat - Status: 200
+2026-03-28 15:36:27 - ai_data_agent - INFO - Request: POST http://localhost:8000/api/v1/chat
+2026-03-28 15:36:27 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-28 15:36:27 - ai_data_agent - INFO - [IntentNode] Processing query: 查询IP地址8.8.8.8的地理位置信息
+2026-03-28 15:36:29 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:36:39 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:36:39 - ai_data_agent - INFO - Anthropic Content Length: 263
+2026-03-28 15:36:39 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"ip_address": "8.8.8.8", "api_hint": "geo"}, "metrics": ["地理位置"], "dimensions": [], "confidence": 0.95, "missing_info": null, "clarification_question": null}
+2026-03-28 15:36:39 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"ip_address": "8.8.8.8", "api_hint": "geo"}, "metrics": ["地理位置"], "dimensions": [], "confidence": 0.95}
+2026-03-28 15:36:39 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询IP地址8.8.8.8的地理位置信息
+2026-03-28 15:36:39 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-28 15:36:39 - ai_data_agent - INFO - Retrieved 5 candidates for user 1
+2026-03-28 15:36:40 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:36:49 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:36:49 - ai_data_agent - INFO - Anthropic Content Length: 208
+2026-03-28 15:36:49 - ai_data_agent - INFO - LLM raw response: ```json
+{
+    "selected_apis": [
+        {
+            "api_id": 6,
+            "reason": "畅捷通IP定位服务专门用于查询IP地址的地理位置信息，包括国家、省份、城市等，与用户查询IP 8.8.8.8地理位置的需求完全匹配",
+            "call_order": 1
+        }
+    ]
+}
+```
+2026-03-28 15:36:49 - ai_data_agent - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2026-03-28 15:36:49 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-28 15:36:49 - ai_data_agent - INFO - Enriched 1 APIs with full metadata
+2026-03-28 15:36:49 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-28 15:36:49 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-28 15:36:49 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询IP地址8.8.8.8的地理位置信息
+2026-03-28 15:36:49 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-28 15:36:49 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：查询IP地址8.8.8.8的地理位置信息
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "ip_address": "8.8.8.8",
+    "api_hint": "geo"
+  },
+  "metrics": [
+    "地理位置"
+  ],
+  "dimensions": [],
+  "confidence": 0.95
+}
+
+可用的API列表：
+1. API ID: chanjet_ip_loc
+   名称: 畅捷通IP定位服务
+   描述: 查询IP地址的地理位置信息，包括国家、省份、城市等
+   可用端点:
+     - get_ip_location: 根据输入的 IP 地址获取该 IP 的地理位置信息 (路径: /api/iplocaltion)
+       参数: {"ip": "ip"}
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_id: string
+  - input_tokens: integer
+  -
+2026-03-28 15:36:51 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:37:05 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:37:05 - ai_data_agent - INFO - Anthropic Content Length: 650
+2026-03-28 15:37:05 - ai_data_agent - INFO - [PlannerNode] LLM Response: {
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "chanjet_ip_loc",
+            "params": {
+                "endpoint": "get_ip_location",
+                "params": {
+                    "ip": "8.8.8.8"
+                }
+            },
+            "description": "调用畅捷通IP定位服务查询IP地址8.8.8.8的地理位置信息，包括国家、省份、城市等",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户需要查询IP地址8.8.8.8的地理位置信息，根据提取的过滤条件显示intent_type为api_query且api_hint为geo。可用的API列表中存在chanjet_ip_loc（畅捷通IP定位服务），其get_ip_location端点专门用于根据输入的IP地址获取地理位置信息，包括国家、省份、城市等。该API只需要一个ip参数即可完成查询，因此直接调用该API即可获取所需结果，无需额外的数据库查询或数据计算。"
+}
+2026-03-28 15:37:05 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-28 15:37:05 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 调用畅捷通IP定位服务查询IP地址8.8.8.8的地理位置信息，包括国家、省份、城市等
+2026-03-28 15:37:10 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_chanjet_ip_loc']
+2026-03-28 15:37:10 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-28 15:37:10 - ai_data_agent - INFO - [AnalyzerNode] Extracted 1 total rows from data_context
+2026-03-28 15:37:11 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-28 15:37:42 - ai_data_agent - INFO - Anthropic Response received
+2026-03-28 15:37:42 - ai_data_agent - INFO - Anthropic Content Length: 1153
+2026-03-28 15:37:42 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-28 15:37:42 - ai_data_agent - INFO - Response: POST http://localhost:8000/api/v1/chat - Status: 200

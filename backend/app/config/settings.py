@@ -2,12 +2,19 @@
 Global configuration settings for AI Data Agent.
 """
 from typing import Optional
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+import os
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
+
+    model_config = SettingsConfigDict(
+        env_file=os.path.join(os.path.dirname(__file__), "../../../.env"),
+        env_file_encoding="utf-8",
+        case_sensitive=True
+    )
 
     # Application
     APP_NAME: str = "AI Data Agent"
@@ -69,11 +76,6 @@ class Settings(BaseSettings):
     REACT_LOOP_TIMEOUT_SECONDS: int = 120
     REACT_CIRCUIT_FAILURE_THRESHOLD: int = 3  # Consecutive failures to trigger OPEN
     REACT_CIRCUIT_RECOVERY_TIMEOUT: float = 30.0  # Seconds before attempting recovery
-
-    class Config:
-        env_file = "../.env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
 
 
 @lru_cache()

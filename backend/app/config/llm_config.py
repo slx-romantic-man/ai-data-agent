@@ -308,7 +308,7 @@ class AnthropicClient(BaseLLMClient):
             content = ""
             if message.content:
                 for block in message.content:
-                    if block.type == "text":
+                    if hasattr(block, 'type') and block.type == "text":
                         content += block.text
             else:
                 logger.warning("Anthropic response has no content")
