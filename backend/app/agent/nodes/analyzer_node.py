@@ -34,16 +34,20 @@ async def analyzer_node(state: AgentState) -> AgentState:
     # 检查是否有明确的错误信息
     if error:
         logger.warning(f"[AnalyzerNode] Error detected: {error}")
-        analysis_report = f"抱歉，无法执行您的请求。\n\n原因：{error}"
+        analysis_report = f"抱歉，无法完成您的请求。\n\n{error}"
     # 检查是否有权限错误（plan 为空但没有数据）
     elif not plan and not data_context:
-        logger.warning("[AnalyzerNode] Empty plan, checking for errors")
-        # 这可能是权限检查失败导致的
+        logger.warning("[AnalyzerNode] Empty plan and no data")
         analysis_report = (
-            "抱歉，无法执行您的请求。可能的原因：\n"
-            "1. 您没有访问所需 API 的权限，请联系管理员授权\n"
-            "2. 系统无法生成有效的执行计划\n\n"
-            "请检查您的权限设置或重新描述您的需求。"
+            "抱歉，无法执行您的请求。\n\n"
+            "可能的原因：\n"
+            "• 您没有访问所需数据源或API的权限\n"
+            "• 系统无法理解您的需求或生成执行计划\n"
+            "• 所需的数据源暂时不可用\n\n"
+            "建议：\n"
+            "• 请确认您有相应的数据访问权限\n"
+            "• 尝试更清晰地描述您的需求\n"
+            "• 如问题持续，请联系管理员"
         )
     else:
         # 提取所有数据
@@ -51,7 +55,31 @@ async def analyzer_node(state: AgentState) -> AgentState:
 
         if not all_data:
             logger.warning("[AnalyzerNode] No data available for analysis")
-            analysis_report = "未能获取到有效数据进行分析。"
+            # 检查是否有执行失败的步骤
+            has_failures = any(
+                isinstance(v, dict) and not v.get("success", True)
+                for v in data_context.values()
+            )
+            if has_failures:
+                analysis_report = (
+                    "抱歉，数据查询过程中遇到问题，未能获取到有效数据。\n\n"
+                    "可能的原因：\n"
+                    "• 查询条件不匹配任何记录\n"
+                    "• 数据源暂时不可用或响应超时\n"
+                    "• 查询参数不正确\n\n"
+                    "建议：\n"
+                    "• 请检查查询条件是否正确\n"
+                    "• 尝试调整时间范围或筛选条件\n"
+                    "• 稍后重试"
+                )
+            else:
+                analysis_report = (
+                    "未查询到符合条件的数据。\n\n"
+                    "建议：\n"
+                    "• 请检查查询条件（如日期范围、代码、ID等）是否正确\n"
+                    "• 尝试放宽筛选条件\n"
+                    "• 确认数据源中是否存在相关记录"
+                )
         else:
             # 使用 DataAnalyzer 生成洞察
             analyzer = DataAnalyzer()
