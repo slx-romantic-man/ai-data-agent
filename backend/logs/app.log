@@ -24487,3 +24487,1113 @@ TABLE api_configs (No description):
 2026-03-30 16:15:55 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
 2026-03-30 16:15:55 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
 2026-03-30 16:15:55 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 200
+2026-03-30 16:32:33 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-30 16:32:33 - ai_data_agent - INFO - Environment: development
+2026-03-30 16:32:33 - ai_data_agent - INFO - Debug mode: True
+2026-03-30 16:32:33 - ai_data_agent - INFO - Initializing database connection...
+2026-03-30 16:32:33 - ai_data_agent - INFO - Database connection established
+2026-03-30 16:32:33 - ai_data_agent - INFO - Initializing tool router...
+2026-03-30 16:32:33 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-30 16:32:33 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-30 16:32:33 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-30 16:32:33 - ai_data_agent - INFO - LLM Model: claude-sonnet-4-5-20250929
+2026-03-30 16:32:33 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-30 16:32:33 - ai_data_agent - INFO - Building API vector index...
+2026-03-30 16:32:48 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-30 16:33:02 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-30 16:33:04 - ai_data_agent - DEBUG - Upserted embedding for API 4
+2026-03-30 16:33:04 - ai_data_agent - INFO - Built index for API 4: Alpha Vantage 股票查询
+2026-03-30 16:33:04 - ai_data_agent - DEBUG - Upserted embedding for API 3
+2026-03-30 16:33:04 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
+2026-03-30 16:33:04 - ai_data_agent - DEBUG - Upserted embedding for API 1
+2026-03-30 16:33:04 - ai_data_agent - INFO - Built index for API 1: Weather API
+2026-03-30 16:33:04 - ai_data_agent - DEBUG - Upserted embedding for API 2
+2026-03-30 16:33:04 - ai_data_agent - INFO - Built index for API 2: Weather API V2
+2026-03-30 16:33:04 - ai_data_agent - DEBUG - Upserted embedding for API 6
+2026-03-30 16:33:04 - ai_data_agent - INFO - Built index for API 6: 畅捷通IP定位服务
+2026-03-30 16:33:04 - ai_data_agent - INFO - API vector index built: 6 APIs indexed
+2026-03-30 16:33:04 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-30 16:33:04 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-30 16:33:04 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-30 16:33:41 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-30 16:33:41 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-30 16:36:22 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/admin/apis
+2026-03-30 16:36:22 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/admin/apis - Status: 404
+2026-03-30 16:42:08 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-30 16:42:08 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 422
+2026-03-30 16:42:35 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-30 16:42:35 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 422
+2026-03-30 16:43:19 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-30 16:43:19 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-30 16:43:38 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-30 16:43:38 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-30 16:43:38 - ai_data_agent - INFO - Request: GET http://localhost:8002/api/v1/apis
+2026-03-30 16:43:38 - ai_data_agent - INFO - Response: GET http://localhost:8002/api/v1/apis - Status: 200
+2026-03-30 16:50:58 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-30 16:50:58 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-30 16:51:15 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-30 16:51:15 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-30 16:51:15 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat
+2026-03-30 16:51:15 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 400
+2026-03-30 16:52:14 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-30 16:52:14 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-30 16:52:14 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat
+2026-03-30 16:52:14 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 400
+2026-03-30 16:53:34 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-30 16:53:34 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-30 16:53:34 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat
+2026-03-30 16:53:34 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 400
+2026-03-30 16:54:48 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-30 16:54:48 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-30 16:55:22 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-30 16:55:22 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-30 16:55:22 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat
+2026-03-30 16:55:22 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 400
+2026-03-30 16:55:50 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-30 16:55:50 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-30 16:55:50 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat
+2026-03-30 16:55:50 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-30 16:55:50 - ai_data_agent - INFO - [IntentNode] Processing query: 上海今天天气怎么样
+2026-03-30 16:55:53 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 16:55:58 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 16:55:58 - ai_data_agent - INFO - Anthropic Content Length: 321
+2026-03-30 16:55:58 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"location": "上海", "time_range": {"description": "今天"}, "api_hint": "weather"}, "metrics": ["天气状况", "温度"], "dimensions": ["地点", "日期"], "confidence": 0.95, "missing_info": null, "clarification_question": null}
+2026-03-30 16:55:58 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"location": "上海", "time_range": {"description": "今天"}, "api_hint": "weather"}, "metrics": ["天气状况", "温度"], "dimensions": ["地点", "日期"], "confidence": 0.95}
+2026-03-30 16:55:58 - ai_data_agent - INFO - [Retrieval Node] Processing query: 上海今天天气怎么样
+2026-03-30 16:55:58 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-30 16:55:58 - ai_data_agent - INFO - [Retrieval Node] Using user_id: admin
+2026-03-30 16:55:59 - ai_data_agent - INFO - Retrieved 5 candidates for user admin
+2026-03-30 16:56:00 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 16:56:04 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 16:56:04 - ai_data_agent - INFO - Anthropic Content Length: 182
+2026-03-30 16:56:04 - ai_data_agent - INFO - LLM raw response: ```json
+{
+    "selected_apis": [
+        {
+            "api_id": 1,
+            "reason": "用户询问上海天气，Weather API可以查询任意城市的天气信息，最符合需求",
+            "call_order": 1
+        }
+    ]
+}
+```
+2026-03-30 16:56:04 - ai_data_agent - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2026-03-30 16:56:04 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-30 16:56:04 - ai_data_agent - INFO - Enriched 1 APIs with full metadata
+2026-03-30 16:56:04 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-30 16:56:05 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-30 16:56:05 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 上海今天天气怎么样
+2026-03-30 16:56:05 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-30 16:56:05 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：上海今天天气怎么样
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "location": "上海",
+    "time_range": {
+      "description": "今天"
+    },
+    "api_hint": "weather"
+  },
+  "metrics": [
+    "天气状况",
+    "温度"
+  ],
+  "dimensions": [
+    "地点",
+    "日期"
+  ],
+  "confidence": 0.95
+}
+
+可用的API列表：
+1. API ID: weather_api
+   名称: Weather API
+   描述: Get weather information for any city
+   可用端点:
+     - current: Get current weather (路径: /current.json)
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_
+2026-03-30 16:56:06 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 16:56:11 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 16:56:11 - ai_data_agent - INFO - Anthropic Content Length: 460
+2026-03-30 16:56:11 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "weather_api",
+            "params": {
+                "endpoint": "current",
+                "params": {
+                    "q": "上海"
+                }
+            },
+            "description": "获取上海当前天气信息",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户查询上海今天的天气，可用API列表中有weather_api提供天气查询功能，使用current端点获取上海的实时天气数据"
+}
+```
+2026-03-30 16:56:11 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-30 16:56:11 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取上海当前天气信息
+2026-03-30 16:56:11 - ai_data_agent - INFO - [APIFetch] Calling GET https://api.weatherapi.com/v1/current.json with params: {'q': '上海'}
+2026-03-30 16:56:13 - ai_data_agent - ERROR - [ExecutorNode] API fetch failed: API请求失败: HTTP 401 - <!DOCTYPE html>
+<html>
+  <head>
+    <title>401 API key required</title>
+  </head>
+  <body>
+    <h1>Error 401 API key required</h1>
+    <p>API key required</p>
+    <h3>Guru Meditation:</h3>
+    <p>XID:
+2026-03-30 16:56:13 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_weather_api']
+2026-03-30 16:56:13 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-30 16:56:13 - ai_data_agent - DEBUG - [AnalyzerNode] Processing step_0_weather_api: success=False, has_data=False
+2026-03-30 16:56:13 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-30 16:56:13 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-30 16:56:13 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-30 16:56:13 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 200
+2026-03-30 16:56:44 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/auth/login
+2026-03-30 16:56:44 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/auth/login - Status: 200
+2026-03-30 16:56:44 - ai_data_agent - INFO - Request: POST http://localhost:8002/api/v1/chat
+2026-03-30 16:56:44 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-30 16:56:44 - ai_data_agent - INFO - [IntentNode] Processing query: 上海今天天气怎么样
+2026-03-30 16:56:46 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 16:56:51 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 16:56:51 - ai_data_agent - INFO - Anthropic Content Length: 321
+2026-03-30 16:56:51 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"location": "上海", "time_range": {"description": "今天"}, "api_hint": "weather"}, "metrics": ["天气状况", "温度"], "dimensions": ["地点", "日期"], "confidence": 0.95, "missing_info": null, "clarification_question": null}
+2026-03-30 16:56:51 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"location": "上海", "time_range": {"description": "今天"}, "api_hint": "weather"}, "metrics": ["天气状况", "温度"], "dimensions": ["地点", "日期"], "confidence": 0.95}
+2026-03-30 16:56:51 - ai_data_agent - INFO - [Retrieval Node] Processing query: 上海今天天气怎么样
+2026-03-30 16:56:51 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-30 16:56:51 - ai_data_agent - INFO - [Retrieval Node] Using user_id: admin
+2026-03-30 16:56:51 - ai_data_agent - INFO - Retrieved 5 candidates for user admin
+2026-03-30 16:56:52 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 16:56:55 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 16:56:55 - ai_data_agent - INFO - Anthropic Content Length: 182
+2026-03-30 16:56:55 - ai_data_agent - INFO - LLM raw response: ```json
+{
+    "selected_apis": [
+        {
+            "api_id": 1,
+            "reason": "用户询问上海天气，Weather API可以查询任意城市的天气信息，最符合需求",
+            "call_order": 1
+        }
+    ]
+}
+```
+2026-03-30 16:56:55 - ai_data_agent - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2026-03-30 16:56:55 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-30 16:56:55 - ai_data_agent - INFO - Enriched 1 APIs with full metadata
+2026-03-30 16:56:55 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-30 16:56:55 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-30 16:56:55 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 上海今天天气怎么样
+2026-03-30 16:56:55 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-30 16:56:55 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：上海今天天气怎么样
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "location": "上海",
+    "time_range": {
+      "description": "今天"
+    },
+    "api_hint": "weather"
+  },
+  "metrics": [
+    "天气状况",
+    "温度"
+  ],
+  "dimensions": [
+    "地点",
+    "日期"
+  ],
+  "confidence": 0.95
+}
+
+可用的API列表：
+1. API ID: weather_api
+   名称: Weather API
+   描述: Get weather information for any city
+   可用端点:
+     - current: Get current weather (路径: /current.json)
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_
+2026-03-30 16:56:57 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 16:57:03 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 16:57:03 - ai_data_agent - INFO - Anthropic Content Length: 460
+2026-03-30 16:57:03 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "weather_api",
+            "params": {
+                "endpoint": "current",
+                "params": {
+                    "q": "上海"
+                }
+            },
+            "description": "获取上海当前天气信息",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户查询上海今天的天气，可用API列表中有weather_api提供天气查询功能，使用current端点获取上海的实时天气数据"
+}
+```
+2026-03-30 16:57:03 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-30 16:57:03 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取上海当前天气信息
+2026-03-30 16:57:03 - ai_data_agent - INFO - [APIFetch] Calling GET https://api.weatherapi.com/v1/current.json with params: {'q': '上海'}
+2026-03-30 16:57:03 - ai_data_agent - ERROR - [ExecutorNode] API fetch failed: API请求失败: HTTP 401 - <!DOCTYPE html>
+<html>
+  <head>
+    <title>401 API key required</title>
+  </head>
+  <body>
+    <h1>Error 401 API key required</h1>
+    <p>API key required</p>
+    <h3>Guru Meditation:</h3>
+    <p>XID:
+2026-03-30 16:57:03 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_weather_api']
+2026-03-30 16:57:03 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-30 16:57:03 - ai_data_agent - DEBUG - [AnalyzerNode] Processing step_0_weather_api: success=False, has_data=False
+2026-03-30 16:57:03 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-30 16:57:03 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-30 16:57:03 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-30 16:57:04 - ai_data_agent - INFO - Response: POST http://localhost:8002/api/v1/chat - Status: 200
+2026-03-30 17:05:05 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-30 17:05:05 - ai_data_agent - INFO - Environment: development
+2026-03-30 17:05:05 - ai_data_agent - INFO - Debug mode: True
+2026-03-30 17:05:05 - ai_data_agent - INFO - Initializing database connection...
+2026-03-30 17:05:05 - ai_data_agent - INFO - Database connection established
+2026-03-30 17:05:05 - ai_data_agent - INFO - Initializing tool router...
+2026-03-30 17:05:05 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-30 17:05:05 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-30 17:05:05 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-30 17:05:05 - ai_data_agent - INFO - LLM Model: claude-sonnet-4-5-20250929
+2026-03-30 17:05:05 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-30 17:05:05 - ai_data_agent - INFO - Building API vector index...
+2026-03-30 17:05:24 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-30 17:05:38 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-30 17:05:38 - ai_data_agent - ERROR - Failed to upsert embedding for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-30 17:05:38 - ai_data_agent - ERROR - Failed to build index for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-30 17:05:38 - ai_data_agent - ERROR - Startup failed: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-30 17:07:48 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-30 17:07:48 - ai_data_agent - INFO - Environment: development
+2026-03-30 17:07:48 - ai_data_agent - INFO - Debug mode: True
+2026-03-30 17:07:48 - ai_data_agent - INFO - Initializing database connection...
+2026-03-30 17:07:48 - ai_data_agent - INFO - Database connection established
+2026-03-30 17:07:48 - ai_data_agent - INFO - Initializing tool router...
+2026-03-30 17:07:48 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-30 17:07:48 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-30 17:07:48 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-30 17:07:48 - ai_data_agent - INFO - LLM Model: claude-sonnet-4-5-20250929
+2026-03-30 17:07:48 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-30 17:07:48 - ai_data_agent - INFO - Building API vector index...
+2026-03-30 17:08:05 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-30 17:08:19 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-30 17:08:20 - ai_data_agent - INFO - Created Qdrant collection: api_embeddings
+2026-03-30 17:08:20 - ai_data_agent - DEBUG - Upserted embedding for API 4
+2026-03-30 17:08:20 - ai_data_agent - INFO - Built index for API 4: Alpha Vantage 股票查询
+2026-03-30 17:08:20 - ai_data_agent - DEBUG - Upserted embedding for API 3
+2026-03-30 17:08:20 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
+2026-03-30 17:08:21 - ai_data_agent - DEBUG - Upserted embedding for API 1
+2026-03-30 17:08:21 - ai_data_agent - INFO - Built index for API 1: Weather API
+2026-03-30 17:08:21 - ai_data_agent - DEBUG - Upserted embedding for API 2
+2026-03-30 17:08:21 - ai_data_agent - INFO - Built index for API 2: Weather API V2
+2026-03-30 17:08:21 - ai_data_agent - DEBUG - Upserted embedding for API 6
+2026-03-30 17:08:21 - ai_data_agent - INFO - Built index for API 6: 畅捷通IP定位服务
+2026-03-30 17:08:21 - ai_data_agent - INFO - API vector index built: 5 APIs indexed
+2026-03-30 17:08:21 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-30 17:08:21 - ai_data_agent - INFO - Request: GET http://localhost:8000/health
+2026-03-30 17:08:21 - ai_data_agent - INFO - Response: GET http://localhost:8000/health - Status: 200
+2026-03-30 17:12:18 - ai_data_agent - INFO - Request: POST http://localhost:8000/api/v1/chat
+2026-03-30 17:12:18 - ai_data_agent - INFO - Response: POST http://localhost:8000/api/v1/chat - Status: 400
+2026-03-30 17:13:53 - ai_data_agent - INFO - Request: POST http://localhost:8000/api/v1/chat
+2026-03-30 17:13:53 - ai_data_agent - INFO - Response: POST http://localhost:8000/api/v1/chat - Status: 400
+2026-03-30 17:15:58 - ai_data_agent - INFO - Request: POST http://localhost:8000/api/v1/chat
+2026-03-30 17:15:58 - ai_data_agent - INFO - Response: POST http://localhost:8000/api/v1/chat - Status: 400
+2026-03-30 17:17:59 - ai_data_agent - INFO - Request: POST http://localhost:8000/api/v1/chat
+2026-03-30 17:17:59 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-30 17:18:00 - ai_data_agent - INFO - [IntentNode] Processing query: 上海今天天气怎么样
+2026-03-30 17:18:02 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:18:06 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:18:06 - ai_data_agent - INFO - Anthropic Content Length: 321
+2026-03-30 17:18:06 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"location": "上海", "time_range": {"description": "今天"}, "api_hint": "weather"}, "metrics": ["天气状况", "温度"], "dimensions": ["地点", "日期"], "confidence": 0.95, "missing_info": null, "clarification_question": null}
+2026-03-30 17:18:06 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"location": "上海", "time_range": {"description": "今天"}, "api_hint": "weather"}, "metrics": ["天气状况", "温度"], "dimensions": ["地点", "日期"], "confidence": 0.95}
+2026-03-30 17:18:06 - ai_data_agent - INFO - [Retrieval Node] Processing query: 上海今天天气怎么样
+2026-03-30 17:18:06 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-30 17:18:06 - ai_data_agent - INFO - [Retrieval Node] Using user_id: admin
+2026-03-30 17:18:06 - ai_data_agent - INFO - Retrieved 5 candidates for user admin
+2026-03-30 17:18:07 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:18:12 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:18:12 - ai_data_agent - INFO - Anthropic Content Length: 193
+2026-03-30 17:18:12 - ai_data_agent - INFO - LLM raw response: ```json
+{
+    "selected_apis": [
+        {
+            "api_id": 1,
+            "reason": "用户询问上海天气，Weather API 提供城市天气查询功能，相似度最高(0.406)，最符合需求",
+            "call_order": 1
+        }
+    ]
+}
+```
+2026-03-30 17:18:12 - ai_data_agent - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2026-03-30 17:18:12 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-30 17:18:12 - ai_data_agent - INFO - Enriched 1 APIs with full metadata
+2026-03-30 17:18:12 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-30 17:18:12 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-30 17:18:12 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 上海今天天气怎么样
+2026-03-30 17:18:12 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-30 17:18:12 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：上海今天天气怎么样
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "location": "上海",
+    "time_range": {
+      "description": "今天"
+    },
+    "api_hint": "weather"
+  },
+  "metrics": [
+    "天气状况",
+    "温度"
+  ],
+  "dimensions": [
+    "地点",
+    "日期"
+  ],
+  "confidence": 0.95
+}
+
+可用的API列表：
+1. API ID: weather_api
+   名称: Weather API
+   描述: Get weather information for any city
+   可用端点:
+     - get_weather: 获取指定城市的实时天气数据 (路径: /v1/current.json)
+       参数: {"q": "q", "key": "key"}
+       默认参数: {"key": "e71bfeb75a37444994935141261303"}
+       必需参数: ['key', 'q']
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE cred
+2026-03-30 17:18:13 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:18:18 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:18:18 - ai_data_agent - INFO - Anthropic Content Length: 496
+2026-03-30 17:18:18 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "weather_api",
+            "params": {
+                "endpoint": "get_weather",
+                "params": {
+                    "q": "上海"
+                }
+            },
+            "description": "获取上海今天的实时天气数据",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户查询上海今天的天气情况，可用API列表中有weather_api提供天气查询功能，使用get_weather端点传入城市名称'上海'即可获取实时天气数据（包括天气状况和温度等信息）"
+}
+```
+2026-03-30 17:18:18 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-30 17:18:18 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取上海今天的实时天气数据
+2026-03-30 17:18:18 - ai_data_agent - INFO - [APIFetch] Calling GET http://api.weatherapi.com/v1/current.json with params: {'key': 'e71bfeb75a37444994935141261303', 'q': '上海'}
+2026-03-30 17:18:20 - ai_data_agent - INFO - [APIFetch] Response data keys: ['location', 'current']
+2026-03-30 17:18:20 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_weather_api']
+2026-03-30 17:18:20 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-30 17:18:20 - ai_data_agent - DEBUG - [AnalyzerNode] Processing step_0_weather_api: success=True, has_data=True
+2026-03-30 17:18:20 - ai_data_agent - DEBUG - [AnalyzerNode] Data type for step_0_weather_api: <class 'dict'>, keys: ['location', 'current']
+2026-03-30 17:18:20 - ai_data_agent - INFO - [AnalyzerNode] Extracted 1 total rows from data_context
+2026-03-30 17:18:21 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:18:34 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:18:34 - ai_data_agent - INFO - Anthropic Content Length: 727
+2026-03-30 17:18:34 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-30 17:18:34 - ai_data_agent - INFO - Response: POST http://localhost:8000/api/v1/chat - Status: 200
+2026-03-30 17:19:46 - ai_data_agent - INFO - Request: POST http://localhost:8000/api/v1/chat
+2026-03-30 17:19:46 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-30 17:19:46 - ai_data_agent - INFO - [IntentNode] Processing query: 上海今天天气怎么样
+2026-03-30 17:19:47 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:19:51 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:19:51 - ai_data_agent - INFO - Anthropic Content Length: 321
+2026-03-30 17:19:51 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"location": "上海", "time_range": {"description": "今天"}, "api_hint": "weather"}, "metrics": ["天气状况", "温度"], "dimensions": ["地点", "日期"], "confidence": 0.95, "missing_info": null, "clarification_question": null}
+2026-03-30 17:19:51 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"location": "上海", "time_range": {"description": "今天"}, "api_hint": "weather"}, "metrics": ["天气状况", "温度"], "dimensions": ["地点", "日期"], "confidence": 0.95}
+2026-03-30 17:19:51 - ai_data_agent - INFO - [Retrieval Node] Processing query: 上海今天天气怎么样
+2026-03-30 17:19:51 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-30 17:19:51 - ai_data_agent - INFO - [Retrieval Node] Using user_id: admin
+2026-03-30 17:19:51 - ai_data_agent - INFO - Retrieved 5 candidates for user admin
+2026-03-30 17:19:52 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:19:57 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:19:57 - ai_data_agent - INFO - Anthropic Content Length: 193
+2026-03-30 17:19:57 - ai_data_agent - INFO - LLM raw response: ```json
+{
+    "selected_apis": [
+        {
+            "api_id": 1,
+            "reason": "用户询问上海天气，Weather API 提供城市天气查询功能，相似度最高(0.406)，最符合需求",
+            "call_order": 1
+        }
+    ]
+}
+```
+2026-03-30 17:19:57 - ai_data_agent - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2026-03-30 17:19:57 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-30 17:19:57 - ai_data_agent - INFO - Enriched 1 APIs with full metadata
+2026-03-30 17:19:57 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-30 17:19:57 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-30 17:19:57 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 上海今天天气怎么样
+2026-03-30 17:19:57 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-30 17:19:57 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：上海今天天气怎么样
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "location": "上海",
+    "time_range": {
+      "description": "今天"
+    },
+    "api_hint": "weather"
+  },
+  "metrics": [
+    "天气状况",
+    "温度"
+  ],
+  "dimensions": [
+    "地点",
+    "日期"
+  ],
+  "confidence": 0.95
+}
+
+可用的API列表：
+1. API ID: weather_api
+   名称: Weather API
+   描述: Get weather information for any city
+   可用端点:
+     - get_weather: 获取指定城市的实时天气数据 (路径: /v1/current.json)
+       参数: {"q": "q", "key": "key"}
+       默认参数: {"key": "e71bfeb75a37444994935141261303"}
+       必需参数: ['key', 'q']
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE cred
+2026-03-30 17:19:58 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:20:04 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:20:04 - ai_data_agent - INFO - Anthropic Content Length: 496
+2026-03-30 17:20:04 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "weather_api",
+            "params": {
+                "endpoint": "get_weather",
+                "params": {
+                    "q": "上海"
+                }
+            },
+            "description": "获取上海今天的实时天气数据",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户查询上海今天的天气情况，可用API列表中有weather_api提供天气查询功能，使用get_weather端点传入城市名称'上海'即可获取实时天气数据（包括天气状况和温度等信息）"
+}
+```
+2026-03-30 17:20:04 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-30 17:20:04 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取上海今天的实时天气数据
+2026-03-30 17:20:04 - ai_data_agent - INFO - [APIFetch] Calling GET http://api.weatherapi.com/v1/current.json with params: {'key': 'e71bfeb75a37444994935141261303', 'q': '上海'}
+2026-03-30 17:20:05 - ai_data_agent - INFO - [APIFetch] Response data keys: ['location', 'current']
+2026-03-30 17:20:05 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_weather_api']
+2026-03-30 17:20:05 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-30 17:20:05 - ai_data_agent - DEBUG - [AnalyzerNode] Processing step_0_weather_api: success=True, has_data=True
+2026-03-30 17:20:05 - ai_data_agent - DEBUG - [AnalyzerNode] Data type for step_0_weather_api: <class 'dict'>, keys: ['location', 'current']
+2026-03-30 17:20:05 - ai_data_agent - INFO - [AnalyzerNode] Extracted 1 total rows from data_context
+2026-03-30 17:20:06 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:20:18 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:20:18 - ai_data_agent - INFO - Anthropic Content Length: 623
+2026-03-30 17:20:18 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-30 17:20:18 - ai_data_agent - INFO - Response: POST http://localhost:8000/api/v1/chat - Status: 200
+2026-03-30 17:29:13 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-30 17:29:13 - ai_data_agent - INFO - Environment: development
+2026-03-30 17:29:13 - ai_data_agent - INFO - Debug mode: True
+2026-03-30 17:29:13 - ai_data_agent - INFO - Initializing database connection...
+2026-03-30 17:29:13 - ai_data_agent - INFO - Database connection established
+2026-03-30 17:29:13 - ai_data_agent - INFO - Initializing tool router...
+2026-03-30 17:29:13 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-30 17:29:13 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-30 17:29:13 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-30 17:29:13 - ai_data_agent - INFO - LLM Model: claude-sonnet-4-5-20250929
+2026-03-30 17:29:13 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-30 17:29:13 - ai_data_agent - INFO - Building API vector index...
+2026-03-30 17:29:31 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-30 17:29:45 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-30 17:29:46 - ai_data_agent - ERROR - Failed to upsert embedding for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-30 17:29:46 - ai_data_agent - ERROR - Failed to build index for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-30 17:29:46 - ai_data_agent - ERROR - Startup failed: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-30 17:35:46 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-30 17:35:46 - ai_data_agent - INFO - Environment: development
+2026-03-30 17:35:46 - ai_data_agent - INFO - Debug mode: True
+2026-03-30 17:35:46 - ai_data_agent - INFO - Initializing database connection...
+2026-03-30 17:35:46 - ai_data_agent - INFO - Database connection established
+2026-03-30 17:35:46 - ai_data_agent - INFO - Initializing tool router...
+2026-03-30 17:35:46 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-30 17:35:46 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-30 17:35:46 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-30 17:35:46 - ai_data_agent - INFO - LLM Model: claude-sonnet-4-5-20250929
+2026-03-30 17:35:46 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-30 17:35:46 - ai_data_agent - INFO - Building API vector index...
+2026-03-30 17:36:00 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-30 17:36:15 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-30 17:36:16 - ai_data_agent - INFO - Created Qdrant collection: api_embeddings
+2026-03-30 17:36:16 - ai_data_agent - DEBUG - Upserted embedding for API 4
+2026-03-30 17:36:16 - ai_data_agent - INFO - Built index for API 4: Alpha Vantage 股票查询
+2026-03-30 17:36:16 - ai_data_agent - DEBUG - Upserted embedding for API 3
+2026-03-30 17:36:16 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
+2026-03-30 17:36:17 - ai_data_agent - DEBUG - Upserted embedding for API 1
+2026-03-30 17:36:17 - ai_data_agent - INFO - Built index for API 1: Weather API
+2026-03-30 17:36:17 - ai_data_agent - DEBUG - Upserted embedding for API 2
+2026-03-30 17:36:17 - ai_data_agent - INFO - Built index for API 2: Weather API V2
+2026-03-30 17:36:17 - ai_data_agent - DEBUG - Upserted embedding for API 6
+2026-03-30 17:36:17 - ai_data_agent - INFO - Built index for API 6: 畅捷通IP定位服务
+2026-03-30 17:36:17 - ai_data_agent - INFO - API vector index built: 5 APIs indexed
+2026-03-30 17:36:17 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-30 17:36:17 - ai_data_agent - INFO - Request: GET http://127.0.0.1:8002/api/sessions
+2026-03-30 17:36:17 - ai_data_agent - INFO - Response: GET http://127.0.0.1:8002/api/sessions - Status: 404
+2026-03-30 17:36:18 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-30 17:36:18 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-30 17:36:38 - ai_data_agent - INFO - Request: GET http://127.0.0.1:8002/docs
+2026-03-30 17:36:38 - ai_data_agent - INFO - Response: GET http://127.0.0.1:8002/docs - Status: 200
+2026-03-30 17:43:06 - ai_data_agent - INFO - Request: GET http://127.0.0.1:8002/api/api-configs
+2026-03-30 17:43:06 - ai_data_agent - INFO - Response: GET http://127.0.0.1:8002/api/api-configs - Status: 404
+2026-03-30 17:43:57 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-30 17:43:57 - ai_data_agent - INFO - Environment: development
+2026-03-30 17:43:57 - ai_data_agent - INFO - Debug mode: True
+2026-03-30 17:43:57 - ai_data_agent - INFO - Initializing database connection...
+2026-03-30 17:43:57 - ai_data_agent - INFO - Database connection established
+2026-03-30 17:43:57 - ai_data_agent - INFO - Initializing tool router...
+2026-03-30 17:43:57 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-30 17:43:57 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-30 17:43:57 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-30 17:43:57 - ai_data_agent - INFO - LLM Model: claude-sonnet-4-5-20250929
+2026-03-30 17:43:57 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-30 17:43:57 - ai_data_agent - INFO - Building API vector index...
+2026-03-30 17:44:12 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-30 17:44:27 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-30 17:44:28 - ai_data_agent - DEBUG - Upserted embedding for API 4
+2026-03-30 17:44:28 - ai_data_agent - INFO - Built index for API 4: Alpha Vantage 股票查询
+2026-03-30 17:44:29 - ai_data_agent - DEBUG - Upserted embedding for API 8
+2026-03-30 17:44:29 - ai_data_agent - INFO - Built index for API 8: Chanjet IP 定位查询
+2026-03-30 17:44:29 - ai_data_agent - DEBUG - Upserted embedding for API 3
+2026-03-30 17:44:29 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
+2026-03-30 17:44:29 - ai_data_agent - DEBUG - Upserted embedding for API 1
+2026-03-30 17:44:29 - ai_data_agent - INFO - Built index for API 1: Weather API
+2026-03-30 17:44:29 - ai_data_agent - DEBUG - Upserted embedding for API 2
+2026-03-30 17:44:29 - ai_data_agent - INFO - Built index for API 2: Weather API V2
+2026-03-30 17:44:29 - ai_data_agent - DEBUG - Upserted embedding for API 6
+2026-03-30 17:44:29 - ai_data_agent - INFO - Built index for API 6: 畅捷通IP定位服务
+2026-03-30 17:44:29 - ai_data_agent - INFO - API vector index built: 6 APIs indexed
+2026-03-30 17:44:29 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-30 17:44:30 - ai_data_agent - INFO - Request: GET http://localhost:8002/docs
+2026-03-30 17:44:30 - ai_data_agent - INFO - Response: GET http://localhost:8002/docs - Status: 200
+2026-03-30 17:44:59 - ai_data_agent - INFO - Request: POST http://127.0.0.1:8002/api/chat
+2026-03-30 17:44:59 - ai_data_agent - INFO - Response: POST http://127.0.0.1:8002/api/chat - Status: 404
+2026-03-30 17:45:23 - ai_data_agent - INFO - Request: GET http://127.0.0.1:8002/openapi.json
+2026-03-30 17:45:24 - ai_data_agent - INFO - Response: GET http://127.0.0.1:8002/openapi.json - Status: 200
+2026-03-30 17:45:49 - ai_data_agent - INFO - Request: GET http://127.0.0.1:8002/openapi.json
+2026-03-30 17:45:49 - ai_data_agent - INFO - Response: GET http://127.0.0.1:8002/openapi.json - Status: 200
+2026-03-30 17:46:06 - ai_data_agent - INFO - Request: POST http://127.0.0.1:8002/api/v1/chat
+2026-03-30 17:46:06 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-30 17:46:06 - ai_data_agent - INFO - [IntentNode] Processing query: 查询 IP 49.67.207.11 的位置
+2026-03-30 17:46:08 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:46:13 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:46:13 - ai_data_agent - INFO - Anthropic Content Length: 282
+2026-03-30 17:46:13 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"ip_address": "49.67.207.11", "api_hint": "ip_location"}, "metrics": ["位置", "地理信息"], "dimensions": [], "confidence": 0.98, "missing_info": null, "clarification_question": null}
+2026-03-30 17:46:13 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"ip_address": "49.67.207.11", "api_hint": "ip_location"}, "metrics": ["位置", "地理信息"], "dimensions": [], "confidence": 0.98}
+2026-03-30 17:46:13 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询 IP 49.67.207.11 的位置
+2026-03-30 17:46:13 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-30 17:46:13 - ai_data_agent - INFO - [Retrieval Node] Using user_id: admin
+2026-03-30 17:46:13 - ai_data_agent - INFO - Retrieved 6 candidates for user admin
+2026-03-30 17:46:14 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:46:18 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:46:18 - ai_data_agent - INFO - Anthropic Content Length: 170
+2026-03-30 17:46:18 - ai_data_agent - INFO - LLM raw response: ```json
+{
+    "selected_apis": [
+        {
+            "api_id": 8,
+            "reason": "专门用于查询IP地址的地理位置信息，与用户需求完全匹配",
+            "call_order": 1
+        }
+    ]
+}
+```
+2026-03-30 17:46:18 - ai_data_agent - ERROR - JSON decode error: Expecting value: line 1 column 1 (char 0)
+2026-03-30 17:46:18 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-30 17:46:18 - ai_data_agent - INFO - Enriched 1 APIs with full metadata
+2026-03-30 17:46:18 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-30 17:46:19 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-30 17:46:19 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询 IP 49.67.207.11 的位置
+2026-03-30 17:46:19 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-30 17:46:19 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：查询 IP 49.67.207.11 的位置
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "ip_address": "49.67.207.11",
+    "api_hint": "ip_location"
+  },
+  "metrics": [
+    "位置",
+    "地理信息"
+  ],
+  "dimensions": [],
+  "confidence": 0.98
+}
+
+可用的API列表：
+1. API ID: ip_location_api
+   名称: Chanjet IP 定位查询
+   描述: 查询 IP 地址的地理位置信息，包括国家、省份、城市等
+   可用端点:
+     - get_location: 根据 IP 地址查询地理位置 (路径: /api/iplocaltion)
+       参数: {"ip": "ip"}
+       必需参数: ['ip']
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_
+2026-03-30 17:46:20 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:46:25 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:46:25 - ai_data_agent - INFO - Anthropic Content Length: 544
+2026-03-30 17:46:25 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "ip_location_api",
+            "params": {
+                "endpoint": "get_location",
+                "params": {
+                    "ip": "49.67.207.11"
+                }
+            },
+            "description": "调用IP定位API查询49.67.207.11的地理位置信息",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户需要查询IP地址49.67.207.11的位置信息，可用API列表中存在ip_location_api，提供get_location端点可直接查询IP地理位置，使用api_fetch工具调用该API即可满足需求"
+}
+```
+2026-03-30 17:46:25 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-30 17:46:25 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 调用IP定位API查询49.67.207.11的地理位置信息
+2026-03-30 17:46:25 - ai_data_agent - INFO - [APIFetch] Calling GET https://midas.chanapp.chanjet.com/api/iplocaltion with params: {'ip': '49.67.207.11'}
+2026-03-30 17:46:28 - ai_data_agent - INFO - [APIFetch] Response data keys: ['msg', 'result', 'data']
+2026-03-30 17:46:28 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_ip_location_api']
+2026-03-30 17:46:28 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-30 17:46:28 - ai_data_agent - DEBUG - [AnalyzerNode] Processing step_0_ip_location_api: success=True, has_data=True
+2026-03-30 17:46:28 - ai_data_agent - DEBUG - [AnalyzerNode] Data type for step_0_ip_location_api: <class 'dict'>, keys: ['msg', 'result', 'data']
+2026-03-30 17:46:28 - ai_data_agent - INFO - [AnalyzerNode] Extracted 1 total rows from data_context
+2026-03-30 17:46:29 - ai_data_agent - INFO - Anthropic Request: https://api-us.aiznt.com
+2026-03-30 17:46:41 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 17:46:41 - ai_data_agent - INFO - Anthropic Content Length: 563
+2026-03-30 17:46:41 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-30 17:46:41 - ai_data_agent - INFO - Response: POST http://127.0.0.1:8002/api/v1/chat - Status: 200
