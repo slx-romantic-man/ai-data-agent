@@ -985,3 +985,75 @@ Continuation Agent (会话延续智能体)
 
 ---
 
+【时间】2026-03-30 15:30
+【智能体】Continuation Agent
+【功能】F-20: Alpha Vantage 股票 API 注册与端到端调用
+【状态】✅ 完全通过
+
+## 本轮工作内容
+本轮接续前一会话，解决LLM超时问题，完成F-20最终验收。
+
+### 核心修复
+1. **LLM提供商切换**
+   - 从不稳定的minimaxi切换到稳定的aiznt.com
+   - 修改.env配置，修复API URL构造问题
+   - 添加reset_llm_client()函数支持配置热重载
+
+2. **Planner提示增强**
+   - 在planner_prompt.py中添加endpoint的default_params和required_params显示
+   - 使LLM能够生成包含function参数的完整API调用计划
+
+3. **错误处理增强**
+   - 在api_fetch_tool.py中添加Alpha Vantage错误响应检测
+   - 在analyzer_node.py中添加API限流错误的用户友好提示
+   - 确保所有异常场景都有明确的最终回答
+
+### 验收结果（完整通过）
+1. ✅ 管理员登录系统，进入API管理界面
+2. ✅ 添加Alpha Vantage API配置：URL、参数模板、认证信息
+3. ✅ 使用测试URL验证API可访问性
+4. ✅ 管理员用自然语言提问："查询苹果公司最近的股价"
+5. ✅ Agent识别意图、选择正确API、构造请求参数
+6. ✅ Executor成功调用API并将100条股票数据存入data_context
+7. ✅ Analyzer解析股票数据并生成完整分析报告（包含股价、涨跌等关键信息）
+8. ✅ 管理员在后台为普通用户授予该API权限
+9. ✅ 普通用户登录后用自然语言提问相同问题
+10. ✅ 普通用户成功获得股票分析结果
+
+### 技术细节
+- **LLM配置**: aiznt.com (Anthropic Claude Sonnet 4.5)
+- **API调用**: 成功获取100条TIME_SERIES_DAILY数据
+- **数据规范化**: 正确处理Alpha Vantage的Time Series格式
+- **错误处理**: 检测并友好提示API限流错误（25 requests/day）
+
+## 修改的文件
+1. .env
+   - 切换LLM_PROVIDER到aiznt.com
+   - 修复LLM_API_BASE（移除重复的/v1）
+
+2. backend/app/config/llm_config.py
+   - 添加reset_llm_client()函数
+
+3. backend/app/agent/prompts/planner_prompt.py
+   - 增强API元数据显示（default_params, required_params）
+
+4. backend/app/agent/tools/api_fetch_tool.py
+   - 添加调试日志
+   - 增强_normalize_stock_data()错误检测
+
+5. backend/app/agent/nodes/analyzer_node.py
+   - 增强API限流错误的用户友好提示
+
+6. feature_list.json
+   - 更新F-20为passes=true
+   - 添加完整通过的notes
+
+7. claude-progress.txt (本文件)
+   - 追加本轮进度记录
+
+## Git提交
+- 状态: 待提交
+- 提交信息: feat: F-20 Alpha Vantage股票API完全通过 - 切换稳定LLM提供商，增强错误处理
+
+---
+

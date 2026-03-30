@@ -267,58 +267,67 @@ class AnthropicClient(BaseLLMClient):
         max_tokens: Optional[int] = None,
     ) -> str:
         """Send chat completion request using Anthropic SDK."""
-        try:
-            import anthropic
-            import os
+        import anthropic
+        import os
 
-            os.environ['ANTHROPIC_BASE_URL'] = self.api_base
-            os.environ['ANTHROPIC_AUTH_TOKEN'] = self.api_key
+        os.environ['ANTHROPIC_BASE_URL'] = self.api_base
+        os.environ['ANTHROPIC_AUTH_TOKEN'] = self.api_key
 
-            client = anthropic.Anthropic()
+        client = anthropic.Anthropic(timeout=300.0)
 
-            # Convert messages format
-            system_msg = ""
-            user_messages = []
-            for msg in messages:
-                if msg["role"] == "system":
-                    system_msg = msg["content"]
-                else:
-                    user_messages.append({
-                        "role": msg["role"],
-                        "content": [{"type": "text", "text": msg["content"]}]
-                    })
-
-            logger.info(f"Anthropic Request: {self.api_base}")
-
-            message = client.messages.create(
-                model=self.model,
-                max_tokens=max_tokens or self.max_tokens,
-                system=system_msg,
-                messages=user_messages,
-                temperature=temperature or self.temperature,
-            )
-
-            logger.info(f"Anthropic Response received")
-
-            if message is None:
-                logger.error("Anthropic response is None")
-                return ""
-
-            # Extract text content
-            content = ""
-            if message.content:
-                for block in message.content:
-                    if hasattr(block, 'type') and block.type == "text":
-                        content += block.text
+        # Convert messages format
+        system_msg = ""
+        user_messages = []
+        for msg in messages:
+            if msg["role"] == "system":
+                system_msg = msg["content"]
             else:
-                logger.warning("Anthropic response has no content")
+                user_messages.append({
+                    "role": msg["role"],
+                    "content": [{"type": "text", "text": msg["content"]}]
+                })
 
-            logger.info(f"Anthropic Content Length: {len(content)}")
-            return content
+        logger.info(f"Anthropic Request: {self.api_base}")
 
-        except Exception as e:
-            logger.error(f"Anthropic API error: {str(e)}")
-            raise
+        max_retries = 3
+        retry_delay = 2
+
+        for attempt in range(max_retries):
+            try:
+                message = client.messages.create(
+                    model=self.model,
+                    max_tokens=max_tokens or self.max_tokens,
+                    system=system_msg,
+                    messages=user_messages,
+                    temperature=temperature or self.temperature,
+                )
+
+                logger.info(f"Anthropic Response received")
+
+                if message is None:
+                    logger.error("Anthropic response is None")
+                    return ""
+
+                # Extract text content
+                content = ""
+                if message.content:
+                    for block in message.content:
+                        if hasattr(block, 'type') and block.type == "text":
+                            content += block.text
+                else:
+                    logger.warning("Anthropic response has no content")
+
+                logger.info(f"Anthropic Content Length: {len(content)}")
+                return content
+
+            except Exception as e:
+                logger.error(f"Anthropic API error (attempt {attempt + 1}/{max_retries}): {str(e)}")
+                if attempt < max_retries - 1:
+                    logger.info(f"Retrying in {retry_delay} seconds...")
+                    await asyncio.sleep(retry_delay)
+                    retry_delay *= 2
+                else:
+                    raise Exception(f"Anthropic API failed after {max_retries} retries: {str(e)}")
 
     async def chat_stream(
         self,
@@ -327,40 +336,50 @@ class AnthropicClient(BaseLLMClient):
         max_tokens: Optional[int] = None,
     ) -> AsyncGenerator[str, None]:
         """Send chat completion request with streaming."""
-        try:
-            import anthropic
-            import os
+        import anthropic
+        import os
 
-            os.environ['ANTHROPIC_BASE_URL'] = self.api_base
-            os.environ['ANTHROPIC_AUTH_TOKEN'] = self.api_key
+        os.environ['ANTHROPIC_BASE_URL'] = self.api_base
+        os.environ['ANTHROPIC_AUTH_TOKEN'] = self.api_key
 
-            client = anthropic.Anthropic()
+        client = anthropic.Anthropic(timeout=300.0)
 
-            # Convert messages format
-            system_msg = ""
-            user_messages = []
-            for msg in messages:
-                if msg["role"] == "system":
-                    system_msg = msg["content"]
+        # Convert messages format
+        system_msg = ""
+        user_messages = []
+        for msg in messages:
+            if msg["role"] == "system":
+                system_msg = msg["content"]
+            else:
+                user_messages.append({
+                    "role": msg["role"],
+                    "content": [{"type": "text", "text": msg["content"]}]
+                })
+
+        max_retries = 3
+        retry_delay = 2
+
+        for attempt in range(max_retries):
+            try:
+                with client.messages.stream(
+                    model=self.model,
+                    max_tokens=max_tokens or self.max_tokens,
+                    system=system_msg,
+                    messages=user_messages,
+                    temperature=temperature or self.temperature,
+                ) as stream:
+                    for text in stream.text_stream:
+                        yield text
+                return
+
+            except Exception as e:
+                logger.error(f"Anthropic streaming error (attempt {attempt + 1}/{max_retries}): {str(e)}")
+                if attempt < max_retries - 1:
+                    logger.info(f"Retrying in {retry_delay} seconds...")
+                    await asyncio.sleep(retry_delay)
+                    retry_delay *= 2
                 else:
-                    user_messages.append({
-                        "role": msg["role"],
-                        "content": [{"type": "text", "text": msg["content"]}]
-                    })
-
-            with client.messages.stream(
-                model=self.model,
-                max_tokens=max_tokens or self.max_tokens,
-                system=system_msg,
-                messages=user_messages,
-                temperature=temperature or self.temperature,
-            ) as stream:
-                for text in stream.text_stream:
-                    yield text
-
-        except Exception as e:
-            logger.error(f"Anthropic streaming error: {str(e)}")
-            raise
+                    raise Exception(f"Anthropic streaming failed after {max_retries} retries: {str(e)}")
 
 
 def get_llm_client() -> BaseLLMClient:
@@ -413,3 +432,10 @@ def get_llm() -> BaseLLMClient:
             if _llm_client is None:  # Double-check
                 _llm_client = get_llm_client()
     return _llm_client
+
+
+def reset_llm_client():
+    """Reset the global LLM client (for config changes)."""
+    global _llm_client
+    with _client_lock:
+        _llm_client = None

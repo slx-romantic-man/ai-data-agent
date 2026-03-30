@@ -238,6 +238,8 @@ class APIFetchTool(BaseTool):
             session = await self._get_session()
             method = endpoint_config.get("method", "GET").upper()
 
+            logger.info(f"[APIFetch] Calling {method} {url} with params: {query_params}")
+
             if method == "GET":
                 async with session.get(
                     url, headers=headers, params=query_params
@@ -249,6 +251,7 @@ class APIFetchTool(BaseTool):
                         return self._error(f"API请求失败: HTTP {response.status} - {text[:200]}")
                     try:
                         data = await response.json(content_type=None)
+                        logger.info(f"[APIFetch] Response data keys: {list(data.keys()) if isinstance(data, dict) else 'not a dict'}")
                     except Exception:
                         text = await response.text()
                         status = "failed"
@@ -286,7 +289,9 @@ class APIFetchTool(BaseTool):
 
             # 股票API特殊处理：规范化时间序列数据
             if api_id == "alpha_vantage_stock" and isinstance(data, dict):
+                logger.info(f"[APIFetch] Normalizing stock data, input keys: {list(data.keys())}")
                 data = self._normalize_stock_data(data)
+                logger.info(f"[APIFetch] Normalized data: row_count={data.get('row_count', 0)}")
 
             return self._success(
                 data=data,
@@ -554,6 +559,18 @@ class APIFetchTool(BaseTool):
 
     def _normalize_stock_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """规范化股票API返回数据为Analyzer可消费的格式"""
+        # 检查是否是错误响应
+        if "Information" in data or "Error Message" in data or "Note" in data:
+            error_msg = data.get("Information") or data.get("Error Message") or data.get("Note")
+            logger.warning(f"[APIFetch] Alpha Vantage API error: {error_msg}")
+            return {
+                "rows": [],
+                "row_count": 0,
+                "source": "alpha_vantage",
+                "error": error_msg,
+                "raw_summary": str(data)[:200]
+            }
+
         time_series_key = None
         for key in data.keys():
             if "Time Series" in key:

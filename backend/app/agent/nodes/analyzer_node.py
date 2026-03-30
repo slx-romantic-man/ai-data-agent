@@ -55,12 +55,35 @@ async def analyzer_node(state: AgentState) -> AgentState:
 
         if not all_data:
             logger.warning("[AnalyzerNode] No data available for analysis")
+
+            # 检查是否有API限流或其他错误
+            error_messages = []
+            for key, result in data_context.items():
+                if isinstance(result, dict) and result.get("data"):
+                    data = result["data"]
+                    if isinstance(data, dict) and data.get("error"):
+                        error_messages.append(data["error"])
+
+            # 如果有API错误信息，优先显示
+            if error_messages:
+                error_text = error_messages[0]
+                if "rate limit" in error_text.lower() or "requests per day" in error_text.lower():
+                    analysis_report = (
+                        "抱歉，API调用已达到每日限额。\n\n"
+                        f"错误信息：{error_text}\n\n"
+                        "建议：\n"
+                        "• 请明天再试（API配额每日重置）\n"
+                        "• 或联系管理员升级API计划"
+                    )
+                else:
+                    analysis_report = (
+                        f"抱歉，API调用失败：{error_text}\n\n"
+                        "建议：\n"
+                        "• 请稍后重试\n"
+                        "• 如问题持续，请联系管理员"
+                    )
             # 检查是否有执行失败的步骤
-            has_failures = any(
-                isinstance(v, dict) and not v.get("success", True)
-                for v in data_context.values()
-            )
-            if has_failures:
+            elif any(isinstance(v, dict) and not v.get("success", True) for v in data_context.values()):
                 analysis_report = (
                     "抱歉，数据查询过程中遇到问题，未能获取到有效数据。\n\n"
                     "可能的原因：\n"

@@ -147,8 +147,15 @@ def get_planner_prompt(
 
                         # 添加参数信息
                         endpoint_params = endpoint_config.get('params', {})
+                        default_params = endpoint_config.get('default_params', {})
+                        required_params = endpoint_config.get('required_params', [])
+
                         if endpoint_params:
                             apis_str += f"       参数: {json.dumps(endpoint_params, ensure_ascii=False)}\n"
+                        if default_params:
+                            apis_str += f"       默认参数: {json.dumps(default_params, ensure_ascii=False)}\n"
+                        if required_params:
+                            apis_str += f"       必需参数: {required_params}\n"
 
             # 如果没有 endpoints，尝试显示 params
             if not endpoints:
