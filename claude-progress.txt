@@ -129,38 +129,63 @@ Intent → Retrieval → Planner → Executor → Analyzer
 ===========================================
 
 【功能总览】
-- 总功能数：11 个 (F-09 到 F-19)
-- 已完成：0 个
-- 待完成：11 个
+- 总功能数：11 个 (F-09 到 F-13, F-18, F-20 到 F-24)
+- 已完成：6 个 (F-09, F-10, F-11, F-12, F-13, F-18)
+- 待完成：5 个 (F-20, F-21, F-22, F-23, F-24)
 
 【优先级分布】
-- Priority 1 (最高优先级)：5 个功能
-  - F-09: Planner 计划结构强校验修复
-  - F-10: Planner Fallback 安全化
-  - F-11: Executor 数据存储键标准化
-  - F-12: Analyzer 空数据兜底
-  - F-18: 端到端最终回答判定机制
+- Priority 1 (最高优先级)：8 个功能
+  - F-09: Planner 计划结构强校验修复 ✅ 已完成
+  - F-10: Planner Fallback 安全化 ✅ 已完成
+  - F-11: Executor 数据存储键标准化 ✅ 已完成
+  - F-12: Analyzer 空数据兜底 ✅ 已完成
+  - F-18: 端到端最终回答判定机制 ✅ 已完成
+  - F-20: Alpha Vantage 股票 API 注册与端到端调用 ⏳ 待完成
+  - F-21: WeatherAPI 天气 API 注册与端到端调用 ⏳ 待完成
+  - F-22: Chanjet IP 定位 API 注册与端到端调用 ⏳ 待完成
 
 - Priority 2 (中优先级)：3 个功能
-  - F-13: API 全量复杂问题覆盖测试集
-  - F-15: SSE 流式事件协议标准化
-  - F-16: 前端思考过程与回答结果双区域流式展示
-
-- Priority 3 (低优先级)：3 个功能
-  - F-14: API 能力清单与测试映射表生成
-  - F-17: 节点级流式埋点补齐
-  - F-19: 失败分类与可观测性增强
+  - F-13: API 全量复杂问题覆盖测试集 ✅ 已完成
+  - F-23: 三个外部 API 的 RBAC 权限隔离验证 ⏳ 待完成
+  - F-24: 三个外部 API 的端到端复杂问题测试 ⏳ 待完成
 
 【下一步推荐】
-→ F-09: Planner 计划结构强校验修复 (priority=1, bugfix)
+→ F-20: Alpha Vantage 股票 API 注册与端到端调用 (priority=1, feature)
+
+【已删除功能】（需求变更）
+- F-15: SSE 流式事件协议标准化（已删除）
+- F-16: 前端思考过程与回答结果双区域流式展示（已删除）
+- F-17: 节点级流式埋点补齐（已删除）
+- F-19: 失败分类与可观测性增强（已删除）
+- F-14: API 能力清单与测试映射表生成（已删除）
 
 【已知问题】
-根据历史日志，系统存在以下主链路问题：
-1. Planner 生成的 api_id 为 int 而非 string
-2. Planner fallback 后生成 unknown step
-3. Executor 写入 data_context 的 key 不可追踪
-4. Analyzer 提取 0 rows 但用户无可见回答
-5. 前端缺少流式思考与结果展示
+根据历史日志，系统存在以下主链路问题（已修复）：
+1. ✅ Planner 生成的 api_id 为 int 而非 string（F-09 已修复）
+2. ✅ Planner fallback 后生成 unknown step（F-10 已修复）
+3. ✅ Executor 写入 data_context 的 key 不可追踪（F-11 已修复）
+4. ✅ Analyzer 提取 0 rows 但用户无可见回答（F-12 已修复）
+5. ❌ 前端缺少流式思考与结果展示（需求变更，已删除）
+
+【新需求重点】
+1. 三个外部 API 的端到端集成：
+   - Alpha Vantage 股票 API: https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&apikey=BEX015VSNDBAWP31
+   - WeatherAPI 天气 API: http://api.weatherapi.com/v1/current.json?key=e71bfeb75a37444994935141261303&q=Shanghai
+   - Chanjet IP 定位 API: https://midas.chanapp.chanjet.com/api/iplocaltion?ip=49.67.207.11
+
+2. 实现路径：
+   - 管理员通过管理后台界面注册 API（URL、参数模板、认证信息）
+   - Agent 通过自然语言识别用户意图并选择正确 API
+   - Executor 调用外部 API 并标准化结果
+   - Analyzer 解析结果并生成用户友好的自然语言回答
+   - RBAC 权限系统控制用户访问权限
+
+3. 验收标准：
+   - 管理员能成功调用三个 API
+   - 管理员能在后台授予普通用户权限
+   - 授权用户能成功调用被授权的 API
+   - 未授权用户调用时被明确拒绝
+   - 所有调用都能得到 Analyzer 生成的最终回答
 
 ===========================================
 六、环境与配置
@@ -304,6 +329,32 @@ Intent → Retrieval → Planner → Executor → Analyzer
   - backend/test_f11_real_api.py (真实API调用测试)
   - backend/test_f11_e2e.py (端到端测试)
   - backend/test_f11_acceptance.py (完整验收测试)
+
+---
+
+【2026-03-30】Initializer Agent - Session 2 (需求变更)
+- 任务：响应需求变更，重新规划功能路线图
+- 状态：成功
+- 需求变更内容：
+  1. 删除所有未完成的流式传输功能（F-15, F-16, F-17, F-19）
+  2. 保留已完成的 bugfix 和测试功能（F-09 到 F-13, F-18）
+  3. 新增三个外部 API 的端到端自然语言查询功能
+- 新增功能：
+  - F-20: Alpha Vantage 股票 API 注册与端到端调用
+  - F-21: WeatherAPI 天气 API 注册与端到端调用
+  - F-22: Chanjet IP 定位 API 注册与端到端调用
+  - F-23: 三个外部 API 的 RBAC 权限隔离验证
+  - F-24: 三个外部 API 的端到端复杂问题测试
+- 修改文件：
+  - feature_list.json (删除 F-15/F-16/F-17/F-19，新增 F-20/F-21/F-22/F-23/F-24)
+  - claude-progress.txt (更新需求说明和下一步指引)
+- 验收标准：
+  - 管理员能通过管理后台注册三个 API
+  - 管理员和授权用户都能用自然语言查询这三个 API
+  - Agent 能自动识别意图、选择 API、解析结果并生成友好回答
+  - RBAC 权限系统完全生效，未授权用户无法访问
+- Git提交：待提交
+- 下一步：开始实现 F-20（Alpha Vantage 股票 API）
   - backend/test_f11_debug.py (数据结构调试)
 - 测试结果：全部通过
   - Step 1: 股票API调用成功 - PASS
