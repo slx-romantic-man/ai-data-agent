@@ -95,9 +95,20 @@
       "priority": 1,
       "category": "feature",
       "description": "Alpha Vantage 股票 API 注册与端到端调用：在管理后台注册 Alpha Vantage API，实现管理员和授权用户通过自然语言查询股票数据",
+      "test_url": "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&apikey=BEX015VSNDBAWP31",
+      "api_config": {
+        "base_url": "https://www.alphavantage.co/query",
+        "method": "GET",
+        "params": {
+          "function": "TIME_SERIES_DAILY",
+          "symbol": "{stock_symbol}",
+          "apikey": "BEX015VSNDBAWP31"
+        }
+      },
       "steps": [
         "管理员登录系统，进入 API 管理界面",
         "添加 Alpha Vantage API 配置：URL、参数模板、认证信息",
+        "使用测试 URL 验证 API 可访问性",
         "管理员用自然语言提问：'查询苹果公司最近的股价'或'AAPL股票今天表现如何'",
         "验证 Agent 能识别意图、选择正确 API、构造请求参数",
         "验证 Executor 成功调用 API 并将结果存入 data_context",
@@ -113,9 +124,19 @@
       "priority": 1,
       "category": "feature",
       "description": "WeatherAPI 天气 API 注册与端到端调用：在管理后台注册 WeatherAPI，实现管理员和授权用户通过自然语言查询天气数据",
+      "test_url": "http://api.weatherapi.com/v1/current.json?key=e71bfeb75a37444994935141261303&q=Shanghai",
+      "api_config": {
+        "base_url": "http://api.weatherapi.com/v1/current.json",
+        "method": "GET",
+        "params": {
+          "key": "e71bfeb75a37444994935141261303",
+          "q": "{city_name}"
+        }
+      },
       "steps": [
         "管理员登录系统，进入 API 管理界面",
         "添加 WeatherAPI 配置：URL、参数模板、认证信息",
+        "使用测试 URL 验证 API 可访问性",
         "管理员用自然语言提问：'上海今天天气怎么样'或'查询北京的天气'",
         "验证 Agent 能识别意图、选择正确 API、构造请求参数（提取城市名）",
         "验证 Executor 成功调用 API 并将结果存入 data_context",
@@ -131,9 +152,18 @@
       "priority": 1,
       "category": "feature",
       "description": "Chanjet IP 定位 API 注册与端到端调用：在管理后台注册 Chanjet IP 定位 API，实现管理员和授权用户通过自然语言查询 IP 地理位置",
+      "test_url": "https://midas.chanapp.chanjet.com/api/iplocaltion?ip=49.67.207.11",
+      "api_config": {
+        "base_url": "https://midas.chanapp.chanjet.com/api/iplocaltion",
+        "method": "GET",
+        "params": {
+          "ip": "{ip_address}"
+        }
+      },
       "steps": [
         "管理员登录系统，进入 API 管理界面",
         "添加 Chanjet IP 定位 API 配置：URL、参数模板",
+        "使用测试 URL 验证 API 可访问性",
         "管理员用自然语言提问：'查询 IP 49.67.207.11 的位置'或'这个 IP 在哪里：49.67.207.11'",
         "验证 Agent 能识别意图、选择正确 API、构造请求参数（提取 IP 地址）",
         "验证 Executor 成功调用 API 并将结果存入 data_context",
