@@ -117,22 +117,35 @@ def _extract_all_data(data_context: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     for key, result in data_context.items():
         if not isinstance(result, dict):
+            logger.debug(f"[AnalyzerNode] Skipping {key}: not a dict")
             continue
+
+        logger.debug(f"[AnalyzerNode] Processing {key}: success={result.get('success')}, has_data={bool(result.get('data'))}")
 
         if result.get("success") and result.get("data"):
             data = result["data"]
+            logger.debug(f"[AnalyzerNode] Data type for {key}: {type(data)}, keys: {list(data.keys()) if isinstance(data, dict) else 'N/A'}")
 
             # 处理规范化的股票数据格式
             if isinstance(data, dict) and "rows" in data:
                 rows = data.get("rows", [])
                 if isinstance(rows, list):
+                    logger.info(f"[AnalyzerNode] Extracting {len(rows)} rows from {key}")
                     all_data.extend(rows)
             # 处理普通列表数据
             elif isinstance(data, list):
                 all_data.extend(data)
-            # 处理单个字典数据
+            # 处理单个字典数据（包括Alpha Vantage原始响应）
             elif isinstance(data, dict):
-                all_data.append(data)
+                # 如果是Alpha Vantage的Time Series格式，展开为行
+                if "Time Series (Daily)" in data:
+                    time_series = data["Time Series (Daily)"]
+                    for date, values in time_series.items():
+                        row = {"date": date, **values}
+                        all_data.append(row)
+                    logger.info(f"[AnalyzerNode] Extracted {len(time_series)} time series rows from {key}")
+                else:
+                    all_data.append(data)
 
     logger.info(f"[AnalyzerNode] Extracted {len(all_data)} total rows from data_context")
     return all_data

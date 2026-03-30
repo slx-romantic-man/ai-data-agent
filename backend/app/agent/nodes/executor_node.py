@@ -103,6 +103,9 @@ async def _execute_api_fetch(api_id: str, params: Dict[str, Any], permission: Pe
         from app.models.tool import ToolStatus
         success = result.status == ToolStatus.SUCCESS
 
+        if not success:
+            logger.error(f"[ExecutorNode] API fetch failed: {result.error}")
+
         return {
             "success": success,
             "data": result.data if success else None,
@@ -110,7 +113,7 @@ async def _execute_api_fetch(api_id: str, params: Dict[str, Any], permission: Pe
             "metadata": result.metadata
         }
     except Exception as e:
-        logger.error(f"[ExecutorNode] API fetch failed: {e}")
+        logger.error(f"[ExecutorNode] API fetch exception: {e}")
         return {"success": False, "error": str(e)}
 
 
@@ -126,7 +129,7 @@ async def _execute_python_exec(params: Dict[str, Any], data_context: Dict[str, A
         # 将 data_context 中的数据注入到执行环境
         for key, value in data_context.items():
             if isinstance(value, dict) and value.get("success") and value.get("data"):
-                context[key] = value["data"]
+                context[key] = value
 
         tool_params = {"code": code, "context": context}
         result = await tool.execute(tool_params, permission)

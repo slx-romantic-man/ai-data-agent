@@ -3191,3 +3191,114 @@ TABLE credit_logs (No description):
 2026-03-28 21:15:58 - ai_data_agent - INFO - ============================================================
 2026-03-28 21:15:58 - ai_data_agent - INFO - 
 ✅ F-13 所有API测试通过
+2026-03-30 10:02:38 - ai_data_agent - INFO - ============================================================
+2026-03-30 10:02:38 - ai_data_agent - INFO - 外部API直接调用测试
+2026-03-30 10:02:38 - ai_data_agent - INFO - ============================================================
+2026-03-30 10:02:39 - ai_data_agent - INFO - 
+找到 5 个活跃API
+
+2026-03-30 10:02:39 - ai_data_agent - INFO - 
+============================================================
+2026-03-30 10:02:39 - ai_data_agent - INFO - 测试 API: Alpha Vantage 股票查询 (alpha_vantage_stock)
+2026-03-30 10:02:39 - ai_data_agent - INFO - Base URL: https://www.alphavantage.co
+2026-03-30 10:02:39 - ai_data_agent - INFO - 测试端点: 获取日线数据
+2026-03-30 10:02:39 - ai_data_agent - INFO - URL: https://www.alphavantage.co/query
+2026-03-30 10:02:39 - ai_data_agent - INFO - Method: GET
+2026-03-30 10:02:39 - ai_data_agent - WARNING - Invalid auth_config JSON: 'gAAAAABpus8wkcnnBdCipiXedk1kqZBdeJrQSk9QBEWeDc8EtgCuwZISBQAZKGf-4RqzB59viU00zeg5f-_-nDooQEWAyNGnjdUSCe2NvQmyqlvg0vsPpzqxnafckFvusQWFcqws_Kej6JzABhFpUYDI5DaNvjtXvmF4h6RLVgTlnxdUqJWoKzrN0ND-tnTzMS4BU1yoDwo5wr4lkzs8Fcns5sB08BcwEwh6451TJhPULjFsEgnoTUJVZOy0oS-bjFk-U6ubBLTciH5v_PA_lzqSu7VAF3iNzA=='
+2026-03-30 10:02:39 - ai_data_agent - INFO - 请求参数: {}
+2026-03-30 10:02:44 - ai_data_agent - INFO - 响应状态码: 200
+2026-03-30 10:02:44 - ai_data_agent - INFO - [OK] API调用成功
+2026-03-30 10:02:44 - ai_data_agent - INFO - 响应前200字符: {
+    "Error Message": "the parameter apikey is invalid or missing. Please claim your free API key on (https://www.alphavantage.co/support/#api-key). It should take less than 20 seconds."
+}
+2026-03-30 10:02:45 - ai_data_agent - INFO - 
+============================================================
+2026-03-30 10:02:45 - ai_data_agent - INFO - 测试 API: Inventory Query V5 (inventory_api_v5)
+2026-03-30 10:02:45 - ai_data_agent - INFO - Base URL: https://api.example.com/inventory
+2026-03-30 10:02:45 - ai_data_agent - INFO - 测试端点: query
+2026-03-30 10:02:45 - ai_data_agent - INFO - URL: https://api.example.com/inventory/query
+2026-03-30 10:02:45 - ai_data_agent - INFO - Method: GET
+2026-03-30 10:02:45 - ai_data_agent - WARNING - Invalid auth_config JSON: 'gAAAAABpuiNo9BBFK86M_ebmrihZqQwc5-mI43pbGMXd379dHA2stXKgLR-WJdHxVtjbMpeBbxDXteYTVwbkG0g8-wyY1NzEP-lJbRp7yco9jUaxNfc38h7I2oUWg2rWj9cG2wF8nYtsK4Oi-7tlWx5I3C65JovHZaiE4WNIxAU8xUeRPEZchH94H_AZskquclI9O2lo_BQNxCn400cCtW-LOKYNE1LXfKwxwO2YjOxyrMCEEoKs71bKWbxirTanm21uEPW4x-ZQYcilCok04RV8rkRGq-9Z0MZ2oPUc3sAkr8L51eIdRLk='
+2026-03-30 10:02:45 - ai_data_agent - INFO - 请求参数: {'apikey': ''}
+2026-03-30 10:02:48 - ai_data_agent - ERROR - [ERROR] 请求异常: 
+2026-03-30 10:02:49 - ai_data_agent - INFO - 
+============================================================
+2026-03-30 10:02:49 - ai_data_agent - INFO - 测试 API: Weather API (weather_api)
+2026-03-30 10:02:49 - ai_data_agent - INFO - Base URL: https://api.weatherapi.com/v1
+2026-03-30 10:02:49 - ai_data_agent - INFO - 测试端点: current
+2026-03-30 10:02:49 - ai_data_agent - INFO - URL: https://api.weatherapi.com/v1/current.json
+2026-03-30 10:02:49 - ai_data_agent - INFO - Method: GET
+2026-03-30 10:02:49 - ai_data_agent - INFO - 请求参数: {}
+2026-03-30 10:02:51 - ai_data_agent - INFO - 响应状态码: 401
+2026-03-30 10:02:51 - ai_data_agent - ERROR - [FAIL] HTTP 401
+2026-03-30 10:02:51 - ai_data_agent - ERROR - 响应: <!DOCTYPE html>
+<html>
+  <head>
+    <title>401 API key required</title>
+  </head>
+  <body>
+    <h1>Error 401 API key required</h1>
+    <p>API key required</p>
+    <h3>Guru Meditation:</h3>
+    <p>XID:
+2026-03-30 10:02:52 - ai_data_agent - INFO - 
+============================================================
+2026-03-30 10:02:52 - ai_data_agent - INFO - 测试 API: Weather API V2 (weather_api_v2)
+2026-03-30 10:02:52 - ai_data_agent - INFO - Base URL: https://api.weatherapi.com/v1
+2026-03-30 10:02:52 - ai_data_agent - INFO - 测试端点: current
+2026-03-30 10:02:52 - ai_data_agent - INFO - URL: https://api.weatherapi.com/v1/current.json
+2026-03-30 10:02:52 - ai_data_agent - INFO - Method: GET
+2026-03-30 10:02:52 - ai_data_agent - INFO - 请求参数: {}
+2026-03-30 10:02:54 - ai_data_agent - INFO - 响应状态码: 401
+2026-03-30 10:02:54 - ai_data_agent - ERROR - [FAIL] HTTP 401
+2026-03-30 10:02:54 - ai_data_agent - ERROR - 响应: <!DOCTYPE html>
+<html>
+  <head>
+    <title>401 API key required</title>
+  </head>
+  <body>
+    <h1>Error 401 API key required</h1>
+    <p>API key required</p>
+    <h3>Guru Meditation:</h3>
+    <p>XID:
+2026-03-30 10:02:55 - ai_data_agent - INFO - 
+============================================================
+2026-03-30 10:02:55 - ai_data_agent - INFO - 测试 API: 畅捷通IP定位服务 (chanjet_ip_loc)
+2026-03-30 10:02:55 - ai_data_agent - INFO - Base URL: https://midas.chanapp.chanjet.com
+2026-03-30 10:02:55 - ai_data_agent - INFO - 测试端点: get_ip_location
+2026-03-30 10:02:55 - ai_data_agent - INFO - URL: https://midas.chanapp.chanjet.com/api/iplocaltion
+2026-03-30 10:02:55 - ai_data_agent - INFO - Method: GET
+2026-03-30 10:02:55 - ai_data_agent - INFO - 请求参数: {}
+2026-03-30 10:02:58 - ai_data_agent - INFO - 响应状态码: 400
+2026-03-30 10:02:58 - ai_data_agent - ERROR - [FAIL] HTTP 400
+2026-03-30 10:02:58 - ai_data_agent - ERROR - 响应: 
+2026-03-30 10:02:59 - ai_data_agent - INFO - 
+============================================================
+2026-03-30 10:02:59 - ai_data_agent - INFO - 测试汇总
+2026-03-30 10:02:59 - ai_data_agent - INFO - ============================================================
+2026-03-30 10:02:59 - ai_data_agent - INFO - 总计: 5 个API
+2026-03-30 10:02:59 - ai_data_agent - INFO - 成功: 1
+2026-03-30 10:02:59 - ai_data_agent - INFO - 失败: 3
+2026-03-30 10:02:59 - ai_data_agent - INFO - 错误: 1
+2026-03-30 10:02:59 - ai_data_agent - INFO - 
+详细结果:
+2026-03-30 10:02:59 - ai_data_agent - INFO - [OK] alpha_vantage_stock: Success
+2026-03-30 10:02:59 - ai_data_agent - INFO - [FAIL] inventory_api_v5: 
+2026-03-30 10:02:59 - ai_data_agent - INFO - [FAIL] weather_api: HTTP 401: <!DOCTYPE html>
+<html>
+  <head>
+    <title>401 API key required</title>
+  </head>
+  <body>
+    <h1>E
+2026-03-30 10:02:59 - ai_data_agent - INFO - [FAIL] weather_api_v2: HTTP 401: <!DOCTYPE html>
+<html>
+  <head>
+    <title>401 API key required</title>
+  </head>
+  <body>
+    <h1>E
+2026-03-30 10:02:59 - ai_data_agent - INFO - [FAIL] chanjet_ip_loc: HTTP 400: 
+2026-03-30 12:14:43 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-30 12:14:47 - ai_data_agent - INFO - Anthropic Response received
+2026-03-30 12:14:47 - ai_data_agent - INFO - Anthropic Content Length: 1

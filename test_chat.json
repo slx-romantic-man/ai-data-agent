@@ -1,4 +1,1 @@
-{
-  "message": "查询苹果公司AAPL股票最近的价格数据",
-  "session_id": "test123"
-}
+{"message": "查询苹果公司最近的股价", "session_id": "test_alpha_vantage_001"}
