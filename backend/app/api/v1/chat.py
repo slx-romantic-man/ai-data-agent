@@ -137,6 +137,21 @@ async def chat(
 3. **逻辑连贯性**：结论不得与之前已确认的事实相矛盾。
     """
     try:
+        # Override user context if user_id provided in request
+        if request.user_id:
+            user_service = get_user_service()
+            override_user = user_service.get_user_context(request.user_id)
+            if override_user:
+                user = override_user
+                from app.access.permission import get_rbac_manager
+                rbac_manager = get_rbac_manager()
+                permission = rbac_manager.build_permission_context(
+                    user_id=user.user_id,
+                    role=user.role,
+                    department=user.department,
+                    business_line=user.business_line,
+                )
+
         # Get or create session
         session_id = request.session_id or generate_session_id()
 

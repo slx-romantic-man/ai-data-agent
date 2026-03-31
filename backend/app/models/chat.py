@@ -37,6 +37,7 @@ class ChatRequest(BaseModel):
         None, description="Session ID for conversation continuity"
     )
     message: str = Field(..., description="User message")
+    user_id: Optional[str] = Field(None, description="User ID for permission check")
     context: Optional[Dict[str, Any]] = Field(
         default_factory=dict, description="User context"
     )

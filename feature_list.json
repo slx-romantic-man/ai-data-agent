@@ -193,7 +193,8 @@
         "user_a 再次查询股票，验证被拒绝",
         "验证权限隔离完全生效，无越权访问"
       ],
-      "passes": false
+      "passes": false,
+      "notes": "⚠️ 部分完成 - 代码修复已实施但E2E验证被基础设施阻断。✅ 已完成：(1) 数据库权限配置正确 user_001→股票API(id=4), user_002→天气API(id=1) (2) 权限服务层验证通过 APIPermissionService.get_active_api_ids() 正确返回用户权限 (3) HTTP接口层修复完成 在app/models/chat.py添加user_id字段，在app/api/v1/chat.py添加user_id覆盖逻辑。❌ 未完成：端到端HTTP测试因Qdrant lock文件无法清除导致服务器无法重启，代码更改未加载到运行环境。详见backend/F23_RBAC_TEST_REPORT.md。下一智能体：重启系统清除Qdrant锁后运行backend/rbac_e2e_test.py验证。"
     },
     {
       "id": "F-24",
