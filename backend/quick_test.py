@@ -1,56 +1,40 @@
-"""快速测试场景3"""
-import asyncio
-from app.agent.graph import create_graph
-from app.agent.state import AgentState
-from app.models.permission import PermissionContext
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
+import requests
+import time
 
-async def main():
-    print("测试场景3：多步骤依赖")
+BASE_URL = "http://127.0.0.1:8002"
 
-    permission = PermissionContext(user_id="admin_001", role="admin")
-    graph = await create_graph(permission)
+session_id = f"quick_test_{int(time.time())}"
+question = "苹果股价"
 
-    initial_state: AgentState = {
-        "messages": [],
-        "query": "计算本月销售额和成本的利润率",
-        "extracted_filters": {},
-        "plan": [],
-        "current_step": 0,
-        "data_context": {},
-        "permission": {"user_id": "admin_001", "role": "admin"}
+print(f"发送问题: {question}")
+response = requests.post(
+    f"{BASE_URL}/api/v1/chat",
+    json={
+        "session_id": session_id,
+        "message": question,
+        "user_id": "admin"
     }
+)
 
-    config = {"configurable": {"thread_id": "quick_test"}}
+print(f"HTTP状态: {response.status_code}")
+if response.status_code == 200:
+    data = response.json()
+    print(f"响应键: {list(data.keys())}")
+else:
+    print(f"错误: {response.text}")
 
-    final_state = None
-    async for event in graph.astream(initial_state, config):
-        if "__end__" in event:
-            final_state = event["__end__"]
+print("\n等待10秒...")
+time.sleep(10)
 
-    if final_state:
-        plan = final_state.get("plan", [])
-        print(f"\n生成的计划步骤数: {len(plan)}")
-        for i, step in enumerate(plan):
-            print(f"步骤{i+1}: {step.get('tool')} - {step.get('description', '')}")
-            if step.get('tool') == 'python_exec':
-                code = step.get('params', {}).get('code', '')
-                print(f"  代码: {code[:100]}...")
-
-        print(f"\n数据上下文键: {list(final_state.get('data_context', {}).keys())}")
-
-        python_results = [v for k, v in final_state.get("data_context", {}).items() if "python_exec" in k]
-        if python_results:
-            print(f"\nPython执行结果: {python_results[0]}")
-
-        has_python = any(s.get("tool") == "python_exec" for s in plan)
-        success = has_python and len(plan) >= 2
-        print(f"\n测试结果: {'通过' if success else '失败'}")
-        return success
-
-    return False
-
-
-if __name__ == "__main__":
-    result = asyncio.run(main())
-    exit(0 if result else 1)
+history_response = requests.get(f"{BASE_URL}/api/v1/sessions/{session_id}/history")
+print(f"\n历史状态: {history_response.status_code}")
+if history_response.status_code == 200:
+    history = history_response.json()
+    messages = history.get("messages", [])
+    print(f"消息数量: {len(messages)}")
+    for msg in messages[-3:]:
+        print(f"  - {msg.get('role')}: {msg.get('content')[:100]}...")

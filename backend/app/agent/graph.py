@@ -200,8 +200,23 @@ async def create_graph(permission: PermissionContext):
     import aiosqlite
     os.makedirs("./data", exist_ok=True)
 
-    # 创建数据库连接
-    conn = aiosqlite.connect("./data/checkpoints.db")
+    # 创建数据库连接，启用 WAL 模式支持并发
+    conn = aiosqlite.connect(
+        "./data/checkpoints.db",
+        timeout=30.0,  # 增加超时时间
+        check_same_thread=False  # 允许多线程访问
+    )
+
+    # 启用 WAL 模式以支持并发读写
+    async def init_wal():
+        async with conn as db:
+            await db.execute("PRAGMA journal_mode=WAL")
+            await db.execute("PRAGMA busy_timeout=30000")  # 30秒超时
+            await db.commit()
+
+    import asyncio
+    asyncio.create_task(init_wal())
+
     memory = AsyncSqliteSaver(conn)
 
     # 编译图（在 approval_gate 前中断）
