@@ -99,7 +99,69 @@ Intent → Retrieval → Planner → Executor → Analyzer
    → git commit -m "feat/fix/test: 功能描述"
 
 ===========================================
-四、工作纪律
+四、常见问题与解决方案
+===========================================
+
+### 问题1: Qdrant向量数据库锁文件无法释放
+
+**症状**:
+```
+RuntimeError: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client.
+PermissionError: [Errno 13] Permission denied (删除.lock文件时)
+```
+
+**根本原因**:
+- Windows文件系统在进程异常退出后未释放文件锁
+- 锁文件路径: `backend/data/qdrant/.lock`
+- 即使进程已终止，文件句柄仍被系统持有
+
+**解决方案** (按优先级排序):
+
+1. **方案A: 系统重启** (最彻底，推荐)
+   - 重启Windows系统释放所有文件锁
+   - 删除 `backend/data/qdrant` 目录
+   - 重新启动服务器，Qdrant自动重建索引
+
+2. **方案B: 查找并终止占用进程**
+   ```bash
+   # 查找占用端口的进程
+   netstat -ano | findstr :8002
+
+   # 查看Python进程详情
+   wmic process where "name='python.exe'" get ProcessId,CommandLine
+
+   # 终止进程 (注意Windows下用双斜杠)
+   taskkill //F //PID <进程ID>
+
+   # 等待3秒后删除目录
+   sleep 3 && rm -rf backend/data/qdrant
+   ```
+
+3. **方案C: 修改存储路径** (临时绕过)
+   ```python
+   # backend/app/services/vector_store.py
+   storage_path = "./data/qdrant_new"  # 使用新路径
+   ```
+   **警告**: 此方案会导致向量索引丢失，需重建
+
+4. **方案D: 切换到内存模式** (不推荐用于生产)
+   ```python
+   # backend/app/config/settings.py
+   QDRANT_URL: str = ":memory:"  # 改为内存模式
+   ```
+   **警告**: 重启后索引丢失
+
+**预防措施**:
+- 使用 `Ctrl+C` 优雅停止服务器，避免强制终止
+- 开发时使用 `uvicorn --reload` 的自动重载功能
+- 生产环境考虑使用 Qdrant Server 而非文件模式
+
+**历史记录**:
+- F-23 (2026-03-31): 通过系统重启解决
+- 多个前任智能体遇到相同问题
+
+===========================================
+五、工作纪律
 ===========================================
 
 【单功能原则】
