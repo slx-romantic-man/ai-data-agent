@@ -28111,3 +28111,733 @@ TABLE api_configs (No description):
 2026-03-31 12:56:26 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
 2026-03-31 12:56:26 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
 2026-03-31 12:56:26 - ai_data_agent - INFO - Response: POST http://127.0.0.1:8003/api/v1/chat - Status: 200
+2026-03-31 13:09:00 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-31 13:09:00 - ai_data_agent - INFO - Environment: development
+2026-03-31 13:09:00 - ai_data_agent - INFO - Debug mode: True
+2026-03-31 13:09:00 - ai_data_agent - INFO - Initializing database connection...
+2026-03-31 13:09:00 - ai_data_agent - INFO - Database connection established
+2026-03-31 13:09:00 - ai_data_agent - INFO - Initializing tool router...
+2026-03-31 13:09:00 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-31 13:09:00 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-31 13:09:00 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-31 13:09:00 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-31 13:09:00 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-31 13:09:00 - ai_data_agent - INFO - Building API vector index...
+2026-03-31 13:09:14 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-31 13:09:27 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-31 13:09:27 - ai_data_agent - ERROR - Failed to upsert embedding for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:09:27 - ai_data_agent - ERROR - Failed to build index for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:09:27 - ai_data_agent - ERROR - Startup failed: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:13:39 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-31 13:13:39 - ai_data_agent - INFO - Environment: development
+2026-03-31 13:13:39 - ai_data_agent - INFO - Debug mode: True
+2026-03-31 13:13:39 - ai_data_agent - INFO - Initializing database connection...
+2026-03-31 13:13:39 - ai_data_agent - INFO - Database connection established
+2026-03-31 13:13:39 - ai_data_agent - INFO - Initializing tool router...
+2026-03-31 13:13:39 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-31 13:13:39 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-31 13:13:39 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-31 13:13:39 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-31 13:13:39 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-31 13:13:39 - ai_data_agent - INFO - Building API vector index...
+2026-03-31 13:13:51 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-31 13:14:04 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-31 13:14:04 - ai_data_agent - ERROR - Failed to upsert embedding for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:14:04 - ai_data_agent - ERROR - Failed to build index for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:14:04 - ai_data_agent - ERROR - Startup failed: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:15:27 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-31 13:15:27 - ai_data_agent - INFO - Environment: development
+2026-03-31 13:15:27 - ai_data_agent - INFO - Debug mode: True
+2026-03-31 13:15:27 - ai_data_agent - INFO - Initializing database connection...
+2026-03-31 13:15:27 - ai_data_agent - INFO - Database connection established
+2026-03-31 13:15:27 - ai_data_agent - INFO - Initializing tool router...
+2026-03-31 13:15:27 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-31 13:15:27 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-31 13:15:27 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-31 13:15:27 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-31 13:15:27 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-31 13:15:27 - ai_data_agent - INFO - Building API vector index...
+2026-03-31 13:15:39 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-31 13:15:52 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-31 13:15:52 - ai_data_agent - ERROR - Failed to upsert embedding for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:15:52 - ai_data_agent - ERROR - Failed to build index for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:15:52 - ai_data_agent - ERROR - Startup failed: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:23:57 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-31 13:23:57 - ai_data_agent - INFO - Environment: development
+2026-03-31 13:23:57 - ai_data_agent - INFO - Debug mode: True
+2026-03-31 13:23:57 - ai_data_agent - INFO - Initializing database connection...
+2026-03-31 13:23:57 - ai_data_agent - INFO - Database connection established
+2026-03-31 13:23:57 - ai_data_agent - INFO - Initializing tool router...
+2026-03-31 13:23:57 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-31 13:23:57 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-31 13:23:57 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-31 13:23:57 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-31 13:23:57 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-31 13:23:57 - ai_data_agent - INFO - Building API vector index...
+2026-03-31 13:24:19 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-31 13:24:33 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-31 13:24:34 - ai_data_agent - ERROR - Failed to upsert embedding for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:24:34 - ai_data_agent - ERROR - Failed to build index for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:24:34 - ai_data_agent - ERROR - Startup failed: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:24:43 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-31 13:24:43 - ai_data_agent - INFO - Environment: development
+2026-03-31 13:24:43 - ai_data_agent - INFO - Debug mode: True
+2026-03-31 13:24:43 - ai_data_agent - INFO - Initializing database connection...
+2026-03-31 13:24:43 - ai_data_agent - INFO - Database connection established
+2026-03-31 13:24:43 - ai_data_agent - INFO - Initializing tool router...
+2026-03-31 13:24:43 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-31 13:24:43 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-31 13:24:43 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-31 13:24:43 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-31 13:24:43 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-31 13:24:43 - ai_data_agent - INFO - Building API vector index...
+2026-03-31 13:24:58 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-31 13:25:12 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-31 13:25:13 - ai_data_agent - ERROR - Failed to upsert embedding for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:25:13 - ai_data_agent - ERROR - Failed to build index for API 4: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:25:13 - ai_data_agent - ERROR - Startup failed: Storage folder ./data/qdrant is already accessed by another instance of Qdrant client. If you require concurrent access, use Qdrant server instead.
+2026-03-31 13:33:09 - ai_data_agent - INFO - Starting AI Data Agent...
+2026-03-31 13:33:09 - ai_data_agent - INFO - Environment: development
+2026-03-31 13:33:09 - ai_data_agent - INFO - Debug mode: True
+2026-03-31 13:33:09 - ai_data_agent - INFO - Initializing database connection...
+2026-03-31 13:33:09 - ai_data_agent - INFO - Database connection established
+2026-03-31 13:33:09 - ai_data_agent - INFO - Initializing tool router...
+2026-03-31 13:33:09 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
+2026-03-31 13:33:09 - ai_data_agent - INFO - Initializing LLM client...
+2026-03-31 13:33:09 - ai_data_agent - INFO - LLM Provider: anthropic
+2026-03-31 13:33:09 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
+2026-03-31 13:33:09 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
+2026-03-31 13:33:09 - ai_data_agent - INFO - Building API vector index...
+2026-03-31 13:33:28 - ai_data_agent - INFO - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-31 13:33:43 - ai_data_agent - INFO - Embedding model loaded successfully
+2026-03-31 13:33:51 - ai_data_agent - INFO - Created Qdrant collection: api_embeddings
+2026-03-31 13:33:52 - ai_data_agent - DEBUG - Upserted embedding for API 4
+2026-03-31 13:33:52 - ai_data_agent - INFO - Built index for API 4: Alpha Vantage 股票查询
+2026-03-31 13:33:52 - ai_data_agent - DEBUG - Upserted embedding for API 8
+2026-03-31 13:33:52 - ai_data_agent - INFO - Built index for API 8: Chanjet IP 定位查询
+2026-03-31 13:33:53 - ai_data_agent - DEBUG - Upserted embedding for API 3
+2026-03-31 13:33:53 - ai_data_agent - INFO - Built index for API 3: Inventory Query V5
+2026-03-31 13:33:53 - ai_data_agent - DEBUG - Upserted embedding for API 1
+2026-03-31 13:33:53 - ai_data_agent - INFO - Built index for API 1: Weather API
+2026-03-31 13:33:53 - ai_data_agent - DEBUG - Upserted embedding for API 2
+2026-03-31 13:33:53 - ai_data_agent - INFO - Built index for API 2: Weather API V2
+2026-03-31 13:33:54 - ai_data_agent - DEBUG - Upserted embedding for API 6
+2026-03-31 13:33:54 - ai_data_agent - INFO - Built index for API 6: 畅捷通IP定位服务
+2026-03-31 13:33:54 - ai_data_agent - INFO - API vector index built: 6 APIs indexed
+2026-03-31 13:33:54 - ai_data_agent - INFO - AI Data Agent started successfully
+2026-03-31 13:34:23 - ai_data_agent - INFO - Request: GET http://localhost:8002/health
+2026-03-31 13:34:23 - ai_data_agent - INFO - Response: GET http://localhost:8002/health - Status: 200
+2026-03-31 13:35:35 - ai_data_agent - INFO - Request: POST http://127.0.0.1:8002/api/v1/chat
+2026-03-31 13:35:36 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-31 13:35:36 - ai_data_agent - INFO - [IntentNode] Processing query: 查询苹果公司最新股价
+2026-03-31 13:35:37 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:35:49 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:35:49 - ai_data_agent - INFO - Anthropic Content Length: 422
+2026-03-31 13:35:49 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"stock_symbol": "AAPL", "stock_name": "苹果公司", "market": "US", "trading_day_count": 1, "time_range": {"description": "最新交易日"}, "api_hint": "stock_price"}, "metrics": ["最新股价", "涨跌幅", "成交量"], "dimensions": ["日期"], "confidence": 0.95, "missing_info": null, "clarification_question": null}
+2026-03-31 13:35:49 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"stock_symbol": "AAPL", "stock_name": "苹果公司", "market": "US", "trading_day_count": 1, "time_range": {"description": "最新交易日"}, "api_hint": "stock_price"}, "metrics": ["最新股价", "涨跌幅", "成交量"], "dimensions": ["日期"], "confidence": 0.95}
+2026-03-31 13:35:49 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询苹果公司最新股价
+2026-03-31 13:35:49 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-31 13:35:49 - ai_data_agent - INFO - [Retrieval Node] Using user_id: user_001
+2026-03-31 13:35:50 - ai_data_agent - INFO - Retrieved 1 candidates for user user_001
+2026-03-31 13:35:51 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:35:59 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:35:59 - ai_data_agent - INFO - Anthropic Content Length: 185
+2026-03-31 13:35:59 - ai_data_agent - INFO - LLM raw response: {
+    "selected_apis": [
+        {
+            "api_id": 4,
+            "reason": "该API专门用于查询美股股票的实时价格、历史数据等信息，与用户查询苹果公司（AAPL）最新股价的需求完全匹配",
+            "call_order": 1
+        }
+    ]
+}
+2026-03-31 13:35:59 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-31 13:35:59 - ai_data_agent - INFO - Enriched 1 APIs with full metadata
+2026-03-31 13:35:59 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-31 13:35:59 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-31 13:35:59 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询苹果公司最新股价
+2026-03-31 13:35:59 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-31 13:35:59 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：查询苹果公司最新股价
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "stock_symbol": "AAPL",
+    "stock_name": "苹果公司",
+    "market": "US",
+    "trading_day_count": 1,
+    "time_range": {
+      "description": "最新交易日"
+    },
+    "api_hint": "stock_price"
+  },
+  "metrics": [
+    "最新股价",
+    "涨跌幅",
+    "成交量"
+  ],
+  "dimensions": [
+    "日期"
+  ],
+  "confidence": 0.95
+}
+
+可用的API列表：
+1. API ID: alpha_vantage_stock
+   名称: Alpha Vantage 股票查询
+   描述: 查询美股股票的实时价格、历史数据、技术指标等信息
+   可用端点:
+     - 获取日线数据:  (路径: /query)
+       参数: {"function": "function", "symbol": "symbol", "outputsize": "outputsize", "datatype": "datatype", "apikey": "apikey"}
+       默认参数: {"apikey": "BEX015VSNDBAWP31"}
+       必需参数: ['function', 'symbol', 'apikey']
+     - /query:  (路径: /query)
+       参数: {"function": "function", "symbol": "symbol", "outputsize": "outputsize", "datatype": "datatype", "apikey": "apikey"}
+       默认参数: {"apikey": "BEX015VSNDBAWP31"}
+       必需参数: ['function', 'symbol', 'apikey']
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: inte
+2026-03-31 13:36:00 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:36:19 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:36:19 - ai_data_agent - INFO - Anthropic Content Length: 736
+2026-03-31 13:36:19 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "alpha_vantage_stock",
+            "params": {
+                "endpoint": "/query",
+                "params": {
+                    "function": "TIME_SERIES_DAILY",
+                    "symbol": "AAPL",
+                    "outputsize": "compact"
+                }
+            },
+            "description": "获取苹果股票(AAPL)最近的日线交易数据，包括最新股价、涨跌幅和成交量",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户查询苹果公司(AAPL)的最新股价、涨跌幅和成交量。根据提取的意图信息，这是一个美股查询请求，需要获取最新交易日的股票数据。可用的API列表中存在 alpha_vantage_stock 这个股票查询API，它支持获取日线数据的功能。通过调用该API并设置symbol为AAPL、outputsize为compact，可以获取最近100个交易日的数据，从中提取最新交易日的股价、涨跌幅和成交量信息。"
+}
+```
+2026-03-31 13:36:19 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-31 13:36:19 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取苹果股票(AAPL)最近的日线交易数据，包括最新股价、涨跌幅和成交量
+2026-03-31 13:36:20 - ai_data_agent - INFO - [APIFetch] Calling GET https://www.alphavantage.co/query with params: {'apikey': 'BEX015VSNDBAWP31', 'function': 'TIME_SERIES_DAILY', 'symbol': 'AAPL', 'outputsize': 'compact'}
+2026-03-31 13:36:22 - ai_data_agent - INFO - [APIFetch] Response data keys: ['Meta Data', 'Time Series (Daily)']
+2026-03-31 13:36:22 - ai_data_agent - INFO - [APIFetch] Normalizing stock data, input keys: ['Meta Data', 'Time Series (Daily)']
+2026-03-31 13:36:22 - ai_data_agent - INFO - [APIFetch] Normalized data: row_count=100
+2026-03-31 13:36:22 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-31 13:36:22 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-31 13:36:22 - ai_data_agent - DEBUG - [AnalyzerNode] Processing step_0_alpha_vantage_stock: success=True, has_data=True
+2026-03-31 13:36:22 - ai_data_agent - DEBUG - [AnalyzerNode] Data type for step_0_alpha_vantage_stock: <class 'dict'>, keys: ['rows', 'row_count', 'source', 'symbol', 'raw_summary']
+2026-03-31 13:36:22 - ai_data_agent - INFO - [AnalyzerNode] Extracting 100 rows from step_0_alpha_vantage_stock
+2026-03-31 13:36:22 - ai_data_agent - INFO - [AnalyzerNode] Extracted 100 total rows from data_context
+2026-03-31 13:36:23 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:37:41 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:37:41 - ai_data_agent - INFO - Anthropic Content Length: 5036
+2026-03-31 13:37:41 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-31 13:37:41 - ai_data_agent - INFO - Request: POST http://127.0.0.1:8002/api/v1/chat
+2026-03-31 13:37:41 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-31 13:37:41 - ai_data_agent - INFO - [IntentNode] Processing query: 查询特斯拉股票
+2026-03-31 13:37:41 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:37:59 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:37:59 - ai_data_agent - INFO - Anthropic Content Length: 341
+2026-03-31 13:37:59 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"stock_symbol": "TSLA", "market": "US", "trading_day_count": 7, "api_hint": "stock_price"}, "metrics": ["股价", "涨跌幅", "成交量"], "dimensions": ["日期"], "confidence": 0.9, "missing_info": null, "clarification_question": null}
+2026-03-31 13:37:59 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"stock_symbol": "TSLA", "market": "US", "trading_day_count": 7, "api_hint": "stock_price"}, "metrics": ["股价", "涨跌幅", "成交量"], "dimensions": ["日期"], "confidence": 0.9}
+2026-03-31 13:37:59 - ai_data_agent - INFO - Request: POST http://127.0.0.1:8002/api/v1/chat
+2026-03-31 13:37:59 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-31 13:37:59 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询特斯拉股票
+2026-03-31 13:37:59 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-31 13:37:59 - ai_data_agent - INFO - [Retrieval Node] Using user_id: user_002
+2026-03-31 13:37:59 - ai_data_agent - INFO - [IntentNode] Processing query: 查询苹果公司最新股价
+2026-03-31 13:38:00 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:38:12 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:38:12 - ai_data_agent - INFO - Anthropic Content Length: 354
+2026-03-31 13:38:12 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"stock_symbol": "AAPL", "market": "US", "trading_day_count": 1, "api_hint": "stock_price"}, "metrics": ["最新股价", "涨跌幅", "开盘价", "收盘价", "成交量"], "dimensions": [], "confidence": 0.95, "missing_info": null, "clarification_question": null}
+2026-03-31 13:38:12 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"stock_symbol": "AAPL", "market": "US", "trading_day_count": 1, "api_hint": "stock_price"}, "metrics": ["最新股价", "涨跌幅", "开盘价", "收盘价", "成交量"], "dimensions": [], "confidence": 0.95}
+2026-03-31 13:38:12 - ai_data_agent - INFO - Retrieved 1 candidates for user user_002
+2026-03-31 13:38:13 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:38:20 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:38:20 - ai_data_agent - INFO - Anthropic Content Length: 27
+2026-03-31 13:38:20 - ai_data_agent - INFO - LLM raw response: {
+    "selected_apis": []
+}
+2026-03-31 13:38:20 - ai_data_agent - INFO - LLM selected 0 APIs
+2026-03-31 13:38:20 - ai_data_agent - INFO - [Retrieval Node] Retrieved 0 APIs
+2026-03-31 13:38:20 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-31 13:38:20 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询苹果公司最新股价
+2026-03-31 13:38:20 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-31 13:38:20 - ai_data_agent - INFO - [Retrieval Node] Using user_id: user_001
+2026-03-31 13:38:20 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询特斯拉股票
+2026-03-31 13:38:20 - ai_data_agent - INFO - [PlannerNode] Available APIs: 0, Tables: 12
+2026-03-31 13:38:20 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：查询特斯拉股票
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "stock_symbol": "TSLA",
+    "market": "US",
+    "trading_day_count": 7,
+    "api_hint": "stock_price"
+  },
+  "metrics": [
+    "股价",
+    "涨跌幅",
+    "成交量"
+  ],
+  "dimensions": [
+    "日期"
+  ],
+  "confidence": 0.9
+}
+
+可用的API列表：
+（无可用API）
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_id: string
+  - input_tokens: integer
+  - output_tokens: integer
+  - total_tokens: integer
+  - credits_deducted: integer
+  - balance_after: in
+2026-03-31 13:38:20 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:38:37 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:38:37 - ai_data_agent - INFO - Anthropic Content Length: 286
+2026-03-31 13:38:37 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [],
+    "reasoning": "用户想查询特斯拉股票（TSLA）数据，包括股价、涨跌幅、成交量。但检查可用数据源后发现：1) 可用的API列表显示为'（无可用API）'，没有可调用的股票数据API；2) 可用的数据库表中没有任何表包含股票数据（如股价、涨跌幅、成交量等字段）。所有表都是系统管理相关的表（api_call_logs、api_configs、user_accounts等），不包含股票市场数据。由于没有可用的数据源，无法满足用户的股票查询需求。建议用户检查是否有其他数据源或API可用。"
+}
+```
+2026-03-31 13:38:37 - ai_data_agent - WARNING - [PlannerNode] LLM plan parsing failed, attempting fallback
+2026-03-31 13:38:37 - ai_data_agent - WARNING - [PlannerNode] Fallback: No APIs available, cannot generate plan
+2026-03-31 13:38:37 - ai_data_agent - ERROR - [PlannerNode] Cannot generate valid plan - insufficient metadata or no tools available
+2026-03-31 13:38:37 - ai_data_agent - ERROR - Chat error: database is locked
+2026-03-31 13:38:37 - ai_data_agent - INFO - Response: POST http://127.0.0.1:8002/api/v1/chat - Status: 500
+2026-03-31 13:38:37 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 0 data sources
+2026-03-31 13:38:37 - ai_data_agent - WARNING - [AnalyzerNode] Empty plan and no data
+2026-03-31 13:38:37 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-31 13:38:37 - ai_data_agent - INFO - Retrieved 1 candidates for user user_001
+2026-03-31 13:38:38 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:38:46 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:38:46 - ai_data_agent - INFO - Anthropic Content Length: 106
+2026-03-31 13:38:46 - ai_data_agent - INFO - LLM raw response: {"selected_apis":[{"api_id":4,"reason":"该API专门提供美股股票的实时价格查询功能，完全满足用户查询苹果公司(AAPL)最新股价的需求","call_order":1}]}
+2026-03-31 13:38:46 - ai_data_agent - INFO - LLM selected 1 APIs
+2026-03-31 13:38:46 - ai_data_agent - INFO - Enriched 1 APIs with full metadata
+2026-03-31 13:38:46 - ai_data_agent - INFO - [Retrieval Node] Retrieved 1 APIs
+2026-03-31 13:38:46 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-31 13:38:46 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询苹果公司最新股价
+2026-03-31 13:38:46 - ai_data_agent - INFO - [PlannerNode] Available APIs: 1, Tables: 12
+2026-03-31 13:38:46 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：查询苹果公司最新股价
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "stock_symbol": "AAPL",
+    "market": "US",
+    "trading_day_count": 1,
+    "api_hint": "stock_price"
+  },
+  "metrics": [
+    "最新股价",
+    "涨跌幅",
+    "开盘价",
+    "收盘价",
+    "成交量"
+  ],
+  "dimensions": [],
+  "confidence": 0.95
+}
+
+可用的API列表：
+1. API ID: alpha_vantage_stock
+   名称: Alpha Vantage 股票查询
+   描述: 查询美股股票的实时价格、历史数据、技术指标等信息
+   可用端点:
+     - 获取日线数据:  (路径: /query)
+       参数: {"function": "function", "symbol": "symbol", "outputsize": "outputsize", "datatype": "datatype", "apikey": "apikey"}
+       默认参数: {"apikey": "BEX015VSNDBAWP31"}
+       必需参数: ['function', 'symbol', 'apikey']
+     - /query:  (路径: /query)
+       参数: {"function": "function", "symbol": "symbol", "outputsize": "outputsize", "datatype": "datatype", "apikey": "apikey"}
+       默认参数: {"apikey": "BEX015VSNDBAWP31"}
+       必需参数: ['function', 'symbol', 'apikey']
+
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: i
+2026-03-31 13:38:47 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:39:05 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:39:05 - ai_data_agent - INFO - Anthropic Content Length: 717
+2026-03-31 13:39:05 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [
+        {
+            "step_id": 1,
+            "tool": "api_fetch",
+            "api_id": "alpha_vantage_stock",
+            "params": {
+                "endpoint": "获取日线数据",
+                "params": {
+                    "function": "GLOBAL_QUOTE",
+                    "symbol": "AAPL",
+                    "outputsize": "compact"
+                }
+            },
+            "description": "获取苹果股票(AAPL)最新实时报价数据",
+            "depends_on": []
+        }
+    ],
+    "reasoning": "用户查询苹果公司最新股价，意图类型为api_query，需要获取股票的实时价格数据。可用API列表中有alpha_vantage_stock支持美股股票查询。使用该API的获取日线数据端点，通过GLOBAL_QUOTE函数获取AAPL的最新报价，包含最新股价、涨跌幅、开盘价、收盘价、成交量等指标。outputsize设为compact获取最近一天的数据，符合trading_day_count=1的要求。"
+}
+```
+2026-03-31 13:39:05 - ai_data_agent - INFO - [PlannerNode] Generated plan with 1 steps
+2026-03-31 13:39:05 - ai_data_agent - INFO - [ExecutorNode] Executing step 1/1: 获取苹果股票(AAPL)最新实时报价数据
+2026-03-31 13:39:05 - ai_data_agent - INFO - [APIFetch] Calling GET https://www.alphavantage.co/query with params: {'apikey': 'BEX015VSNDBAWP31', 'function': 'GLOBAL_QUOTE', 'symbol': 'AAPL', 'outputsize': 'compact'}
+2026-03-31 13:39:05 - ai_data_agent - INFO - Response: POST http://127.0.0.1:8002/api/v1/chat - Status: 200
+2026-03-31 13:39:07 - ai_data_agent - INFO - [APIFetch] Response data keys: ['Global Quote']
+2026-03-31 13:39:07 - ai_data_agent - INFO - [APIFetch] Normalizing stock data, input keys: ['Global Quote']
+2026-03-31 13:39:07 - ai_data_agent - INFO - [APIFetch] Normalized data: row_count=0
+2026-03-31 13:39:07 - ai_data_agent - INFO - [ExecutorNode] Stored result in data_context['step_0_alpha_vantage_stock']
+2026-03-31 13:39:07 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 1 data sources
+2026-03-31 13:39:07 - ai_data_agent - DEBUG - [AnalyzerNode] Processing step_0_alpha_vantage_stock: success=True, has_data=True
+2026-03-31 13:39:07 - ai_data_agent - DEBUG - [AnalyzerNode] Data type for step_0_alpha_vantage_stock: <class 'dict'>, keys: ['rows', 'row_count', 'source', 'error', 'raw_summary']
+2026-03-31 13:39:07 - ai_data_agent - INFO - [AnalyzerNode] Extracting 0 rows from step_0_alpha_vantage_stock
+2026-03-31 13:39:07 - ai_data_agent - INFO - [AnalyzerNode] Extracted 0 total rows from data_context
+2026-03-31 13:39:07 - ai_data_agent - WARNING - [AnalyzerNode] No data available for analysis
+2026-03-31 13:39:07 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-31 13:39:07 - ai_data_agent - INFO - Response: POST http://127.0.0.1:8002/api/v1/chat - Status: 200
+2026-03-31 13:39:07 - ai_data_agent - INFO - Request: POST http://127.0.0.1:8002/api/v1/chat
+2026-03-31 13:39:07 - ai_data_agent - INFO - [Graph] LangGraph workflow compiled with AsyncSqliteSaver
+2026-03-31 13:39:07 - ai_data_agent - INFO - [IntentNode] Processing query: 查询特斯拉股票
+2026-03-31 13:39:08 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:39:27 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:39:27 - ai_data_agent - INFO - Anthropic Content Length: 363
+2026-03-31 13:39:27 - ai_data_agent - INFO - [IntentNode] Parsed intent: {"intent_type": "api_query", "entities": {"stock_symbol": "TSLA", "market": "US", "trading_day_count": 5, "api_hint": "stock_price"}, "metrics": ["收盘价", "涨跌幅", "成交量", "开盘价", "最高价", "最低价"], "dimensions": ["日期"], "confidence": 0.9, "missing_info": null, "clarification_question": null}
+2026-03-31 13:39:27 - ai_data_agent - INFO - [IntentNode] Extracted filters: {"intent_type": "api_query", "entities": {"stock_symbol": "TSLA", "market": "US", "trading_day_count": 5, "api_hint": "stock_price"}, "metrics": ["收盘价", "涨跌幅", "成交量", "开盘价", "最高价", "最低价"], "dimensions": ["日期"], "confidence": 0.9}
+2026-03-31 13:39:27 - ai_data_agent - INFO - [Retrieval Node] Processing query: 查询特斯拉股票
+2026-03-31 13:39:27 - ai_data_agent - INFO - [Retrieval Node] Intent type: api_query
+2026-03-31 13:39:27 - ai_data_agent - INFO - [Retrieval Node] Using user_id: user_002
+2026-03-31 13:39:27 - ai_data_agent - INFO - Retrieved 1 candidates for user user_002
+2026-03-31 13:39:27 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:39:35 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:39:35 - ai_data_agent - INFO - Anthropic Content Length: 21
+2026-03-31 13:39:35 - ai_data_agent - INFO - LLM raw response: {"selected_apis": []}
+2026-03-31 13:39:35 - ai_data_agent - INFO - LLM selected 0 APIs
+2026-03-31 13:39:35 - ai_data_agent - INFO - [Retrieval Node] Retrieved 0 APIs
+2026-03-31 13:39:35 - ai_data_agent - INFO - [Retrieval Node] Retrieved 12 database tables
+2026-03-31 13:39:35 - ai_data_agent - INFO - [PlannerNode] Generating plan for query: 查询特斯拉股票
+2026-03-31 13:39:35 - ai_data_agent - INFO - [PlannerNode] Available APIs: 0, Tables: 12
+2026-03-31 13:39:35 - ai_data_agent - INFO - [PlannerNode] Prompt sent to LLM:
+你是一个数据查询规划师。根据用户查询和可用的数据源，生成一个结构化的执行计划。
+
+用户查询：查询特斯拉股票
+
+提取的过滤条件：
+{
+  "intent_type": "api_query",
+  "entities": {
+    "stock_symbol": "TSLA",
+    "market": "US",
+    "trading_day_count": 5,
+    "api_hint": "stock_price"
+  },
+  "metrics": [
+    "收盘价",
+    "涨跌幅",
+    "成交量",
+    "开盘价",
+    "最高价",
+    "最低价"
+  ],
+  "dimensions": [
+    "日期"
+  ],
+  "confidence": 0.9
+}
+
+可用的API列表：
+（无可用API）
+
+
+可用的数据库表：
+1. 表名: api_call_logs
+   描述: 数据库表: api_call_logs
+   结构: 
+TABLE api_call_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - api_config_id: integer
+  - permission_id: integer
+  - conversation_id: string
+  - status: string
+  - response_time_ms: integer
+  - error_message: string
+  - called_at: datetime
+
+
+2. 表名: api_categories
+   描述: 数据库表: api_categories
+   结构: 
+TABLE api_categories (No description):
+  - id: integer [PK]
+  - name: string
+  - description: string
+  - parent_id: integer
+  - sort_order: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+
+
+3. 表名: api_configs
+   描述: 数据库表: api_configs
+   结构: 
+TABLE api_configs (No description):
+  - id: integer [PK]
+  - config_id: string
+  - name: string
+  - description: string
+  - base_url: string
+  - auth_type: string
+  - auth_config: json
+  - endpoints: json
+  - timeout: integer
+  - retry_count: integer
+  - is_system: integer
+  - is_active: integer
+  - created_by: integer
+  - created_at: datetime
+  - updated_at: datetime
+  - category_id: integer
+  - auth_fields: json
+  - owner_id: integer
+
+
+4. 表名: conversations
+   描述: 数据库表: conversations
+   结构: 
+TABLE conversations (No description):
+  - id: string [PK]
+  - user_id: integer
+  - username: string
+  - title: string
+  - created_at: datetime
+  - updated_at: datetime
+
+
+5. 表名: credit_logs
+   描述: 数据库表: credit_logs
+   结构: 
+TABLE credit_logs (No description):
+  - id: integer [PK]
+  - user_id: string
+  - username: string
+  - query: string
+  - session_id: string
+  - input_tokens: integer
+  - output_tokens: integer
+  - total_tokens: integer
+  - credits_deduc
+2026-03-31 13:39:36 - ai_data_agent - INFO - Anthropic Request: https://api.minimaxi.com/anthropic
+2026-03-31 13:39:58 - ai_data_agent - INFO - Anthropic Response received
+2026-03-31 13:39:58 - ai_data_agent - INFO - Anthropic Content Length: 390
+2026-03-31 13:39:58 - ai_data_agent - INFO - [PlannerNode] LLM Response: ```json
+{
+    "steps": [],
+    "reasoning": "用户查询特斯拉股票（TSLA）的价格数据，包括收盘价、涨跌幅、成交量、开盘价、最高价、最低价等。然而，经过分析发现：\n\n1. 可用的API列表显示为\"（无可用API）\"，没有任何可用的股票数据API端点。\n2. 可用的数据库表中没有任何表包含股票价格相关数据（如股票代码、开盘价、收盘价、涨跌幅、成交量等）。\n3. 可用的表主要是系统管理相关的表（用户账户、API配置、权限、日志、订单、通知等），均不包含股票市场数据。\n\n由于没有可用的数据源可以提供特斯拉股票的行情数据，无法生成有效的执行计划。建议用户：\n- 确认是否有其他可用的股票数据API可以接入\n- 检查是否有其他数据源表未在当前列表中\n- 考虑通过其他渠道获取股票数据后，再进行本地数据查询"
+}
+```
+2026-03-31 13:39:58 - ai_data_agent - WARNING - [PlannerNode] LLM plan parsing failed, attempting fallback
+2026-03-31 13:39:58 - ai_data_agent - WARNING - [PlannerNode] Fallback: No APIs available, cannot generate plan
+2026-03-31 13:39:58 - ai_data_agent - ERROR - [PlannerNode] Cannot generate valid plan - insufficient metadata or no tools available
+2026-03-31 13:39:58 - ai_data_agent - INFO - [AnalyzerNode] Starting analysis with 0 data sources
+2026-03-31 13:39:58 - ai_data_agent - WARNING - [AnalyzerNode] Empty plan and no data
+2026-03-31 13:39:58 - ai_data_agent - INFO - [AnalyzerNode] Analysis complete, report added to messages
+2026-03-31 13:39:58 - ai_data_agent - INFO - Response: POST http://127.0.0.1:8002/api/v1/chat - Status: 200

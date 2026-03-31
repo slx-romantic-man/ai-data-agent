@@ -11,7 +11,7 @@ from sqlalchemy import text
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-BASE_URL = "http://127.0.0.1:8003"
+BASE_URL = "http://127.0.0.1:8002"
 
 async def setup_permissions():
     """配置测试权限"""
