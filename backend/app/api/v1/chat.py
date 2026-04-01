@@ -562,17 +562,60 @@ async def stream_chat(
                             final_answer_text = messages[-1].get("content", "")
                             yield f"data: {_json_dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
 
-                        # Extract data from data_context
-                        data_context = node_output.get("data_context", {})
-                        if data_context:
-                            for key, value in data_context.items():
-                                if isinstance(value, dict) and "data" in value:
-                                    final_data = value
-                                    yield f"data: {_json_dumps({'type': 'data', 'data': final_data}, ensure_ascii=False)}\n\n"
-                                    break
+                        # Send normalized data immediately after analyzer output
+                        # Get the current state from the graph to access data_context
+                        current_state = await graph.aget_state(config)
+
+                        if current_state.values:
+                            data_context = current_state.values.get("data_context", {})
+                            logger.info(f"[SSE] data_context from state: {len(data_context)} keys, keys={list(data_context.keys())}")
+
+                            if data_context:
+                                for key, value in data_context.items():
+                                    if isinstance(value, dict) and "data" in value:
+                                        # Normalize data to {rows: [...], row_count: N} format
+                                        raw_data = value.get("data")
+                                        logger.info(f"[SSE] Normalizing data for key={key}, raw_data_type={type(raw_data).__name__}")
+
+                                        # Case 1: Already has 'rows' field
+                                        if isinstance(raw_data, dict) and "rows" in raw_data:
+                                            normalized_data = {
+                                                "rows": raw_data.get("rows", []),
+                                                "row_count": len(raw_data.get("rows", []))
+                                            }
+                                            logger.info(f"[SSE] Case 1: Already has rows field, row_count={normalized_data['row_count']}")
+
+                                        # Case 2: List format
+                                        elif isinstance(raw_data, list):
+                                            normalized_data = {
+                                                "rows": raw_data,
+                                                "row_count": len(raw_data)
+                                            }
+                                            logger.info(f"[SSE] Case 2: List format, row_count={normalized_data['row_count']}")
+
+                                        # Case 3: Single dict format (e.g., weather/IP API response)
+                                        elif isinstance(raw_data, dict):
+                                            normalized_data = {
+                                                "rows": [raw_data],
+                                                "row_count": 1
+                                            }
+                                            logger.info(f"[SSE] Case 3: Single dict format (weather/IP API), row_count=1")
+
+                                        # Case 4: No data or invalid format
+                                        else:
+                                            normalized_data = {
+                                                "rows": [],
+                                                "row_count": 0
+                                            }
+                                            logger.warning(f"[SSE] Case 4: Invalid format or no data")
+
+                                        yield f"data: {_json_dumps({'type': 'data', 'data': normalized_data}, ensure_ascii=False)}\n\n"
+                                        logger.info(f"[SSE] Sent normalized data event with rows field")
+                                        break
 
             # Check if workflow is interrupted (waiting for approval)
             state = await graph.aget_state(config)
+
             if state.next:
                 # Workflow is interrupted, send approval_required event
                 approval_event = _json_dumps({
