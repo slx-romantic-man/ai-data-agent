@@ -210,6 +210,61 @@
         "若任何问题无法得到有效回答，则测试失败"
       ],
       "passes": true
+    },
+    {
+      "id": "F-25",
+      "priority": 1,
+      "category": "bugfix",
+      "description": "多模板系统：修复分析模板过于特定化问题，天气查询不应使用金融术语模板，建立通用模板与金融模板的双模板机制",
+      "steps": [
+        "在 backend/app/agent/prompts/analysis_prompt.py 中保留 FINANCIAL_ANALYSIS_PROMPT 并新增 GENERAL_ANALYSIS_PROMPT",
+        "创建 get_api_type() 函数识别 API 类型（financial/general）",
+        "在 backend/app/agent/nodes/analyzer_node.py 中提取 API 类型信息",
+        "在 backend/app/agent/core/data_analyzer.py 中根据 API 类型选择模板",
+        "测试天气查询（如'今天北京天气如何'），验证不包含开盘价、收盘价等金融术语",
+        "测试股票查询（如'查询AAPL股票价格'），验证包含金融专用术语和风险提示",
+        "测试其他 API 类型（如 IP 查询），验证使用通用模板"
+      ],
+      "passes": false,
+      "notes": "需求来源：用户反馈查询天气时使用了包含金融术语的模板，导致输出不相关表述。需要实现 API 类型识别和模板选择机制。"
+    },
+    {
+      "id": "F-26",
+      "priority": 1,
+      "category": "bugfix",
+      "description": "规范化 SSE 数据结构：修复导出 Excel 按钮不显示问题，确保后端发送的数据包含 rows 字段",
+      "steps": [
+        "检查 backend/app/api/v1/chat.py 第 565-572 行的数据发送逻辑",
+        "修改 SSE 发送逻辑，规范化数据为 {rows: [...], row_count: N} 格式",
+        "处理三种数据格式：已有 rows 字段、列表格式、单个字典格式",
+        "前端验证：frontend/js/app-setup.js 的 hasExportableData() 函数检查 msg.data.rows",
+        "测试任意查询（天气/股票/IP），验证导出按钮显示",
+        "点击导出按钮，验证 Excel 文件下载成功",
+        "打开 Excel 验证数据完整性（rows 字段正确）"
+      ],
+      "passes": false,
+      "notes": "需求来源：用户反馈导出 Excel 按钮在所有查询中都不显示。根本原因是后端 SSE 直接赋值 final_data = value，未规范化为包含 rows 字段的结构。"
+    },
+    {
+      "id": "F-27",
+      "priority": 2,
+      "category": "bugfix",
+      "description": "排查并修复流式输出问题：前端流式输出完全不工作，无实时思考和打字机效果，需先排查根源再修复",
+      "steps": [
+        "用户打开浏览器开发者工具 → Network 标签",
+        "发送查询，检查 /chat/stream 请求状态码是否 200",
+        "检查 Response Headers 是否包含 text/event-stream",
+        "检查是否有数据流接收",
+        "查看 Console 标签是否有 [Stream] 日志输出",
+        "根据排查结果定位问题根源（CORS/权限/事件解析）",
+        "如确认 CORS 问题，修改 backend/app/api/v1/chat.py 添加 CORS 头",
+        "如确认前端问题，修改 frontend/js/api.js 增强错误处理",
+        "验证流式输出功能：发送查询，观察推理过程实时显示",
+        "验证打字机效果（思考内容逐字显示，20ms 间隔）",
+        "验证推理过程面板可折叠功能"
+      ],
+      "passes": false,
+      "notes": "需求来源：用户反馈流式输出完全失效。代码验证显示前端调用 api.streamChat()、后端 SSE 端点正常、打字机效果逻辑完整，但实际不工作。需要先排查再修复。"
     }
   ]
 }
