@@ -1797,27 +1797,31 @@ LLM_MAX_TOKENS=4096
 
 根据结构化需求文档，将问题拆解为3个原子化功能卡片：
 
-### F-25: 多模板系统（优先级 P1）
-- 目标：建立通用模板与金融模板的双模板机制
-- 修改文件（3个）：
+### F-25: 统一通用分析模板（优先级 P1）
+- 目标：创建单一通用模板，包罗万象，适配所有API类型（股票、天气、IP等）
+- 修改文件（2个）：
   1. backend/app/agent/prompts/analysis_prompt.py
-     - 保留 ANALYSIS_PROMPT 重命名为 FINANCIAL_ANALYSIS_PROMPT
-     - 新增 GENERAL_ANALYSIS_PROMPT（移除金融术语）
-     - 创建 get_api_type() 函数和 get_analysis_prompt_by_api_type() 函数
+     - 将 ANALYSIS_PROMPT 重命名为 UNIVERSAL_ANALYSIS_PROMPT
+     - 移除所有金融专用术语（开盘价、收盘价、涨跌幅等特定表述）
+     - 设计通用分析维度：
+       * 数据概览（基本信息、时间范围、数据量）
+       * 核心指标（关键数值、统计特征）
+       * 主要发现（模式识别、趋势分析）
+       * 异常检测（异常点、特殊情况）
+       * 可能解释（推测性分析，明确标注）
+       * 应用建议（基于数据的一般性建议）
+       * 局限性说明（数据完整性、时效性等）
+     - 确保模板能自然适配各类数据（时间序列、地理位置、气象数据、财务数据等）
 
-  2. backend/app/agent/nodes/analyzer_node.py
-     - 在 _extract_all_data() 函数中提取 api_id
-     - 调用 get_api_type(api_id) 确定 API 类型
-     - 返回 (all_data, primary_api_type) 元组
-
-  3. backend/app/agent/core/data_analyzer.py
-     - analyze() 方法新增 api_type 参数
-     - 调用 get_analysis_prompt_by_api_type() 选择模板
+  2. backend/app/agent/core/data_analyzer.py
+     - 直接调用 UNIVERSAL_ANALYSIS_PROMPT（无需API类型判断）
+     - 保持现有 analyze() 方法结构不变
 
 - 验收标准：
-  - 天气查询不包含"开盘价、收盘价"等金融术语
-  - 股票查询包含金融专用术语和风险提示
-  - 其他 API 类型使用通用模板
+  - 天气查询分析报告使用通用表述（温度、湿度、天气状况），不出现金融术语
+  - 股票查询分析报告自然呈现股价数据，不强制金融术语框架（如"开盘价"、"收盘价"）
+  - IP查询分析报告呈现地理位置数据，结构与其他API一致
+  - 所有API类型的分析报告结构一致，内容自然适配数据类型
 
 ### F-26: 规范化 SSE 数据结构（优先级 P1）
 - 目标：确保后端发送的数据包含 rows 字段
@@ -1857,7 +1861,7 @@ LLM_MAX_TOKENS=4096
 
 ### 1. feature_list.json
 - 新增功能卡片：
-  - F-25: 多模板系统（priority=1, passes=false）
+  - F-25: 统一通用分析模板（priority=1, passes=false）
   - F-26: 规范化 SSE 数据结构（priority=1, passes=false）
   - F-27: 排查并修复流式输出问题（priority=2, passes=false）
 - 功能总数：从 11 个增加到 14 个
@@ -1891,6 +1895,12 @@ LLM_MAX_TOKENS=4096
   - F-20: Alpha Vantage 股票 API ✅ 已完成
   - F-21: WeatherAPI 天气 API ✅ 已完成
   - F-22: Chanjet IP 定位 API ✅ 已完成
+  - F-25: 统一通用分析模板 ⏳ 待完成
+  - F-26: 规范化 SSE 数据结构 ⏳ 待完成
+  - F-18: 端到端最终回答判定机制 ✅ 已完成
+  - F-20: Alpha Vantage 股票 API ✅ 已完成
+  - F-21: WeatherAPI 天气 API ✅ 已完成
+  - F-22: Chanjet IP 定位 API ✅ 已完成
   - F-25: 多模板系统 ⏳ 待完成
   - F-26: 规范化 SSE 数据结构 ⏳ 待完成
 
@@ -1901,7 +1911,7 @@ LLM_MAX_TOKENS=4096
   - F-27: 排查并修复流式输出问题 ⏳ 待完成
 
 【下一步推荐】
-→ F-25: 多模板系统（priority=1，解决最直观的用户体验问题）
+→ F-25: 统一通用分析模板（priority=1，创建包罗万象的单一模板，简化架构）
 → 或 F-26: 规范化 SSE 数据结构（priority=1，修改量小，快速修复导出功能）
 
 【工作纪律提醒】

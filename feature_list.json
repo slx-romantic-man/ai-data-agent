@@ -215,18 +215,20 @@
       "id": "F-25",
       "priority": 1,
       "category": "bugfix",
-      "description": "多模板系统：修复分析模板过于特定化问题，天气查询不应使用金融术语模板，建立通用模板与金融模板的双模板机制",
+      "description": "统一通用分析模板：替换当前过于特定化的金融模板，创建一个包罗万象的通用模板，适用于股票、天气、IP等所有API类型",
       "steps": [
-        "在 backend/app/agent/prompts/analysis_prompt.py 中保留 FINANCIAL_ANALYSIS_PROMPT 并新增 GENERAL_ANALYSIS_PROMPT",
-        "创建 get_api_type() 函数识别 API 类型（financial/general）",
-        "在 backend/app/agent/nodes/analyzer_node.py 中提取 API 类型信息",
-        "在 backend/app/agent/core/data_analyzer.py 中根据 API 类型选择模板",
-        "测试天气查询（如'今天北京天气如何'），验证不包含开盘价、收盘价等金融术语",
-        "测试股票查询（如'查询AAPL股票价格'），验证包含金融专用术语和风险提示",
-        "测试其他 API 类型（如 IP 查询），验证使用通用模板"
+        "在 backend/app/agent/prompts/analysis_prompt.py 中将 ANALYSIS_PROMPT 重命名为 UNIVERSAL_ANALYSIS_PROMPT",
+        "移除所有金融专用术语（开盘价、收盘价、涨跌幅等特定表述）",
+        "设计通用分析维度：数据概览、核心指标、主要发现、模式识别、异常检测、可能解释、应用建议、局限性说明",
+        "确保模板能适配各类数据（时间序列、地理位置、气象数据、财务数据等）",
+        "在 backend/app/agent/core/data_analyzer.py 中调用 UNIVERSAL_ANALYSIS_PROMPT",
+        "测试天气查询（如'今天北京天气如何'），验证分析报告使用通用表述（温度、湿度、天气状况）",
+        "测试股票查询（如'查询AAPL股票价格'），验证分析报告自然呈现股价数据，不强制金融术语框架",
+        "测试IP查询（如'查询IP 8.8.8.8位置'），验证分析报告呈现地理位置数据",
+        "验证所有API类型的分析报告结构一致，内容自然适配数据类型"
       ],
       "passes": false,
-      "notes": "需求来源：用户反馈查询天气时使用了包含金融术语的模板，导致输出不相关表述。需要实现 API 类型识别和模板选择机制。"
+      "notes": "需求调整：用户反馈不需要双模板机制，只需一个统一的通用模板，包含包罗万象的分析维度，能自然适配所有数据类型。"
     },
     {
       "id": "F-26",
