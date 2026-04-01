@@ -16,7 +16,7 @@ from app.agent.prompts.sql_prompt import (
     get_sql_fix_prompt,
 )
 from app.agent.prompts.analysis_prompt import (
-    ANALYSIS_PROMPT,
+    UNIVERSAL_ANALYSIS_PROMPT,
     get_analysis_prompt,
     get_trend_analysis_prompt,
     get_comparison_analysis_prompt,
@@ -38,7 +38,7 @@ __all__ = [
     "get_sql_validation_prompt",
     "get_sql_fix_prompt",
     # Analysis prompt
-    "ANALYSIS_PROMPT",
+    "UNIVERSAL_ANALYSIS_PROMPT",
     "get_analysis_prompt",
     "get_trend_analysis_prompt",
     "get_comparison_analysis_prompt",
