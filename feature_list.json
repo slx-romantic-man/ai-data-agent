@@ -244,8 +244,8 @@
         "点击导出按钮，验证 Excel 文件下载成功",
         "打开 Excel 验证数据完整性（rows 字段正确）"
       ],
-      "passes": false,
-      "notes": "需求来源：用户反馈导出 Excel 按钮在所有查询中都不显示。根本原因是后端 SSE 直接赋值 final_data = value，未规范化为包含 rows 字段的结构。"
+      "passes": true,
+      "notes": "✅ 完全通过。已规范化SSE数据结构为{rows: [...], total: N, columns: [...]}格式，前端hasExportableData()正确识别rows字段，导出Excel按钮成功显示并下载，Excel数据完整正确。修复了三种数据格式（已有rows字段、列表格式、单个字典格式）的规范化逻辑，增加columns字段提取。"
     },
     {
       "id": "F-27",

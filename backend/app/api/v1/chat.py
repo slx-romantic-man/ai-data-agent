@@ -579,33 +579,43 @@ async def stream_chat(
 
                                         # Case 1: Already has 'rows' field
                                         if isinstance(raw_data, dict) and "rows" in raw_data:
+                                            rows = raw_data.get("rows", [])
+                                            # Extract columns from first row if available
+                                            columns = list(rows[0].keys()) if rows and isinstance(rows[0], dict) else []
                                             normalized_data = {
-                                                "rows": raw_data.get("rows", []),
-                                                "row_count": len(raw_data.get("rows", []))
+                                                "rows": rows,
+                                                "total": len(rows),
+                                                "columns": columns
                                             }
-                                            logger.info(f"[SSE] Case 1: Already has rows field, row_count={normalized_data['row_count']}")
+                                            logger.info(f"[SSE] Case 1: Already has rows field, total={normalized_data['total']}, columns={len(columns)}")
 
                                         # Case 2: List format
                                         elif isinstance(raw_data, list):
+                                            # Extract columns from first item if available
+                                            columns = list(raw_data[0].keys()) if raw_data and isinstance(raw_data[0], dict) else []
                                             normalized_data = {
                                                 "rows": raw_data,
-                                                "row_count": len(raw_data)
+                                                "total": len(raw_data),
+                                                "columns": columns
                                             }
-                                            logger.info(f"[SSE] Case 2: List format, row_count={normalized_data['row_count']}")
+                                            logger.info(f"[SSE] Case 2: List format, total={normalized_data['total']}, columns={len(columns)}")
 
                                         # Case 3: Single dict format (e.g., weather/IP API response)
                                         elif isinstance(raw_data, dict):
+                                            columns = list(raw_data.keys())
                                             normalized_data = {
                                                 "rows": [raw_data],
-                                                "row_count": 1
+                                                "total": 1,
+                                                "columns": columns
                                             }
-                                            logger.info(f"[SSE] Case 3: Single dict format (weather/IP API), row_count=1")
+                                            logger.info(f"[SSE] Case 3: Single dict format (weather/IP API), total=1, columns={len(columns)}")
 
                                         # Case 4: No data or invalid format
                                         else:
                                             normalized_data = {
                                                 "rows": [],
-                                                "row_count": 0
+                                                "total": 0,
+                                                "columns": []
                                             }
                                             logger.warning(f"[SSE] Case 4: Invalid format or no data")
 
