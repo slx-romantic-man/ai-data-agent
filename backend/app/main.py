@@ -15,6 +15,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.staticfiles import StaticFiles
 
 from app.config.settings import settings
 from app.config.llm_config import get_llm
@@ -156,6 +157,19 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 # Include API routers
 app.include_router(v1_router, prefix="/api")
+
+# Mount static files for frontend - MUST be after router inclusion
+import os
+from pathlib import Path
+
+# Get frontend directory path
+frontend_path = Path(__file__).parent.parent.parent / "frontend"
+
+if frontend_path.exists():
+    app.mount("/frontend", StaticFiles(directory=str(frontend_path), html=True), name="frontend")
+    logger.info(f"Frontend static files mounted at /frontend from {frontend_path}")
+else:
+    logger.warning(f"Frontend directory not found at {frontend_path}")
 
 
 # Health check endpoint

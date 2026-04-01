@@ -46,7 +46,9 @@ window.AppModules.createChatFeature = function(deps) {
                 const data = event.data;
 
                 if (type === 'thought') {
-                    const stepNum = data.step - 1;
+                    const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length;
+
+                    // Ensure steps array has enough elements
                     while (assistantMsg.reasoningLog.steps.length <= stepNum) {
                         assistantMsg.reasoningLog.steps.push({
                             step_number: assistantMsg.reasoningLog.steps.length + 1,
@@ -59,7 +61,7 @@ window.AppModules.createChatFeature = function(deps) {
                     const targetText = data.content || '';
                     const currentStep = assistantMsg.reasoningLog.steps[stepNum];
 
-                    if (currentStep.thought !== targetText) {
+                    if (currentStep && currentStep.thought !== targetText) {
                         let currentIndex = currentStep.thought.length;
 
                         if (assistantMsg.typewriterInterval) clearInterval(assistantMsg.typewriterInterval);
@@ -83,20 +85,20 @@ window.AppModules.createChatFeature = function(deps) {
                     assistantMsg.reasoningLog.total_steps = assistantMsg.reasoningLog.steps.length;
                 }
                 else if (type === 'action') {
-                    const stepNum = data.step - 1;
-                    if (assistantMsg.reasoningLog.steps[stepNum]) {
+                    const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length - 1;
+                    if (stepNum >= 0 && assistantMsg.reasoningLog.steps[stepNum]) {
                         assistantMsg.reasoningLog.steps[stepNum].action = data.action;
                     }
                 }
                 else if (type === 'executing') {
-                    const stepNum = data.step - 1;
-                    if (assistantMsg.reasoningLog.steps[stepNum]) {
+                    const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length - 1;
+                    if (stepNum >= 0 && assistantMsg.reasoningLog.steps[stepNum]) {
                         assistantMsg.reasoningLog.steps[stepNum].observation = `正在尝试调用: ${data.tool}...`;
                     }
                 }
                 else if (type === 'observation') {
-                    const stepNum = data.step - 1;
-                    if (assistantMsg.reasoningLog.steps[stepNum]) {
+                    const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length - 1;
+                    if (stepNum >= 0 && assistantMsg.reasoningLog.steps[stepNum]) {
                         assistantMsg.reasoningLog.steps[stepNum].observation = data.content;
                     }
                 }
