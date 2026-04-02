@@ -25,7 +25,29 @@ async def intent_clarification_node(state: AgentState) -> AgentState:
         更新后的 AgentState，包含 extracted_filters 或反问消息
     """
     query = state["query"]
+    messages = state.get("messages", [])
+
     logger.info(f"[IntentNode] Processing query: {query}")
+    logger.info(f"[IntentNode] Current messages count: {len(messages)}")
+
+    # Check if this is a clarification follow-up (user responding to previous clarification question)
+    is_clarification_followup = False
+    if len(messages) >= 2:
+        # Check if the last assistant message was a clarification question
+        last_assistant_msg = None
+        for msg in reversed(messages):
+            if msg.get("role") == "assistant":
+                last_assistant_msg = msg
+                break
+
+        if last_assistant_msg and last_assistant_msg.get("type") == "clarification":
+            is_clarification_followup = True
+            logger.info(f"[IntentNode] Detected clarification follow-up. Previous question: {last_assistant_msg.get('content')}")
+
+            # Merge query with history context
+            merged_query = _merge_with_history(messages, query)
+            logger.info(f"[IntentNode] Merged query: {merged_query}")
+            query = merged_query  # Use merged query for intent analysis
 
     # 获取 API 列表描述
     try:
@@ -34,14 +56,18 @@ async def intent_clarification_node(state: AgentState) -> AgentState:
     except Exception:
         api_list_desc = "暂无已配置的API"
 
-    # 调用 LLM 分析意图
+    # 调用 LLM 分析意图 (with conversation history)
     llm = get_llm()
-    prompt = get_intent_prompt(query, api_list_desc)
+    prompt = get_intent_prompt(query, api_list_desc, history=messages if is_clarification_followup else None)
 
-    response = await llm.chat([
-        {"role": "system", "content": "你是一个专业的数据分析助手，擅长理解用户意图并判断查询条件是否完备。"},
-        {"role": "user", "content": prompt}
-    ])
+    # Build chat messages for LLM
+    llm_messages = [{"role": "system", "content": "你是一个专业的数据分析助手，擅长理解用户意图并判断查询条件是否完备。"}]
+    if is_clarification_followup and messages:
+        # Include conversation history for context
+        llm_messages.extend(messages[-6:])  # Last 6 messages (3 rounds)
+    llm_messages.append({"role": "user", "content": prompt})
+
+    response = await llm.chat(llm_messages)
 
     # 解析 LLM 响应
     intent_data = _parse_llm_response(response)
@@ -95,3 +121,36 @@ def _parse_llm_response(response: str) -> Dict[str, Any]:
         "missing_info": None,
         "clarification_question": None
     }
+
+
+def _merge_with_history(messages: list, current_query: str) -> str:
+    """
+    Merge current query with conversation history context.
+
+    Args:
+        messages: Conversation history
+        current_query: Current user query
+
+    Returns:
+        Merged query string with context
+    """
+    # Extract previous user query from history
+    previous_user_msg = None
+    previous_assistant_msg = None
+
+    for msg in reversed(messages):
+        if msg.get("role") == "user" and msg.get("content") != current_query:
+            previous_user_msg = msg.get("content")
+        elif msg.get("role") == "assistant" and msg.get("type") == "clarification":
+            previous_assistant_msg = msg.get("content")
+
+        if previous_user_msg and previous_assistant_msg:
+            break
+
+    if previous_user_msg:
+        # Merge: "previous query + clarification补充"
+        merged = f"{previous_user_msg}，补充信息：{current_query}"
+        logger.info(f"[IntentNode] Merged context: {merged}")
+        return merged
+
+    return current_query

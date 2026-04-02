@@ -161,11 +161,22 @@ async def chat(
             "created_at": datetime.now(),
         })
 
+        # Format conversation history for LangGraph (remove timestamp and extra fields)
+        conversation_history = session.get("messages", [])
+        formatted_history = []
+        for msg in conversation_history:
+            formatted_history.append({
+                "role": msg["role"],
+                "content": msg["content"]
+            })
+
+        logger.info(f"[ChatAPI] Loaded {len(formatted_history)} history messages for session {session_id}")
+
         # Use LangGraph workflow
         graph = await create_graph(permission)
 
         initial_state: AgentState = {
-            "messages": [],
+            "messages": formatted_history,  # Load conversation history
             "query": request.message,
             "extracted_filters": None,
             "plan": None,
