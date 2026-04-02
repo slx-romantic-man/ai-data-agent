@@ -213,36 +213,50 @@ async def chat(
 
         final_reasoning_log = None
 
-        # Update session: Append new messages preserving type metadata
-        # Don't replace entire session - just append new LangGraph messages
-        for msg in messages:
-            if isinstance(msg, dict):
-                # Check if this message already exists in session (avoid duplicates)
-                msg_role = msg.get("role")
-                msg_content = msg.get("content", "")
+        # Update session: Add user message and new assistant response
+        # Step 1: Add user's current request to session (CRITICAL for clarification detection)
+        user_msg = {
+            "role": "user",
+            "content": request.message,
+            "timestamp": datetime.now().isoformat()
+        }
+        session["messages"].append(user_msg)
 
-                # Skip if this is the user's current request (already added below)
-                if msg_role == "user" and msg_content == request.message:
-                    continue
+        # Step 2: Add only the NEW assistant response (last message from LangGraph)
+        # LangGraph messages list contains entire conversation history, we only need the new response
+        if messages:
+            last_msg = messages[-1]  # Get only the last (new) message
 
-                # Preserve all message fields including type
-                session_msg = {
-                    "role": msg_role,
-                    "content": msg_content,
-                    "timestamp": datetime.now().isoformat()
-                }
-                # Preserve metadata fields like "type" for clarification detection
-                if "type" in msg:
-                    session_msg["type"] = msg["type"]
+            if isinstance(last_msg, dict):
+                # Only process assistant messages
+                if last_msg.get("role") == "assistant":
+                    msg_content = last_msg.get("content", "")
 
-                session["messages"].append(session_msg)
+                    # Preserve all message fields including type
+                    session_msg = {
+                        "role": "assistant",
+                        "content": msg_content,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    # Preserve metadata fields like "type" for clarification detection
+                    if "type" in last_msg:
+                        session_msg["type"] = last_msg["type"]
+
+                    session["messages"].append(session_msg)
             else:
-                # Handle LangChain message objects
-                session["messages"].append({
-                    "role": msg.type if hasattr(msg, 'type') else "assistant",
-                    "content": msg.content,
-                    "timestamp": datetime.now().isoformat()
-                })
+                # Handle LangChain message objects (only assistant)
+                if hasattr(last_msg, 'type') and last_msg.type in ["assistant", "ai"]:
+                    # Check if it's a clarification by analyzing content
+                    msg_content = last_msg.content
+                    session_msg = {
+                        "role": "assistant",
+                        "content": msg_content,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    # Detect clarification from LangChain AIMessage
+                    if hasattr(last_msg, 'additional_kwargs') and 'type' in last_msg.additional_kwargs:
+                        session_msg["type"] = last_msg.additional_kwargs['type']
+                    session["messages"].append(session_msg)
 
         session["updated_at"] = datetime.now()
         _sessions[session_id] = session

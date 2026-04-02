@@ -59,13 +59,13 @@ async def intent_clarification_node(state: AgentState) -> AgentState:
         if last_assistant_msg and last_assistant_msg.get("type") == "clarification":
             is_clarification_followup = True
             logger.info(f"[IntentNode] Detected clarification follow-up. Previous question: {last_assistant_msg.get('content')}")
-        else:
-            logger.info(f"[IntentNode] DEBUG: Clarification not detected - last_assistant_msg exists={last_assistant_msg is not None}, type value={last_assistant_msg.get('type') if last_assistant_msg else 'N/A'}")
 
-            # Merge query with history context
+            # Merge query with history context (ONLY when clarification detected)
             merged_query = _merge_with_history(messages, query)
             logger.info(f"[IntentNode] Merged query: {merged_query}")
             query = merged_query  # Use merged query for intent analysis
+        else:
+            logger.info(f"[IntentNode] DEBUG: Clarification not detected - last_assistant_msg exists={last_assistant_msg is not None}, type value={last_assistant_msg.get('type') if last_assistant_msg else 'N/A'}")
 
     # 获取 API 列表描述
     try:
