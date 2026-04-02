@@ -14,7 +14,7 @@
         "验证响应包含股票数据结果，而非再次询问\"请问您具体想查询什么数据\"",
         "检查backend/sessions.json确认test-stock-session包含完整对话历史"
       ],
-      "passes": false,
+      "passes": true,
       "validation_criteria": {
         "must_not_ask_redundant_question": true,
         "must_return_data": true,

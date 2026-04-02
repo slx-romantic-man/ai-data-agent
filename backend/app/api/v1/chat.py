@@ -161,14 +161,18 @@ async def chat(
             "created_at": datetime.now(),
         })
 
-        # Format conversation history for LangGraph (remove timestamp and extra fields)
+        # Format conversation history for LangGraph (preserve type metadata for clarification detection)
         conversation_history = session.get("messages", [])
         formatted_history = []
         for msg in conversation_history:
-            formatted_history.append({
+            formatted_msg = {
                 "role": msg["role"],
                 "content": msg["content"]
-            })
+            }
+            # Preserve "type" field for clarification detection (e.g., "type": "clarification")
+            if "type" in msg:
+                formatted_msg["type"] = msg["type"]
+            formatted_history.append(formatted_msg)
 
         logger.info(f"[ChatAPI] Loaded {len(formatted_history)} history messages for session {session_id}")
 
@@ -209,17 +213,37 @@ async def chat(
 
         final_reasoning_log = None
 
-        # Update session
-        session["messages"].append({
-            "role": "user",
-            "content": request.message,
-            "timestamp": datetime.now().isoformat(),
-        })
-        session["messages"].append({
-            "role": "assistant",
-            "content": final_answer_text,
-            "timestamp": datetime.now().isoformat(),
-        })
+        # Update session: Append new messages preserving type metadata
+        # Don't replace entire session - just append new LangGraph messages
+        for msg in messages:
+            if isinstance(msg, dict):
+                # Check if this message already exists in session (avoid duplicates)
+                msg_role = msg.get("role")
+                msg_content = msg.get("content", "")
+
+                # Skip if this is the user's current request (already added below)
+                if msg_role == "user" and msg_content == request.message:
+                    continue
+
+                # Preserve all message fields including type
+                session_msg = {
+                    "role": msg_role,
+                    "content": msg_content,
+                    "timestamp": datetime.now().isoformat()
+                }
+                # Preserve metadata fields like "type" for clarification detection
+                if "type" in msg:
+                    session_msg["type"] = msg["type"]
+
+                session["messages"].append(session_msg)
+            else:
+                # Handle LangChain message objects
+                session["messages"].append({
+                    "role": msg.type if hasattr(msg, 'type') else "assistant",
+                    "content": msg.content,
+                    "timestamp": datetime.now().isoformat()
+                })
+
         session["updated_at"] = datetime.now()
         _sessions[session_id] = session
         _save_sessions()

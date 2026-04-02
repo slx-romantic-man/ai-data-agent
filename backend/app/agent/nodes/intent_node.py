@@ -30,19 +30,37 @@ async def intent_clarification_node(state: AgentState) -> AgentState:
     logger.info(f"[IntentNode] Processing query: {query}")
     logger.info(f"[IntentNode] Current messages count: {len(messages)}")
 
+    # Debug: Log actual message structure for diagnosis
+    if len(messages) > 0:
+        logger.info(f"[IntentNode] DEBUG: First message type: {type(messages[0])}")
+        logger.info(f"[IntentNode] DEBUG: First message: {messages[0] if isinstance(messages[0], dict) else 'LangChain object'}")
+        if len(messages) >= 2:
+            last_msg = messages[-1] if isinstance(messages[-1], dict) else messages[-1]
+            logger.info(f"[IntentNode] DEBUG: Last message type: {type(messages[-1])}")
+            logger.info(f"[IntentNode] DEBUG: Last message has 'type' field: {'type' in last_msg if isinstance(last_msg, dict) else 'N/A'}")
+            if isinstance(last_msg, dict):
+                logger.info(f"[IntentNode] DEBUG: Last message keys: {list(last_msg.keys())}")
+                logger.info(f"[IntentNode] DEBUG: Last message 'type' value: {last_msg.get('type')}")
+                logger.info(f"[IntentNode] DEBUG: Last message 'role' value: {last_msg.get('role')}")
+                logger.info(f"[IntentNode] DEBUG: Last message content (first 50 chars): {last_msg.get('content', '')[:50]}")
+
     # Check if this is a clarification follow-up (user responding to previous clarification question)
     is_clarification_followup = False
     if len(messages) >= 2:
         # Check if the last assistant message was a clarification question
         last_assistant_msg = None
         for msg in reversed(messages):
+            logger.info(f"[IntentNode] DEBUG: Scanning message - role={msg.get('role')}, type={msg.get('type')}")
             if msg.get("role") == "assistant":
                 last_assistant_msg = msg
+                logger.info(f"[IntentNode] DEBUG: Found last assistant message - type={msg.get('type')}, content={msg.get('content', '')[:50]}")
                 break
 
         if last_assistant_msg and last_assistant_msg.get("type") == "clarification":
             is_clarification_followup = True
             logger.info(f"[IntentNode] Detected clarification follow-up. Previous question: {last_assistant_msg.get('content')}")
+        else:
+            logger.info(f"[IntentNode] DEBUG: Clarification not detected - last_assistant_msg exists={last_assistant_msg is not None}, type value={last_assistant_msg.get('type') if last_assistant_msg else 'N/A'}")
 
             # Merge query with history context
             merged_query = _merge_with_history(messages, query)
