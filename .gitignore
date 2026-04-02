@@ -37,11 +37,16 @@ ENV/
 # Environment Variables
 .env
 .env.local
+.env.production
 
 # Logs
 *.log
 logs/
 backend/logs/
+server.log
+server_f12.log
+init_output.log
+init_server.log
 
 # Database
 *.db
@@ -57,23 +62,32 @@ backend/data/qdrant/
 # Exports
 backend/exports/
 exports/
+*.xlsx
+*.csv
 
 # Node
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
 
 # Testing
 .pytest_cache/
 .coverage
 htmlcov/
 *.cover
+test_*.py
+*_test.py
+check_apis.py
+F12_VERIFICATION.py
+quick_test.sh
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
+.server_pid
 
 # Session data
 backend/sessions.json
@@ -81,4 +95,19 @@ backend/sessions.json
 # OS
 Thumbs.db
 .DS_Store
-backend/data/qdrant/
+
+# Claude Code specific
+.claude/settings.local.json
+.claude/plans/
+.claude/memory/
+
+# Test request files
+test_request*.json
+test_chat.json
+test_stock_api.json
+test_ip.json
+alpha_vantage_api.json
+
+# Documentation temporary
+BUG修复需求*.md
+f24_test_output.txt

@@ -1,272 +1,229 @@
 {
   "project_features": [
     {
-      "id": "F-09",
+      "id": "F-CM-01",
       "priority": 1,
-      "category": "bugfix",
-      "description": "Planner计划结构强校验修复：修复api_id类型错误，确保为字符串且与API元数据一致，禁止隐式转换",
+      "category": "functional",
+      "description": "股票查询多轮澄清上下文记忆：用户补充时间范围后系统应记住初始意图",
       "steps": [
-        "准备股票查询、订单查询、权限拒绝三类问题",
-        "逐条触发Planner生成计划",
-        "检查每个steps[*].api_id是否为字符串",
-        "检查step结构是否包含执行所需字段且字段名正确",
-        "验证不再出现ExecutionPlan的Pydantic校验错误",
-        "验证日志中不再出现api_id为int导致的fallback"
+        "使用curl或浏览器访问 http://localhost:8002/docs 打开API文档",
+        "调用 POST /api/v1/chat 接口，发送第一条消息：{\"message\": \"分析苹果美股股价变化\", \"session_id\": \"test-stock-session\"}",
+        "验证响应包含澄清问题（如\"请问您需要分析哪个时间范围的股价？\"）",
+        "使用相同session_id发送第二条消息：{\"message\": \"近期的\", \"session_id\": \"test-stock-session\"}",
+        "验证系统正确理解合并意图（\"苹果股价，时间范围：近期\"）",
+        "验证响应包含股票数据结果，而非再次询问\"请问您具体想查询什么数据\"",
+        "检查backend/sessions.json确认test-stock-session包含完整对话历史"
       ],
-      "passes": true
+      "passes": false,
+      "validation_criteria": {
+        "must_not_ask_redundant_question": true,
+        "must_return_data": true,
+        "session_history_length": ">= 4 messages (2 user + 2 assistant)"
+      }
     },
     {
-      "id": "F-10",
-      "priority": 1,
-      "category": "bugfix",
-      "description": "Planner Fallback安全化与可执行化：重构fallback策略，禁止生成unknown step，必须基于可信API元数据或安全失败",
-      "steps": [
-        "人为构造Planner非法输出场景",
-        "观察fallback是否触发",
-        "验证fallback不会生成unknown的api_id或存储key",
-        "若Retrieval提供足够元数据，验证fallback可生成最小合法计划并继续执行",
-        "若元数据不足，验证系统明确终止并输出失败原因",
-        "验证不会再进入伪执行+空分析的无效链路"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-11",
-      "priority": 1,
-      "category": "bugfix",
-      "description": "Executor数据存储键标准化与结果完整性修复：统一data_context写入规范，禁止不可溯源key，确保Analyzer可稳定识别",
-      "steps": [
-        "触发股票API调用",
-        "检查data_context中的key是否符合step_<index>_<api_id>等命名规范",
-        "检查value是否包含原始响应与标准化结果",
-        "再触发订单API调用并重复检查",
-        "验证Analyzer能正确读取并提取结构化数据",
-        "验证日志中不再出现结果已写入但Analyzer提取为0 rows的异常"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-12",
-      "priority": 1,
-      "category": "bugfix",
-      "description": "Analyzer空数据兜底与用户可理解答复增强：增强对空数据、权限拒绝、执行失败、计划无效等异常的兜底能力，必须输出用户可理解的正式答复",
-      "steps": [
-        "提交一个有真实数据的问题，验证能得到分析结果",
-        "提交一个无数据问题，验证回答区显示未查询到符合条件的数据",
-        "提交一个无权限问题，验证回答区明确提示权限不足",
-        "提交一个Planner无法形成计划的问题，验证回答区明确提示无法执行原因",
-        "验证任何情况下前端最终回答区都不为空白"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-18",
-      "priority": 1,
-      "category": "testing",
-      "description": "端到端最终回答判定机制：重新定义测试标准，必须以Agent生成最终回答文本且内容有效为准，不以接口成功或流程结束为准",
-      "steps": [
-        "执行现有E2E测试集",
-        "调整断言为必须存在final_answer且非空",
-        "对复杂问题校验回答中的关键业务要素",
-        "对权限拒绝问题断言拒绝文本明确",
-        "对无数据问题断言说明文本明确",
-        "若只有中间过程而无最终回答，则测试必须失败"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-13",
+      "id": "F-CM-02",
       "priority": 2,
-      "category": "testing",
-      "description": "API全量复杂问题覆盖测试集建设：针对系统当前已接入的全部API建立复杂自然语言问题测试集，每个API至少1-3条真实复杂问题",
+      "category": "functional",
+      "description": "天气查询补充地点：用户补充城市名后系统应直接执行查询而非再次询问",
       "steps": [
-        "盘点系统中的全部API",
-        "为每个API设计复杂问句",
-        "逐条运行完整Agent链路",
-        "等待最终回答完成返回",
-        "校验回答与问题语义相匹配",
-        "若某API的问题无法获得最终答案，则该API测试失败",
-        "输出API维度测试报告"
+        "调用 POST /api/v1/chat 接口：{\"message\": \"查询天气\", \"session_id\": \"test-weather-session\"}",
+        "验证响应包含澄清问题（如\"请问您想查询哪个城市的天气？\"）",
+        "发送补充消息：{\"message\": \"北京\", \"session_id\": \"test-weather-session\"}",
+        "验证系统执行北京天气查询并返回数据",
+        "验证响应不包含其他澄清问题（如\"请问具体日期\"）",
+        "使用浏览器打开 frontend/index.html，在UI界面重复上述对话",
+        "验证前端UI显示完整对话历史（包含第一条\"查询天气\"）"
       ],
-      "passes": true
+      "passes": false,
+      "validation_criteria": {
+        "must_execute_api": true,
+        "must_not_ask_additional_question": true,
+        "frontend_history_display": true
+      }
     },
     {
-      "id": "F-20",
-      "priority": 1,
-      "category": "feature",
-      "description": "Alpha Vantage 股票 API 注册与端到端调用：在管理后台注册 Alpha Vantage API，实现管理员和授权用户通过自然语言查询股票数据",
-      "test_url": "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AAPL&apikey=BEX015VSNDBAWP31",
-      "api_config": {
-        "base_url": "https://www.alphavantage.co/query",
-        "method": "GET",
-        "params": {
-          "function": "TIME_SERIES_DAILY",
-          "symbol": "{stock_symbol}",
-          "apikey": "BEX015VSNDBAWP31"
-        }
-      },
+      "id": "F-CM-03",
+      "priority": 3,
+      "category": "functional",
+      "description": "连续独立查询不混淆：完成一个查询后开启新查询，系统不应混入历史上下文",
       "steps": [
-        "管理员登录系统，进入 API 管理界面",
-        "添加 Alpha Vantage API 配置：URL、参数模板、认证信息",
-        "使用测试 URL 验证 API 可访问性",
-        "管理员用自然语言提问：'查询苹果公司最近的股价'或'AAPL股票今天表现如何'",
-        "验证 Agent 能识别意图、选择正确 API、构造请求参数",
-        "验证 Executor 成功调用 API 并将结果存入 data_context",
-        "验证 Analyzer 解析股票数据并生成用户友好的回答（包含股价、涨跌等关键信息）",
-        "管理员在后台为普通用户授予该 API 权限",
-        "普通用户登录后用自然语言提问相同问题",
-        "验证普通用户也能成功获得股票分析结果"
+        "发送第一条完整查询：{\"message\": \"最近7天的订单量\", \"session_id\": \"test-independent-session\"}",
+        "验证返回数据（无澄清问题）",
+        "发送第二条新查询：{\"message\": \"分析用户增长趋势\", \"session_id\": \"test-independent-session\"}",
+        "验证第二条查询返回增长趋势分析，而非订单量数据",
+        "验证系统不会将\"最近7天\"误应用到\"用户增长趋势\"查询",
+        "检查backend/sessions.json确认两条查询均被记录但未混淆"
       ],
-      "passes": true,
-      "notes": "✅ 完全通过。已切换到稳定的aiznt.com LLM提供商，成功调用Alpha Vantage API获取100条股票数据，Analyzer生成完整分析报告。修复了endpoint default_params显示和function参数传递问题。"
+      "passes": false,
+      "validation_criteria": {
+        "queries_independent": true,
+        "no_cross_contamination": true,
+        "session_history_correct": true
+      }
     },
     {
-      "id": "F-21",
-      "priority": 1,
-      "category": "feature",
-      "description": "WeatherAPI 天气 API 注册与端到端调用：在管理后台注册 WeatherAPI，实现管理员和授权用户通过自然语言查询天气数据",
-      "test_url": "http://api.weatherapi.com/v1/current.json?key=e71bfeb75a37444994935141261303&q=Shanghai",
-      "api_config": {
-        "base_url": "http://api.weatherapi.com/v1/current.json",
-        "method": "GET",
-        "params": {
-          "key": "e71bfeb75a37444994935141261303",
-          "q": "{city_name}"
-        }
-      },
+      "id": "F-CM-04",
+      "priority": 4,
+      "category": "functional",
+      "description": "状态初始化历史加载：chat.py第164行initial_state应包含完整对话历史",
       "steps": [
-        "管理员登录系统，进入 API 管理界面",
-        "添加 WeatherAPI 配置：URL、参数模板、认证信息",
-        "使用测试 URL 验证 API 可访问性",
-        "管理员用自然语言提问：'上海今天天气怎么样'或'查询北京的天气'",
-        "验证 Agent 能识别意图、选择正确 API、构造请求参数（提取城市名）",
-        "验证 Executor 成功调用 API 并将结果存入 data_context",
-        "验证 Analyzer 解析天气数据并生成用户友好的回答（包含温度、天气状况等）",
-        "管理员在后台为普通用户授予该 API 权限",
-        "普通用户登录后用自然语言提问相同问题",
-        "验证普通用户也能成功获得天气分析结果"
+        "查看backend/app/api/v1/chat.py第159-177行代码",
+        "验证第164行initial_state['messages']从session['messages']加载历史",
+        "验证历史格式为[{'role': 'user/assistant', 'content': '...'}]",
+        "添加日志验证：logger.info(f\"Loaded {len(formatted_history)} history messages\")",
+        "运行init.sh启动服务器，查看logs/app.log确认日志输出",
+        "进行多轮对话测试，验证每轮请求initial_state包含历史"
       ],
-      "passes": true,
-      "notes": "✅ 完全通过。WeatherAPI成功注册并通过端到端测试，Agent能够识别天气查询意图，正确调用API获取上海实时天气数据（温度21.1°C、湿度78%、零星小雨），Analyzer生成完整中文天气分析报告。"
+      "passes": false,
+      "validation_criteria": {
+        "code_review": "initial_state['messages'] contains session history",
+        "log_verification": "History loaded message appears in logs",
+        "format_correct": "messages format matches LangGraph requirements"
+      }
     },
     {
-      "id": "F-22",
-      "priority": 1,
-      "category": "feature",
-      "description": "Chanjet IP 定位 API 注册与端到端调用：在管理后台注册 Chanjet IP 定位 API，实现管理员和授权用户通过自然语言查询 IP 地理位置",
-      "test_url": "https://midas.chanapp.chanjet.com/api/iplocaltion?ip=49.67.207.11",
-      "api_config": {
-        "base_url": "https://midas.chanapp.chanjet.com/api/iplocaltion",
-        "method": "GET",
-        "params": {
-          "ip": "{ip_address}"
-        }
-      },
+      "id": "F-CM-05",
+      "priority": 5,
+      "category": "functional",
+      "description": "意图节点历史消歧：intent_node.py应检测澄清回复并合并历史意图",
       "steps": [
-        "管理员登录系统，进入 API 管理界面",
-        "添加 Chanjet IP 定位 API 配置：URL、参数模板",
-        "使用测试 URL 验证 API 可访问性",
-        "管理员用自然语言提问：'查询 IP 49.67.207.11 的位置'或'这个 IP 在哪里：49.67.207.11'",
-        "验证 Agent 能识别意图、选择正确 API、构造请求参数（提取 IP 地址）",
-        "验证 Executor 成功调用 API 并将结果存入 data_context",
-        "验证 Analyzer 解析 IP 定位数据并生成用户友好的回答（包含国家、省份、城市等）",
-        "管理员在后台为普通用户授予该 API 权限",
-        "普通用户登录后用自然语言提问相同问题",
-        "验证普通用户也能成功获得 IP 定位分析结果"
+        "查看backend/app/agent/nodes/intent_node.py第27-77行",
+        "验证代码读取state['messages']而非仅state['query']",
+        "验证检测澄清问题的逻辑（检查历史中assistant消息包含\"请问\"）",
+        "验证_merge_with_history函数存在并正确合并意图",
+        "添加日志：logger.info(f\"Detected clarification follow-up\")",
+        "运行股票查询测试（F-CM-01），查看logs确认\"Detected clarification follow-up\"日志",
+        "验证合并后的query传递给LLM（如\"苹果股价，补充信息：近期\"）"
       ],
-      "passes": true,
-      "notes": "✅ 完全通过。Chanjet IP API成功注册并通过端到端测试，Agent能够识别IP查询意图，正确调用API获取IP 49.67.207.11的地理位置数据（中国江苏省南通市、中国电信、经纬度32.016215/120.864611），Analyzer生成完整中文分析报告，包含地理位置、运营商、应用场景和数据局限性说明。"
+      "passes": false,
+      "validation_criteria": {
+        "history_usage": "intent_node reads state['messages']",
+        "merge_logic": "_merge_with_history function exists",
+        "log_output": "Clarification detection logged",
+        "merged_query_correct": true
+      }
     },
     {
-      "id": "F-23",
-      "priority": 2,
-      "category": "testing",
-      "description": "三个外部 API 的 RBAC 权限隔离验证：验证权限系统对三个新 API 的完整控制能力",
+      "id": "F-CM-06",
+      "priority": 6,
+      "category": "functional",
+      "description": "Prompt模板历史字段：intent_prompt.py应包含对话历史字段并传递给LLM",
       "steps": [
-        "创建两个测试用户：user_a 和 user_b",
-        "管理员只授予 user_a 股票 API 权限，只授予 user_b 天气 API 权限",
-        "user_a 登录后查询股票，验证成功",
-        "user_a 尝试查询天气，验证被拒绝且提示权限不足",
-        "user_b 登录后查询天气，验证成功",
-        "user_b 尝试查询股票，验证被拒绝且提示权限不足",
-        "管理员撤销 user_a 的股票权限",
-        "user_a 再次查询股票，验证被拒绝",
-        "验证权限隔离完全生效，无越权访问"
+        "查看backend/app/agent/prompts/intent_prompt.py",
+        "验证get_intent_prompt函数签名包含history参数",
+        "验证Prompt模板包含\"### 对话历史\"字段",
+        "验证历史格式化为最近6轮对话（3个来回）",
+        "验证Prompt说明\"结合历史上下文理解用户完整意图\"",
+        "在intent_node.py中调用get_intent_prompt时传递history",
+        "使用调试工具或日志打印完整Prompt，验证历史字段存在"
       ],
-      "passes": true
+      "passes": false,
+      "validation_criteria": {
+        "function_signature": "get_intent_prompt(query, api_list, history=None)",
+        "prompt_template": "### 对话历史 section exists",
+        "history_passed": "intent_node passes state['messages'] to prompt",
+        "llm_context_complete": true
+      }
     },
     {
-      "id": "F-24",
-      "priority": 2,
-      "category": "testing",
-      "description": "三个外部 API 的端到端复杂问题测试：为每个 API 设计多样化的自然语言问题，验证 Agent 的鲁棒性",
+      "id": "F-CM-07",
+      "priority": 7,
+      "category": "functional",
+      "description": "Stream Chat历史格式清洗：stream_chat endpoint应清洗历史格式为LangGraph标准",
       "steps": [
-        "为股票 API 设计 3 条不同表述的问题（如：'苹果股价'、'AAPL 今天涨了吗'、'查询 Apple 股票'）",
-        "为天气 API 设计 3 条不同表述的问题（如：'上海天气'、'北京今天冷吗'、'深圳气温多少'）",
-        "为 IP API 设计 3 条不同表述的问题（如：'查 IP 位置'、'这个 IP 在哪'、'定位 IP 地址'）",
-        "逐条运行完整 Agent 链路",
-        "验证每条问题都能得到正确的最终回答",
-        "验证回答内容包含关键信息（股价数值、温度数值、城市名称等）",
-        "若任何问题无法得到有效回答，则测试失败"
+        "查看backend/app/api/v1/chat.py第508-539行（stream_chat函数）",
+        "验证conversation_history格式清洗逻辑（去掉timestamp等字段）",
+        "验证formatted_history只保留role和content字段",
+        "验证initial_state使用formatted_history而非原始conversation_history",
+        "测试stream endpoint：POST /api/v1/chat/stream发送多轮对话",
+        "验证流式输出中每轮处理正确理解历史上下文",
+        "检查backend/sessions.json格式一致性"
       ],
-      "passes": true
+      "passes": false,
+      "validation_criteria": {
+        "format_cleaning": "formatted_history removes extra fields",
+        "stream_correct": "Stream endpoint handles history correctly",
+        "format_consistency": "Session format matches LangGraph format"
+      }
     },
     {
-      "id": "F-25",
-      "priority": 1,
-      "category": "bugfix",
-      "description": "统一通用分析模板：替换当前过于特定化的金融模板，创建一个包罗万象的通用模板，适用于股票、天气、IP等所有API类型",
+      "id": "F-CM-08",
+      "priority": 8,
+      "category": "regression",
+      "description": "回归测试：单轮完整查询不受影响（如\"今天北京天气\"直接执行）",
       "steps": [
-        "在 backend/app/agent/prompts/analysis_prompt.py 中将 ANALYSIS_PROMPT 重命名为 UNIVERSAL_ANALYSIS_PROMPT",
-        "移除所有金融专用术语（开盘价、收盘价、涨跌幅等特定表述）",
-        "设计通用分析维度：数据概览、核心指标、主要发现、模式识别、异常检测、可能解释、应用建议、局限性说明",
-        "确保模板能适配各类数据（时间序列、地理位置、气象数据、财务数据等）",
-        "在 backend/app/agent/core/data_analyzer.py 中调用 UNIVERSAL_ANALYSIS_PROMPT",
-        "测试天气查询（如'今天北京天气如何'），验证分析报告使用通用表述（温度、湿度、天气状况）",
-        "测试股票查询（如'查询AAPL股票价格'），验证分析报告自然呈现股价数据，不强制金融术语框架",
-        "测试IP查询（如'查询IP 8.8.8.8位置'），验证分析报告呈现地理位置数据",
-        "验证所有API类型的分析报告结构一致，内容自然适配数据类型"
+        "发送完整查询无需澄清：{\"message\": \"今天北京天气\", \"session_id\": \"test-single-turn\"}",
+        "验证系统直接执行查询返回天气数据",
+        "验证无澄清问题返回",
+        "发送另一完整查询：{\"message\": \"最近7天订单量\", \"session_id\": \"test-single-turn\"}",
+        "验证直接返回订单数据",
+        "验证响应时间符合预期（无额外澄清轮次延迟）"
       ],
-      "passes": true,
-      "notes": "✅ 完全通过。成功实现统一通用分析模板：重命名ANALYSIS_PROMPT为UNIVERSAL_ANALYSIS_PROMPT，移除金融专用术语，设计7个通用分析维度（数据概览、核心指标、主要发现、模式识别、可能解释、应用建议、局限性说明），验证天气/股票/IP三类API分析报告均使用通用表述且结构一致。模板能够自然适配不同数据类型而不引入不匹配的专业术语。"
+      "passes": false,
+      "validation_criteria": {
+        "no_unnecessary_clarification": true,
+        "direct_execution": true,
+        "response_time_acceptable": true
+      }
     },
     {
-      "id": "F-26",
-      "priority": 1,
-      "category": "bugfix",
-      "description": "规范化 SSE 数据结构：修复导出 Excel 按钮不显示问题，确保后端发送的数据包含 rows 字段",
+      "id": "F-CM-09",
+      "priority": 9,
+      "category": "edge_case",
+      "description": "边界测试：用户补充无关信息时系统应识别并重新询问",
       "steps": [
-        "检查 backend/app/api/v1/chat.py 第 565-572 行的数据发送逻辑",
-        "修改 SSE 发送逻辑，规范化数据为 {rows: [...], row_count: N} 格式",
-        "处理三种数据格式：已有 rows 字段、列表格式、单个字典格式",
-        "前端验证：frontend/js/app-setup.js 的 hasExportableData() 函数检查 msg.data.rows",
-        "测试任意查询（天气/股票/IP），验证导出按钮显示",
-        "点击导出按钮，验证 Excel 文件下载成功",
-        "打开 Excel 验证数据完整性（rows 字段正确）"
+        "发送第一条查询：{\"message\": \"查询订单量\", \"session_id\": \"test-edge-session\"}",
+        "验证返回澄清问题\"请问时间范围\"",
+        "发送无关补充：{\"message\": \"我想吃苹果\", \"session_id\": \"test-edge-session\"}",
+        "验证系统识别补充信息无关，重新询问时间范围",
+        "验证不误执行\"苹果股价\"查询",
+        "验证不混淆\"订单量\"和\"苹果\"意图"
       ],
-      "passes": true,
-      "notes": "✅ 完全通过。已规范化SSE数据结构为{rows: [...], total: N, columns: [...]}格式，前端hasExportableData()正确识别rows字段，导出Excel按钮成功显示并下载，Excel数据完整正确。修复了三种数据格式（已有rows字段、列表格式、单个字典格式）的规范化逻辑，增加columns字段提取。"
+      "passes": false,
+      "validation_criteria": {
+        "intent_discrimination": true,
+        "no_wrong_execution": true,
+        "appropriate_re_ask": true
+      }
     },
     {
-      "id": "F-27",
-      "priority": 2,
-      "category": "bugfix",
-      "description": "排查并修复流式输出问题：前端流式输出完全不工作，无实时思考和打字机效果，需先排查根源再修复",
+      "id": "F-CM-10",
+      "priority": 10,
+      "category": "integration",
+      "description": "端到端集成验证：前端UI完整多轮对话流程",
       "steps": [
-        "用户打开浏览器开发者工具 → Network 标签",
-        "发送查询，检查 /chat/stream 请求状态码是否 200",
-        "检查 Response Headers 是否包含 text/event-stream",
-        "检查是否有数据流接收",
-        "查看 Console 标签是否有 [Stream] 日志输出",
-        "根据排查结果定位问题根源（CORS/权限/事件解析）",
-        "如确认 CORS 问题，修改 backend/app/api/v1/chat.py 添加 CORS 头",
-        "如确认前端问题，修改 frontend/js/api.js 增强错误处理",
-        "验证流式输出功能：发送查询，观察推理过程实时显示",
-        "验证打字机效果（思考内容逐字显示，20ms 间隔）",
-        "验证推理过程面板可折叠功能"
+        "运行bash init.sh启动后端服务器",
+        "打开浏览器访问frontend/index.html",
+        "在聊天界面输入\"分析苹果股价\"",
+        "验证前端显示assistant澄清问题",
+        "输入\"近期的\"",
+        "验证前端显示股票数据结果",
+        "验证前端对话历史显示完整4条消息（含第一条）",
+        "点击\"新建聊天\"按钮，验证新会话不包含历史对话",
+        "在新会话输入\"查询天气\"，验证重新开始澄清流程"
       ],
-      "passes": true,
-      "notes": "✅ 核心问题已完全修复。(1) 后端静态文件挂载→已修复；(2) 前端SSE TypeError→已修复；(3) SSE后端验证正常；(4) 工作流执行完整。注意：LLM响应较慢（30-40秒），建议优化LLM提供商或增加测试等待时间。核心功能已正常工作。"
+      "passes": false,
+      "validation_criteria": {
+        "frontend_history_complete": true,
+        "new_session_clean": true,
+        "ui_no_context_loss": true,
+        "end_to_end_flow": true
+      }
     }
-  ]
+  ],
+  "metadata": {
+    "project_name": "AI Data Agent - Context Memory Fix",
+    "version": "v4.2",
+    "created_at": "2026-04-02",
+    "total_features": 10,
+    "priority_distribution": {
+      "P0_critical": 3,
+      "P1_important": 4,
+      "P2_regression": 1,
+      "P3_edge_case": 1,
+      "P4_integration": 1
+    },
+    "success_criteria": "All F-CM-01 to F-CM-10 must pass=true before production deployment"
+  }
 }
