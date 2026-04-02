@@ -64,6 +64,7 @@ async def intent_clarification_node(state: AgentState) -> AgentState:
             merged_query = _merge_with_history(messages, query)
             logger.info(f"[IntentNode] Merged query: {merged_query}")
             query = merged_query  # Use merged query for intent analysis
+            state["query"] = merged_query  # Update state so retrieval node uses merged query
         else:
             logger.info(f"[IntentNode] DEBUG: Clarification not detected - last_assistant_msg exists={last_assistant_msg is not None}, type value={last_assistant_msg.get('type') if last_assistant_msg else 'N/A'}")
 

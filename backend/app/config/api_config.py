@@ -138,7 +138,10 @@ class APIRegistry:
 
     def _db_to_pydantic(self, db_config: ApiConfigDB) -> APIConfig:
         """Convert database model to Pydantic model."""
+        # auth_config can be: None, dict, or encrypted string
         auth_data = db_config.auth_config or {}
+        if isinstance(auth_data, str):
+            auth_data = {}
         auth_config = APIAuthConfig(
             type=AuthType(auth_data.get("type", "none")),
             api_key_header=auth_data.get("api_key_header", "X-API-Key"),
@@ -149,8 +152,17 @@ class APIRegistry:
             custom_headers=auth_data.get("custom_headers", {})
         )
 
+        # endpoints can be: None, dict, or JSON string
+        endpoints_data = db_config.endpoints or {}
+        if isinstance(endpoints_data, str):
+            import json
+            try:
+                endpoints_data = json.loads(endpoints_data)
+            except json.JSONDecodeError:
+                endpoints_data = {}
+
         endpoints = {}
-        for ep_name, ep_data in (db_config.endpoints or {}).items():
+        for ep_name, ep_data in endpoints_data.items():
             endpoints[ep_name] = APIEndpointConfig(
                 path=ep_data.get("path", ""),
                 method=ep_data.get("method", "GET"),

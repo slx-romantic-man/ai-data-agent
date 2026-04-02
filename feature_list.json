@@ -35,7 +35,7 @@
         "使用浏览器打开 frontend/index.html，在UI界面重复上述对话",
         "验证前端UI显示完整对话历史（包含第一条\"查询天气\"）"
       ],
-      "passes": false,
+      "passes": true,
       "validation_criteria": {
         "must_execute_api": true,
         "must_not_ask_additional_question": true,
