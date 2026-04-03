@@ -75,7 +75,7 @@
         "运行init.sh启动服务器，查看logs/app.log确认日志输出",
         "进行多轮对话测试，验证每轮请求initial_state包含历史"
       ],
-      "passes": false,
+      "passes": true,
       "validation_criteria": {
         "code_review": "initial_state['messages'] contains session history",
         "log_verification": "History loaded message appears in logs",
