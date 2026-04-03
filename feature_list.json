@@ -118,7 +118,7 @@
         "在intent_node.py中调用get_intent_prompt时传递history",
         "使用调试工具或日志打印完整Prompt，验证历史字段存在"
       ],
-      "passes": false,
+      "passes": true,
       "validation_criteria": {
         "function_signature": "get_intent_prompt(query, api_list, history=None)",
         "prompt_template": "### 对话历史 section exists",
