@@ -180,7 +180,7 @@
         "验证不误执行\"苹果股价\"查询",
         "验证不混淆\"订单量\"和\"苹果\"意图"
       ],
-      "passes": false,
+      "passes": true,
       "validation_criteria": {
         "intent_discrimination": true,
         "no_wrong_execution": true,
