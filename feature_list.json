@@ -96,7 +96,7 @@
         "运行股票查询测试（F-CM-01），查看logs确认\"Detected clarification follow-up\"日志",
         "验证合并后的query传递给LLM（如\"苹果股价，补充信息：近期\"）"
       ],
-      "passes": false,
+      "passes": true,
       "validation_criteria": {
         "history_usage": "intent_node reads state['messages']",
         "merge_logic": "_merge_with_history function exists",
