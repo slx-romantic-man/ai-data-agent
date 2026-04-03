@@ -55,7 +55,7 @@
         "验证系统不会将\"最近7天\"误应用到\"用户增长趋势\"查询",
         "检查backend/sessions.json确认两条查询均被记录但未混淆"
       ],
-      "passes": false,
+      "passes": true,
       "validation_criteria": {
         "queries_independent": true,
         "no_cross_contamination": true,
