@@ -160,7 +160,7 @@
         "验证直接返回订单数据",
         "验证响应时间符合预期（无额外澄清轮次延迟）"
       ],
-      "passes": false,
+      "passes": true,
       "validation_criteria": {
         "no_unnecessary_clarification": true,
         "direct_execution": true,
