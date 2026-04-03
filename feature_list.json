@@ -140,7 +140,7 @@
         "验证流式输出中每轮处理正确理解历史上下文",
         "检查backend/sessions.json格式一致性"
       ],
-      "passes": false,
+      "passes": true,
       "validation_criteria": {
         "format_cleaning": "formatted_history removes extra fields",
         "stream_correct": "Stream endpoint handles history correctly",

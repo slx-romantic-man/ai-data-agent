@@ -553,11 +553,22 @@ async def stream_chat(
 
             # Get or create session
             session_id = request.session_id or generate_session_id()
-            conversation_history = []
+            session_messages = []
             if session_id and session_id in _sessions:
-                conversation_history = _sessions[session_id].get(
-                    "messages", []
-                )
+                session_messages = _sessions[session_id].get("messages", [])
+
+            # Format conversation history for LangGraph (remove timestamp and extra fields)
+            conversation_history = session_messages
+            formatted_history = []
+            for msg in conversation_history:
+                formatted_msg = {
+                    "role": msg["role"],
+                    "content": msg["content"]
+                }
+                # Preserve "type" field for clarification detection
+                if "type" in msg:
+                    formatted_msg["type"] = msg["type"]
+                formatted_history.append(formatted_msg)
 
             # Check if waiting for missing info
             user_message = request.message
@@ -573,13 +584,14 @@ async def stream_chat(
             final_answer_text = ""
             final_data = None
             total_tokens = 0
+            is_clarification = False  # Track if response is a clarification
 
             # Create LangGraph workflow
             graph = await create_graph(permission)
 
             # Initialize state
             initial_state: AgentState = {
-                "messages": conversation_history,
+                "messages": formatted_history,
                 "query": user_message,
                 "extracted_filters": None,
                 "plan": None,
@@ -602,6 +614,7 @@ async def stream_chat(
                             last_msg = messages[-1]
                             if last_msg.get("type") == "clarification":
                                 final_answer_text = last_msg.get("content", "")
+                                is_clarification = True
                                 yield f"data: {_json_dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
 
                     # Check if this is the final analyzer output
@@ -689,6 +702,32 @@ async def stream_chat(
                 yield f"data: {_json_dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
                 return
 
+            # Save to session storage (for backward compatibility)
+            # CRITICAL: Must happen BEFORE done event yield
+            if session_id:
+                if session_id not in _sessions:
+                    _sessions[session_id] = {
+                        "messages": [],
+                        "created_at": datetime.now(),
+                    }
+                logger.info(f"[StreamChat] Saving session {session_id}: {len(_sessions[session_id]['messages'])} -> {len(_sessions[session_id]['messages']) + 2} messages")
+                _sessions[session_id]["messages"].append({
+                    "role": "user",
+                    "content": request.message,
+                    "timestamp": datetime.now().isoformat(),
+                })
+                assistant_msg = {
+                    "role": "assistant",
+                    "content": final_answer_text[:100],
+                    "timestamp": datetime.now().isoformat(),
+                }
+                if is_clarification:
+                    assistant_msg["type"] = "clarification"
+                _sessions[session_id]["messages"].append(assistant_msg)
+                _sessions[session_id]["updated_at"] = datetime.now()
+                logger.info(f"[StreamChat] Session {session_id} saved with {len(_sessions[session_id]['messages'])} messages")
+                _save_sessions()
+
             # Send done event
             yield f"data: {_json_dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
 
@@ -738,26 +777,6 @@ async def stream_chat(
                 content=final_answer_text,
                 data=final_data
             )
-
-            # Also save to session storage (for backward compatibility)
-            if session_id:
-                if session_id not in _sessions:
-                    _sessions[session_id] = {
-                        "messages": [],
-                        "created_at": datetime.now(),
-                    }
-                _sessions[session_id]["messages"].append({
-                    "role": "user",
-                    "content": request.message,
-                    "timestamp": datetime.now().isoformat(),
-                })
-                _sessions[session_id]["messages"].append({
-                    "role": "assistant",
-                    "content": final_answer_text,
-                    "timestamp": datetime.now().isoformat(),
-                })
-                _sessions[session_id]["updated_at"] = datetime.now()
-                _save_sessions()
 
         except Exception as e:
             logger.error(f"Stream chat error: {str(e)}")
