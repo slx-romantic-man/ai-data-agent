@@ -203,7 +203,7 @@
         "点击\"新建聊天\"按钮，验证新会话不包含历史对话",
         "在新会话输入\"查询天气\"，验证重新开始澄清流程"
       ],
-      "passes": false,
+      "passes": true,
       "validation_criteria": {
         "frontend_history_complete": true,
         "new_session_clean": true,
