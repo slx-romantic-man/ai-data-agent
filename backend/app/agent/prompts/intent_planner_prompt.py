@@ -3,120 +3,33 @@ Combined intent recognition + planning prompt templates.
 Single LLM call for both intent understanding and execution planning.
 """
 
-INTENT_PLANNER_PROMPT = """你是一个智能数据查询规划师。根据用户查询和可用的数据源，完成两项任务：
-1. 识别用户意图并提取关键信息
-2. 生成结构化的执行计划
+INTENT_PLANNER_PROMPT = """你是一个智能数据查询规划师。根据用户查询和可用数据源，完成两项任务：
+1. 识别用户意图  2. 生成结构化执行计划
 
 用户查询：{user_query}
+可用API：{retrieved_apis}
+可用数据库表：{retrieved_tables}
+系统API列表（意图参考）：{api_list}
 
-可用的API列表：
-{retrieved_apis}
+返回JSON，字段如下：
+- intent_type: "api_query"|"data_detail"|"data_statistic"|"data_analysis"|"data_export"
+- entities: {{time_range, stock_symbol, market, location, business, api_hint等}}
+- metrics: 指标名列表 | dimensions: 维度列表 | confidence: 0~1
+- missing_info: 缺失参数列表（相对时间如"最近N天"不算缺失，无相关API也不算）
+- clarification_question: 缺失信息时的友好反问，信息完整则为null
+- steps: 执行步骤，每项含 step_id, tool("api_fetch"|"sql_query"|"python_exec"), api_id(字符串), params, description, depends_on
+  * sql_query 必须含 "sql" 字段；api_fetch 必须含 "endpoint"+"params"；python_exec 必须含 "code"
+- reasoning: 规划推理过程
 
-可用的数据库表：
-{retrieved_tables}
+【约束】无可用API时用sql_query；禁止虚构API；SQL表名/字段必须来自上方列表；python_exec禁止import
 
-系统已配置的API列表（用于意图参考）：
-{api_list}
+完整示例：
+{{"intent_type":"api_query","entities":{{"stock_symbol":"AAPL","market":"US","time_range":{{"description":"最近7天"}},"api_hint":"stock_price"}},"metrics":["股价","涨跌幅"],"dimensions":["日期"],"confidence":0.95,"missing_info":null,"clarification_question":null,"steps":[{{"step_id":1,"tool":"api_fetch","api_id":"alpha_vantage_stock","params":{{"endpoint":"获取日线数据","params":{{"symbol":"AAPL","outputsize":"compact"}}}},"description":"获取苹果股票最近交易数据","depends_on":[]}}],"reasoning":"用户查询苹果股票，用股票API获取日线数据"}}
 
-请返回以下JSON格式的结果：
+缺失信息示例：
+{{"intent_type":"api_query","entities":{{"api_hint":"weather_api"}},"metrics":["天气"],"dimensions":[],"confidence":0.8,"missing_info":["地点"],"clarification_question":"请问您想查询哪个城市的天气？","steps":[],"reasoning":"缺少地点信息"}}
 
-## 意图识别部分
-1. intent_type: 意图类型
-   - "api_query": 调用API查询数据（默认类型）
-   - "data_detail": 查询数据明细
-   - "data_statistic": 统计汇总
-   - "data_analysis": 数据分析
-   - "data_export": 导出数据
-
-2. entities: 提取的实体信息
-   - time_range: 时间范围
-   - trading_day_count: 交易日数量
-   - stock_symbol: 股票代码
-   - market: 股票市场（US/CN/HK）
-   - location: 地点
-   - business: 业务类型
-   - department: 部门
-   - api_hint: 建议使用的API ID
-
-3. metrics: 指标名称列表
-4. dimensions: 维度列表
-5. confidence: 置信度（0-1）
-6. missing_info: 缺失的关键信息列表（仅当用户输入本身缺少必需参数时才填写）
-   - 注意：相对时间（最近N天、本周、本月等）不算缺失信息
-   - 注意：系统没有配置相关API不属于"缺失信息"
-   - 如果信息完整，必须返回null
-7. clarification_question: 如果有缺失信息，生成友好的反问（如果信息完整则为null）
-
-## 执行计划部分
-8. steps: 执行步骤列表，每个步骤包含：
-   - step_id: 步骤编号（从1开始）
-   - tool: 工具类型（"api_fetch", "sql_query", "python_exec"）
-   - api_id: API标识符（仅当tool为api_fetch时需要）
-   - params: 调用参数（字典格式）
-     * 对于 sql_query: 必须包含 "sql" 字段（完整的 SQL SELECT 语句）
-     * 对于 api_fetch: 必须包含 "endpoint" 和 "params" 字段
-     * 对于 python_exec: 必须包含 "code" 字段
-   - description: 步骤描述
-   - depends_on: 依赖的前置步骤ID列表
-9. reasoning: 规划推理过程
-
-【重要约束】
-- 如果"可用的API列表"显示"（无可用API）"，则必须使用sql_query工具
-- 禁止虚构不存在的API，只能使用上面列出的真实API
-- api_id字段必须是字符串类型
-- SQL语句中的表名必须来自"可用的数据库表"列表
-- SQL的WHERE条件只能使用表结构中真实存在的字段
-- python_exec代码禁止使用import语句，只能使用Python内置函数
-
-返回格式示例（信息完整）：
-{{
-    "intent_type": "api_query",
-    "entities": {{
-        "stock_symbol": "AAPL",
-        "market": "US",
-        "time_range": {{"description": "最近7天"}},
-        "api_hint": "stock_price"
-    }},
-    "metrics": ["股价", "涨跌幅"],
-    "dimensions": ["日期"],
-    "confidence": 0.95,
-    "missing_info": null,
-    "clarification_question": null,
-    "steps": [
-        {{
-            "step_id": 1,
-            "tool": "api_fetch",
-            "api_id": "alpha_vantage_stock",
-            "params": {{
-                "endpoint": "获取日线数据",
-                "params": {{
-                    "symbol": "AAPL",
-                    "outputsize": "compact"
-                }}
-            }},
-            "description": "获取苹果股票最近的交易数据",
-            "depends_on": []
-        }}
-    ],
-    "reasoning": "用户查询苹果股票数据，使用股票API获取日线数据"
-}}
-
-返回格式示例（信息不完整）：
-{{
-    "intent_type": "api_query",
-    "entities": {{
-        "api_hint": "weather_api"
-    }},
-    "metrics": ["天气"],
-    "dimensions": [],
-    "confidence": 0.8,
-    "missing_info": ["地点"],
-    "clarification_question": "请问您想查询哪个城市的天气？例如：北京、上海、广州。",
-    "steps": [],
-    "reasoning": "用户查询意图为天气查询，但缺少地点信息，无法生成执行计划"
-}}
-
-请只返回JSON，不要包含其他内容。"""
+只返回JSON，不要包含其他内容。"""
 
 
 def get_intent_planner_prompt(

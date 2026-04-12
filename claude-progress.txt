@@ -153,19 +153,22 @@
   ✅ 执行 git init + 初始 commit
   📊 状态: 0/12 功能完成 | 下一个: F-01 (简单查询跳过 Analyzer)
 
-  [2026-04-13] Session #2 — 编码智能体
-  ✅ F-01: 简单查询跳过 Analyzer LLM 调用
-  ✅ F-02: is_simple_query() 判断函数实现
-  ✅ F-03: _format_simple_response() 格式化函数实现
-  📝 修改文件: backend/app/agent/nodes/analyzer_node.py
-    - 新增 is_simple_query(): 单步计划 + ≤5 行数据 → 判定为简单查询
-    - 新增 _format_simple_response(): 递归格式化嵌套字典，输出 Markdown
-    - 修改 analyzer_node(): 在 LLM 分析前插入简单查询检查，跳过时走快速路径
+  [2026-04-13] Session #3 — 编码智能体
+  ✅ F-04: 精简 intent_planner Prompt — 从 ~115 行压缩到 ~27 行
+  📝 修改文件: backend/app/agent/prompts/intent_planner_prompt.py
+    - 移除冗注释（每个字段单独的解释）
+    - 两个示例合并为单行紧凑 JSON 格式
+    - 保留所有核心约束（禁止虚构API、SQL安全、python_exec禁止import）
+    - 保留 missing_info 和 clarification_question 的判定规则
   🧪 E2E 验证:
-    - 天气查询 (~2s): ✅ 跳过 LLM，返回格式化 Markdown
-    - IP 查询 (8.8.8.8): ✅ 跳过 LLM，返回地理位置信息
-    - 复杂股票对比 (3步, 101行): ✅ 走 LLM 分析，未退化
-  📊 状态: 3/12 功能完成 | 下一个: F-04 (精简 intent_planner Prompt)
+    - 天气查询 (查询北京的天气): ✅ 正确识别 weather_api，提取 location=北京，1步计划生成
+    - 股票查询 (查询AAPL的股票价格): ✅ 正确提取 stock_symbol=AAPL, market=US，生成调用计划
+    - IP查询 (查询 8.8.8.8 的IP地址信息): ✅ 正确识别 geo API，返回地理位置
+    - 缺失信息 (查询天气): ✅ LLM 返回 missing_info=["地点"] + clarification_question
+    - 响应时间: ~2.3s (天气查询，走 F-01 快速路径)
+  ⚠️ 遗留: "查询天气" 的 clarification_question 在下游 chat API 中返回了通用错误而非反问文案，
+     这是预存问题（intent_planner 已正确生成反问），非本次变更引入。
+  📊 状态: 4/12 功能完成 | 下一个: F-05 (intent_planner max_tokens=1024)
 
 ================================================================================
   八、环境信息速查

@@ -82,7 +82,7 @@
       ],
       "acceptance_criteria": "prompt 行数减半，意图识别准确性不退化，响应时间降低",
       "estimated_time_save": "~27s",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-05",
