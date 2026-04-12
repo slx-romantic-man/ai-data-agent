@@ -10,6 +10,96 @@ from app.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+def is_simple_query(plan: List[Dict[str, Any]], data: List[Dict[str, Any]]) -> bool:
+    """
+    判断查询是否为简单查询。
+
+    简单查询定义：
+    - 执行计划只有 1 步
+    - 返回数据行数 ≤ 5
+
+    满足以上两个条件的查询可跳过 Analyzer LLM 调用，
+    直接用 Python 模板格式化为自然语言。
+    """
+    if not plan or not data:
+        return False
+
+    is_single_step = len(plan) == 1
+    is_few_rows = len(data) <= 5
+
+    logger.info(
+        f"[is_simple_query] plan_steps={len(plan)}, data_rows={len(data)}, "
+        f"single_step={is_single_step}, few_rows={is_few_rows}, "
+        f"result={is_single_step and is_few_rows}"
+    )
+    return is_single_step and is_few_rows
+
+
+def _format_simple_response(
+    data: List[Dict[str, Any]],
+    user_query: str,
+) -> str:
+    """
+    将简单查询的 API 返回数据直接格式化为自然语言文本。
+
+    不包含 JSON 原始数据或内部字段（_开头的字段）。
+    输出为 Markdown 格式，加粗关键指标。
+
+    Args:
+        data: 数据行列表
+        user_query: 用户原始查询
+
+    Returns:
+        格式化后的 Markdown 文本
+    """
+    if not data:
+        return "抱歉，未查询到相关数据。"
+
+    row = data[0]
+    # Filter out internal fields (starting with _)
+    visible_keys = [k for k in row.keys() if not k.startswith("_")]
+
+    if not visible_keys:
+        return "抱歉，查询结果不包含有效数据。"
+
+    def format_value(value: Any, depth: int = 0) -> str:
+        """Recursively format a value, handling nested dicts/lists."""
+        if value is None or value == "":
+            return "无"
+
+        if isinstance(value, dict):
+            sub_lines = []
+            for sk, sv in value.items():
+                sub_val = format_value(sv, depth + 1)
+                sub_label = sk.replace("_", " ").replace("  ", " ").title()
+                sub_lines.append(f"- **{sub_label}**: {sub_val}")
+            return "\n" + "\n".join(sub_lines)
+
+        if isinstance(value, list):
+            items = []
+            for item in value:
+                formatted_item = format_value(item, depth + 1)
+                items.append(f"  - {formatted_item}")
+            return "\n" + "\n".join(items) if items else "空列表"
+
+        if isinstance(value, float):
+            if value == int(value):
+                return str(int(value))
+            return str(value)
+
+        return str(value)
+
+    lines = []
+    for key in visible_keys:
+        raw_value = row.get(key)
+        label = key.replace("_", " ").replace("  ", " ").title()
+        formatted = format_value(raw_value)
+        lines.append(f"- **{label}**: {formatted}")
+
+    summary = "\n".join(lines)
+    return f"以下是您查询的结果：\n\n{summary}"
+
+
 async def analyzer_node(state: AgentState) -> AgentState:
     """
     Analyzer Node: 综合分析所有数据并生成最终报告
@@ -104,14 +194,21 @@ async def analyzer_node(state: AgentState) -> AgentState:
                     "• 确认数据源中是否存在相关记录"
                 )
         else:
-            # 使用 DataAnalyzer 生成洞察
-            analyzer = DataAnalyzer()
-            analysis_result = await analyzer.analyze(
-                data=all_data,
-                user_query=query,
-                analysis_type="summary"
-            )
-            analysis_report = analysis_result.get("analysis", "分析完成")
+            # 简单查询跳过 Analyzer LLM 调用（F-01）
+            if is_simple_query(plan, all_data):
+                logger.info(
+                    "[AnalyzerNode] Simple query detected, skipping LLM analysis"
+                )
+                analysis_report = _format_simple_response(all_data, query)
+            else:
+                # 使用 DataAnalyzer 生成洞察
+                analyzer = DataAnalyzer()
+                analysis_result = await analyzer.analyze(
+                    data=all_data,
+                    user_query=query,
+                    analysis_type="summary"
+                )
+                analysis_report = analysis_result.get("analysis", "分析完成")
 
     # 追加分析报告到 messages
     messages.append({

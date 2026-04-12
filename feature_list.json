@@ -22,7 +22,7 @@
       ],
       "acceptance_criteria": "简单查询（单API + ≤5行数据）不触发 Analyzer LLM，直接返回格式化文本",
       "estimated_time_save": "~85s",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-02",
@@ -42,7 +42,7 @@
       ],
       "acceptance_criteria": "is_simple_query() 正确区分简单/复杂查询，简单查询走快速路径",
       "estimated_time_save": "N/A（F-01 的前置逻辑）",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-03",
@@ -62,7 +62,7 @@
       ],
       "acceptance_criteria": "格式化输出可读性好，包含所有核心数据字段，无内部/调试字段泄露",
       "estimated_time_save": "N/A（F-01 的子模块）",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-04",
