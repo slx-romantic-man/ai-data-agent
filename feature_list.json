@@ -1,263 +1,249 @@
 {
+  "project_name": "AI Data Agent v4.3 — 性能优化",
+  "baseline_commit": "PENDING_INITIAL_COMMIT",
+  "last_updated": "2026-04-12",
+  "total_features": 12,
   "project_features": [
     {
-      "id": "F-CM-01",
-      "priority": 100,
-      "category": "legacy_completed",
-      "description": "股票查询多轮澄清上下文记忆：用户补充时间范围后系统应记住初始意图",
-      "steps": [
-        "调用 POST /api/v1/chat 发送：{\"message\": \"分析苹果美股股价变化\", \"session_id\": \"test-stock-session\"}",
-        "验证响应包含澄清问题",
-        "使用相同 session_id 发送：{\"message\": \"近期的\"}",
-        "验证系统返回股票数据结果而非再次询问"
-      ],
-      "passes": true
-    },
-    {
-      "id": "F-CM-02",
-      "priority": 100,
-      "category": "legacy_completed",
-      "description": "天气查询补充地点上下文记忆",
-      "steps": [],
-      "passes": true
-    },
-    {
-      "id": "F-CM-03",
-      "priority": 100,
-      "category": "legacy_completed",
-      "description": "连续独立查询不混淆",
-      "steps": [],
-      "passes": true
-    },
-    {
-      "id": "F-CM-04",
-      "priority": 100,
-      "category": "legacy_completed",
-      "description": "状态初始化历史加载",
-      "steps": [],
-      "passes": true
-    },
-    {
-      "id": "F-CM-05",
-      "priority": 100,
-      "category": "legacy_completed",
-      "description": "意图节点历史消歧",
-      "steps": [],
-      "passes": true
-    },
-    {
-      "id": "F-CM-06",
-      "priority": 100,
-      "category": "legacy_completed",
-      "description": "Prompt模板历史字段",
-      "steps": [],
-      "passes": true
-    },
-    {
-      "id": "F-CM-07",
-      "priority": 100,
-      "category": "legacy_completed",
-      "description": "Stream Chat历史格式清洗",
-      "steps": [],
-      "passes": true
-    },
-    {
-      "id": "F-CM-08",
-      "priority": 100,
-      "category": "legacy_completed",
-      "description": "回归测试：单轮完整查询不受影响",
-      "steps": [],
-      "passes": true
-    },
-    {
-      "id": "F-CM-09",
-      "priority": 100,
-      "category": "legacy_completed",
-      "description": "边界测试：无关信息识别",
-      "steps": [],
-      "passes": true
-    },
-    {
-      "id": "F-CM-10",
-      "priority": 100,
-      "category": "legacy_completed",
-      "description": "端到端集成验证：前端UI完整多轮对话流程",
-      "steps": [],
-      "passes": true
-    },
-    {
-      "id": "F-PERF-01",
+      "id": "F-01",
       "priority": 1,
       "category": "performance",
-      "description": "简单查询跳过 Analyzer LLM：单步执行计划 + 数据行数 ≤ 5 的查询直接用 Python 格式化数据返回，完全不调用 Analyzer LLM",
-      "steps": [
-        "运行 bash init.sh 启动后端服务器",
-        "发送简单查询：POST /api/v1/chat/stream，body={\"message\": \"查询北京的天气\", \"session_id\": \"perf-test-simple\"}",
-        "用 time 计时或在前端观察，确认总耗时 < 60s（原为 ~121s）",
-        "检查 backend/logs/app.log 确认出现 [AnalyzerNode] Simple query detected, skipping LLM 日志",
-        "确认响应内容包含天气数据的核心字段（温度、湿度、风速等），且格式可读",
-        "发送另一简单查询：{\"message\": \"查询IP 8.8.8.8的地理位置\", \"session_id\": \"perf-test-ip\"}",
-        "确认同样跳过 Analyzer LLM 且返回了 IP 地理位置数据",
-        "发送复杂查询验证不误跳：{\"message\": \"查询AAPL的股票价格并分析趋势\", \"session_id\": \"perf-test-complex\"}",
-        "确认复杂查询（多行数据）仍走 LLM Analyzer 路径，日志无 skipping LLM 字样"
-      ],
-      "passes": false,
-      "rationale": "Analyzer LLM 占总耗时 62-65%（约 80-88s）。简单查询的 API 返回数据本身就是答案，无需 LLM '分析'。跳过后预计简单查询耗时降至 20-45s。",
+      "strategy": "策略3: 简单查询跳过 Analyzer",
+      "description": "简单查询（单步执行计划 + 数据行数 ≤ 5）跳过 Analyzer LLM 调用，直接用 Python 模板格式化数据为自然语言",
       "files_to_modify": [
         "backend/app/agent/nodes/analyzer_node.py"
-      ]
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送简单查询请求：POST /api/v1/chat { \"query\": \"查询北京的天气\" }",
+        "验证返回结果包含天气数据的自然语言描述",
+        "检查 logs/init_server.log 确认没有 'DataAnalyzer' 的 LLM 调用日志",
+        "验证整体响应时间 < 30 秒（跳过了 ~85s 的 Analyzer LLM 调用）"
+      ],
+      "acceptance_criteria": "简单查询（单API + ≤5行数据）不触发 Analyzer LLM，直接返回格式化文本",
+      "estimated_time_save": "~85s",
+      "passes": false
     },
     {
-      "id": "F-PERF-02",
+      "id": "F-02",
+      "priority": 1,
+      "category": "performance",
+      "strategy": "策略3: 简单查询跳过 Analyzer",
+      "description": "实现 is_simple_query() 判断函数：根据执行计划步数和数据行数判断查询复杂度",
+      "files_to_modify": [
+        "backend/app/agent/nodes/analyzer_node.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送单步简单查询（如天气查询），验证被判定为 simple 并跳过 LLM",
+        "发送多步复杂查询（如 '对比 AAPL 和 GOOGL 的股票走势'），验证仍走 LLM 分析",
+        "发送返回大量数据的查询（> 5 行），验证仍走 LLM 分析",
+        "检查日志中 is_simple_query 的判定输出是否正确"
+      ],
+      "acceptance_criteria": "is_simple_query() 正确区分简单/复杂查询，简单查询走快速路径",
+      "estimated_time_save": "N/A（F-01 的前置逻辑）",
+      "passes": false
+    },
+    {
+      "id": "F-03",
+      "priority": 1,
+      "category": "performance",
+      "strategy": "策略3: 简单查询跳过 Analyzer",
+      "description": "实现 _format_simple_response() 函数：将简单查询的 API 返回数据直接格式化为用户可读的自然语言文本",
+      "files_to_modify": [
+        "backend/app/agent/nodes/analyzer_node.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送天气查询请求，验证返回的文本包含温度、湿度等核心字段",
+        "发送 IP 查询请求，验证返回的文本包含地理位置信息",
+        "验证输出格式为 Markdown（包含加粗关键指标等格式化）",
+        "验证不包含 JSON 原始数据或内部字段（如 _开头的字段）"
+      ],
+      "acceptance_criteria": "格式化输出可读性好，包含所有核心数据字段，无内部/调试字段泄露",
+      "estimated_time_save": "N/A（F-01 的子模块）",
+      "passes": false
+    },
+    {
+      "id": "F-04",
       "priority": 2,
       "category": "performance",
-      "description": "精简 intent_planner Prompt：压缩 intent_planner_prompt.py 模板从 ~120 行到 ~50 行，移除冗余示例和无用输出字段（metrics/dimensions/confidence）",
-      "steps": [
-        "运行 bash init.sh 启动后端服务器",
-        "发送测试查询：POST /api/v1/chat/stream，body={\"message\": \"查询北京的天气\", \"session_id\": \"perf-prompt-test\"}",
-        "检查 backend/logs/app.log 中 [IntentPlannerNode] LLM Response 日志，确认 LLM 返回了有效 JSON",
-        "确认 JSON 中包含 intent_type、entities、steps 字段",
-        "确认 JSON 中不再包含 metrics、dimensions、confidence 字段（已移除）",
-        "发送股票查询验证：{\"message\": \"查询AAPL的股票价格\", \"session_id\": \"perf-prompt-stock\"}",
-        "确认 intent_planner 正确识别 api_id=alpha_vantage_stock 并生成有效 plan",
-        "发送澄清测试：{\"message\": \"查询天气\", \"session_id\": \"perf-prompt-clarify\"}",
-        "确认系统仍然正确返回澄清问题（未因 prompt 精简而丢失澄清能力）"
-      ],
-      "passes": false,
-      "rationale": "intent_planner 占总耗时 30-33%（约 37-46s）。当前 Prompt 过长导致输入 token 多、示例冗余导致输出 token 多。精简后预计 intent_planner 耗时降至 15-20s。",
+      "strategy": "策略2: 精简 intent_planner Prompt",
+      "description": "将 intent_planner_prompt 从 ~120 行压缩到 ~50 行：移除冗余注释、减少示例到 1 个极简示例、API 描述只保留 config_id + name + endpoint 名称",
       "files_to_modify": [
         "backend/app/agent/prompts/intent_planner_prompt.py"
-      ]
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送天气查询请求，验证 intent_planner 仍能正确识别意图并生成执行计划",
+        "发送股票查询请求，验证 intent_planner 仍能提取 stock_symbol 等实体",
+        "发送缺少关键信息的查询（如 '查询天气' 不带城市），验证仍能正确反问",
+        "对比日志中 intent_planner 的响应时间（应从 ~42s 降至 ~15s）"
+      ],
+      "acceptance_criteria": "prompt 行数减半，意图识别准确性不退化，响应时间降低",
+      "estimated_time_save": "~27s",
+      "passes": false
     },
     {
-      "id": "F-PERF-03",
+      "id": "F-05",
+      "priority": 2,
+      "category": "performance",
+      "strategy": "策略2: 精简 intent_planner Prompt",
+      "description": "intent_planner LLM 调用时显式传入 max_tokens=1024（当前默认 4096，JSON 输出实际只需 200-500 tokens）",
+      "files_to_modify": [
+        "backend/app/agent/nodes/intent_planner_node.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送任意查询请求",
+        "检查 LLM 请求日志确认 max_tokens 参数为 1024",
+        "验证 LLM 响应完整（JSON 未被截断）",
+        "验证多种查询类型（天气/股票/IP）的响应 JSON 结构均完整"
+      ],
+      "acceptance_criteria": "LLM 调用 max_tokens=1024 且无截断问题",
+      "estimated_time_save": "~5s",
+      "passes": false
+    },
+    {
+      "id": "F-06",
       "priority": 3,
       "category": "performance",
-      "description": "精简 Analyzer Prompt：将 UNIVERSAL_ANALYSIS_PROMPT 从 7 段式报告压缩为 3 段式（核心数据、主要发现、注意事项），新增 SIMPLE_ANALYSIS_PROMPT 用于低数据量场景",
-      "steps": [
-        "运行 bash init.sh 启动后端服务器",
-        "发送复杂查询（100行数据）：{\"message\": \"查询AAPL的股票价格\", \"session_id\": \"perf-analysis-test\"}",
-        "确认响应包含分析报告且结构为 3 段（非原先 7 段）",
-        "用 time 或日志时间戳确认 analyzer 节点耗时 < 40s（原 ~85s）",
-        "验证报告质量：包含核心价格数据、趋势发现、数据局限性说明",
-        "确认报告未出现结构乱序或遗漏关键信息"
-      ],
-      "passes": false,
-      "rationale": "原 7 段式报告导致 LLM 输出 2000-3000 tokens（耗 60-90s）。压缩到 3 段后输出约 800-1200 tokens，预计 analyzer 耗时降至 25-40s。",
+      "strategy": "策略2: 精简 analysis_prompt",
+      "description": "新增 SIMPLE_ANALYSIS_PROMPT 模板：用于简单查询（≤5行数据），只要求一段话总结核心数据",
       "files_to_modify": [
         "backend/app/agent/prompts/analysis_prompt.py"
-      ]
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送简单查询使其未被 F-01 跳过（如数据行数为 3-5 行的边界情况），验证使用简单 prompt",
+        "验证返回的分析报告为简短一段话而非 7 段式报告",
+        "验证报告包含核心数据值且准确",
+        "验证报告语言风格自然、简洁"
+      ],
+      "acceptance_criteria": "SIMPLE_ANALYSIS_PROMPT 存在且能生成简洁的一段话分析",
+      "estimated_time_save": "~40s",
+      "passes": false
     },
     {
-      "id": "F-PERF-04",
+      "id": "F-07",
+      "priority": 3,
+      "category": "performance",
+      "strategy": "策略2: 精简 analysis_prompt",
+      "description": "将 UNIVERSAL_ANALYSIS_PROMPT 从 7 段压缩到 3 段（核心数据、主要发现、注意事项），减少 LLM 输出 token 数",
+      "files_to_modify": [
+        "backend/app/agent/prompts/analysis_prompt.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送复杂查询（如 'AAPL 最近的股票走势分析'），触发 UNIVERSAL_ANALYSIS_PROMPT",
+        "验证返回的分析报告只包含 3 个主要章节（核心数据、主要发现、注意事项）",
+        "验证报告质量未严重退化（仍包含有用信息）",
+        "对比日志中 analyzer 的响应时间（应从 ~85s 降至 ~25s）"
+      ],
+      "acceptance_criteria": "报告从 7 段缩减到 3 段，分析质量可接受",
+      "estimated_time_save": "~60s",
+      "passes": false
+    },
+    {
+      "id": "F-08",
       "priority": 4,
       "category": "performance",
-      "description": "降低各节点 max_tokens：intent_planner 调用 LLM 时使用 max_tokens=1024（而非默认 4096），analyzer 简单查询用 512，复杂查询用 2048",
-      "steps": [
-        "运行 bash init.sh 启动后端服务器",
-        "发送查询：{\"message\": \"查询北京的天气\", \"session_id\": \"perf-tokens-test\"}",
-        "检查 backend/logs/app.log 中 LLM Request 日志，确认 intent_planner 调用的 max_tokens=1024",
-        "如果是简单查询跳过 Analyzer 则无需校验 analyzer max_tokens",
-        "发送复杂查询验证：{\"message\": \"查询AAPL的股票价格\", \"session_id\": \"perf-tokens-complex\"}",
-        "检查日志确认 analyzer 调用的 max_tokens=2048（非 4096）",
-        "确认两个查询均返回正确且完整的结果，无截断"
-      ],
-      "passes": false,
-      "rationale": "max_tokens 影响 LLM 推理时间。intent_planner 输出为结构化 JSON（200-500 tokens），使用 4096 存在大量冗余。降低后可减少 LLM 端推理开销约 30%。",
-      "files_to_modify": [
-        "backend/app/agent/nodes/intent_planner_node.py",
-        "backend/app/agent/core/data_analyzer.py"
-      ]
-    },
-    {
-      "id": "F-PERF-05",
-      "priority": 5,
-      "category": "performance",
-      "description": "Analyzer 流式 SSE 输出：将 analyzer 节点改为使用 chat_stream() 输出，使用户在 LLM 开始输出时就能看到首字（感知提速）",
-      "steps": [
-        "运行 bash init.sh 启动后端服务器",
-        "在浏览器打开 frontend/index.html",
-        "发送复杂查询：「查询AAPL的股票价格」",
-        "观察前端界面：在 analyzer 阶段应逐字/逐句显示分析内容（而非等待全部完成后一次性显示）",
-        "使用浏览器开发者工具（Network → EventStream）检查 SSE 事件流",
-        "确认存在多个类型为 analysis_stream 的 SSE 事件（每个事件携带部分文本）",
-        "确认最终完整拼接的分析报告内容与非流式版本一致",
-        "记录从发送请求到看到第一个分析文字的时间，应 < 50s（整体 intent+executor+analyzer首字符）"
-      ],
-      "passes": false,
-      "rationale": "流式输出不减少总耗时，但将用户感知等待时间从 '发送请求后等 2 分钟' 降至 '发送请求后约 45s 开始看到分析文字逐步出现'。这是关键的 UX 优化。",
+      "strategy": "策略2: DataAnalyzer 支持 query_complexity",
+      "description": "DataAnalyzer.analyze() 方法增加 query_complexity 参数（simple/normal/complex），根据复杂度自动选择 prompt 和 max_tokens",
       "files_to_modify": [
         "backend/app/agent/core/data_analyzer.py",
         "backend/app/agent/nodes/analyzer_node.py"
-      ]
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送简单查询（数据行数 ≤ 5），检查日志确认使用了 max_tokens=512",
+        "发送中等复杂查询（数据行数 > 5），检查日志确认使用了 max_tokens=1500",
+        "验证两种情况下的分析报告均完整（未被截断）",
+        "验证分析结果质量在可接受范围内"
+      ],
+      "acceptance_criteria": "analyze() 方法根据 complexity 动态选择 prompt 和 token 限制",
+      "estimated_time_save": "~15s",
+      "passes": false
     },
     {
-      "id": "F-PERF-06",
+      "id": "F-09",
+      "priority": 5,
+      "category": "performance",
+      "strategy": "策略4: Analyzer 流式 SSE 输出",
+      "description": "DataAnalyzer 新增 analyze_stream() 方法，使用 llm.chat_stream() 返回 AsyncGenerator 逐 chunk 产出分析内容",
+      "files_to_modify": [
+        "backend/app/agent/core/data_analyzer.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送复杂查询请求，验证 analyze_stream() 方法存在且可调用",
+        "验证 analyze_stream() 返回 AsyncGenerator 类型",
+        "验证逐 chunk 输出时，每个 chunk 为有效字符串片段",
+        "验证全部 chunk 拼接后等同于完整分析报告"
+      ],
+      "acceptance_criteria": "analyze_stream() 正确实现流式输出",
+      "estimated_time_save": "感知提速（首 token < 3s）",
+      "passes": false
+    },
+    {
+      "id": "F-10",
+      "priority": 5,
+      "category": "performance",
+      "strategy": "策略4: Analyzer 流式 SSE 输出",
+      "description": "analyzer_node 对非简单查询使用流式分析，将分析结果标记为 streaming 并配合前端 SSE 机制逐步展示",
+      "files_to_modify": [
+        "backend/app/agent/nodes/analyzer_node.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "使用浏览器打开前端页面",
+        "输入复杂查询（如 '分析 AAPL 最近的股票表现'）",
+        "观察前端界面：分析内容应逐步出现而非等待全部完成后一次性显示",
+        "验证首个文字出现的时间 < 3 秒（从 analyzer 开始计时）"
+      ],
+      "acceptance_criteria": "用户可看到流式输出的分析文字，首 token 时间 < 3s",
+      "estimated_time_save": "感知提速",
+      "passes": false
+    },
+    {
+      "id": "F-11",
       "priority": 6,
-      "category": "regression",
-      "description": "性能优化后回归验证：确认所有上下文记忆功能（F-CM-01 ~ F-CM-10）在性能优化后仍正常工作",
-      "steps": [
-        "运行 bash init.sh 启动后端服务器",
-        "执行澄清流程回归：发送{\"message\": \"查询天气\"}，确认返回澄清问题",
-        "发送{\"message\": \"北京\"}（同 session），确认返回天气数据（非再次询问）",
-        "执行独立查询回归：发送完整查询{\"message\": \"今天北京天气\", \"session_id\": \"new\"}",
-        "确认直接返回天气数据（无多余澄清）",
-        "检查 backend/sessions.json 确认会话历史格式正确（含 type 字段）",
-        "在前端 UI 重复上述测试，确认对话历史完整显示",
-        "确认所有查询的最终响应质量可接受（无乱码、无截断、含必要信息）"
+      "category": "performance",
+      "strategy": "策略1: Retrieval 与 IntentPlanner 并行化",
+      "description": "移除 retrieval → intent_planner 之间的串行等待，让 retrieval 和 intent_planner 的 prompt 构建并行进行",
+      "files_to_modify": [
+        "backend/app/agent/graph.py"
       ],
-      "passes": false,
-      "rationale": "性能优化（Prompt 精简、跳过 Analyzer、降低 max_tokens）可能破坏已有的上下文记忆功能。此回归测试确保 F-CM 系列功能不受影响。",
-      "files_to_modify": []
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送任意查询请求",
+        "检查日志确认 retrieval 和 intent_planner 的 prompt 构建阶段有时间重叠",
+        "验证 intent_planner 仍能正确接收 retrieval 的结果（API 列表）",
+        "验证总耗时略有下降（~1s）且功能不受影响"
+      ],
+      "acceptance_criteria": "retrieval 和 intent_planner 的非 LLM 阶段并行执行",
+      "estimated_time_save": "~1s",
+      "passes": false
     },
     {
-      "id": "F-PERF-07",
+      "id": "F-12",
       "priority": 7,
-      "category": "benchmark",
-      "description": "性能基准测试：运行标准三件套查询（天气/股票/IP），记录各节点耗时，确认简单查询 < 60s 且各项显著优于基线",
+      "category": "verification",
+      "strategy": "端到端验证",
+      "description": "全量端到端性能回归测试：对比优化前后的 3 个标准查询（天气/股票/IP）的总耗时，确认简单查询 < 30s",
+      "files_to_modify": [],
       "steps": [
-        "运行 bash init.sh 启动后端服务器",
-        "准备计时工具：使用 time curl 或 Python 脚本记录请求耗时",
-        "执行查询1：{\"message\": \"查询北京的天气\"}，记录总耗时",
-        "执行查询2：{\"message\": \"查询AAPL的股票价格\"}，记录总耗时",
-        "执行查询3：{\"message\": \"查询IP 8.8.8.8的地理位置\"}，记录总耗时",
-        "检查日志分析各节点耗时（retrieval、intent_planner、executor、analyzer）",
-        "对比基线数据：天气 121s、股票 134s、IP 139s",
-        "验证天气查询和 IP 查询耗时 < 60s（跳过了 Analyzer）",
-        "验证股票查询耗时 < 90s（Prompt 精简 + max_tokens 降低）",
-        "将结果记录到 claude-progress.txt"
+        "启动后端服务 bash init.sh",
+        "执行 time curl -X POST http://localhost:8002/api/v1/chat -H 'Content-Type: application/json' -d '{\"query\": \"查询北京的天气\"}'，记录耗时",
+        "执行 time curl -X POST http://localhost:8002/api/v1/chat -H 'Content-Type: application/json' -d '{\"query\": \"查询AAPL的股票价格\"}'，记录耗时",
+        "执行 time curl -X POST http://localhost:8002/api/v1/chat -H 'Content-Type: application/json' -d '{\"query\": \"查询 8.8.8.8 的IP地址信息\"}'，记录耗时",
+        "验证简单查询（天气/IP）耗时 < 30 秒",
+        "验证复杂查询（股票）耗时 < 60 秒",
+        "验证所有查询返回的数据内容准确且格式正确"
       ],
-      "passes": false,
-      "rationale": "最终验收基准。基线数据来自用户报告的三次查询。通过对比确认优化效果达标。",
-      "files_to_modify": []
+      "acceptance_criteria": "简单查询 < 30s，复杂查询 < 60s，数据正确性无退化",
+      "estimated_time_save": "N/A（验证项）",
+      "passes": false
     }
-  ],
-  "metadata": {
-    "project_name": "AI Data Agent - Performance Optimization",
-    "version": "v4.3",
-    "created_at": "2026-04-12",
-    "last_updated": "2026-04-12",
-    "total_features_legacy": 10,
-    "total_features_perf": 7,
-    "baseline_performance": {
-      "weather_query_seconds": 121,
-      "stock_query_seconds": 134,
-      "ip_query_seconds": 139,
-      "bottleneck": "两次 LLM 调用合计占总耗时 96%+，analyzer 单独占 62-65%"
-    },
-    "target_performance": {
-      "simple_query_seconds": "< 60",
-      "complex_query_seconds": "< 90"
-    },
-    "priority_distribution": {
-      "P1_skip_analyzer": 1,
-      "P2_slim_intent_prompt": 1,
-      "P3_slim_analysis_prompt": 1,
-      "P4_reduce_max_tokens": 1,
-      "P5_streaming_analyzer": 1,
-      "P6_regression": 1,
-      "P7_benchmark": 1
-    },
-    "success_criteria": "F-PERF-01 ~ F-PERF-07 全部 passes=true，且 F-PERF-07 基准测试耗时符合目标"
-  }
+  ]
 }

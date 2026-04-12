@@ -111,3 +111,38 @@ alpha_vantage_api.json
 # Documentation temporary
 BUG修复需求*.md
 f24_test_output.txt
+
+# Additional virtual environments
+tests_venv/
+backend/venv/
+
+# Additional log variants
+server_new.log
+server_f12_clean.log
+test_output.log
+backend/server.log
+backend/test_f13*.log
+backend/verify_output.txt
+
+# Backend scattered test/debug files
+backend/test_*.py
+backend/test_*.json
+backend/test_*.sh
+backend/test_*.bat
+backend/*.bat
+backend/manual_test*.py
+backend/trigger_query.py
+backend/unlock_qdrant.py
+backend/check_and_rebuild_embeddings.py
+backend/rbac_setup.py
+backend/rbac_verify_permissions.py
+backend/create_orders_table.py
+backend/run_create_orders.py
+backend/sse_file.py
+backend/ip_test_result.json
+backend/weather_test_result.json
+backend/*_TEST_SUMMARY.md
+backend/*_FIX_SUMMARY.md
+
+# Gemini / Antigravity
+.gemini/
