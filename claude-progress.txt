@@ -153,6 +153,20 @@
   ✅ 执行 git init + 初始 commit
   📊 状态: 0/12 功能完成 | 下一个: F-01 (简单查询跳过 Analyzer)
 
+  [2026-04-13] Session #2 — 编码智能体
+  ✅ F-01: 简单查询跳过 Analyzer LLM 调用
+  ✅ F-02: is_simple_query() 判断函数实现
+  ✅ F-03: _format_simple_response() 格式化函数实现
+  📝 修改文件: backend/app/agent/nodes/analyzer_node.py
+    - 新增 is_simple_query(): 单步计划 + ≤5 行数据 → 判定为简单查询
+    - 新增 _format_simple_response(): 递归格式化嵌套字典，输出 Markdown
+    - 修改 analyzer_node(): 在 LLM 分析前插入简单查询检查，跳过时走快速路径
+  🧪 E2E 验证:
+    - 天气查询 (~2s): ✅ 跳过 LLM，返回格式化 Markdown
+    - IP 查询 (8.8.8.8): ✅ 跳过 LLM，返回地理位置信息
+    - 复杂股票对比 (3步, 101行): ✅ 走 LLM 分析，未退化
+  📊 状态: 3/12 功能完成 | 下一个: F-04 (精简 intent_planner Prompt)
+
   [2026-04-13] Session #3 — 编码智能体
   ✅ F-04: 精简 intent_planner Prompt — 从 ~115 行压缩到 ~27 行
   📝 修改文件: backend/app/agent/prompts/intent_planner_prompt.py
@@ -169,6 +183,9 @@
   ⚠️ 遗留: "查询天气" 的 clarification_question 在下游 chat API 中返回了通用错误而非反问文案，
      这是预存问题（intent_planner 已正确生成反问），非本次变更引入。
   📊 状态: 4/12 功能完成 | 下一个: F-05 (intent_planner max_tokens=1024)
+
+  ⚠️ 后续 Agent 注意: 所有进度记录请追加在七、进度日志 部分，在已有 Session 记录之后新增条目，
+     严禁删除或覆盖任何已有 Session 的记录！
 
 ================================================================================
   八、环境信息速查
