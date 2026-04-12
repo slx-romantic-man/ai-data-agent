@@ -22,9 +22,17 @@ _retrieved_tables_cache = []
 
 
 def should_continue_to_executor(state: AgentState) -> str:
-    """路由从 intent_planner: 去 executor 还是 analyzer（错误路径）"""
+    """路由从 intent_planner: 去 executor、analyzer 还是直接结束（澄清场景）"""
     plan = state.get("plan") or []
     if not plan:
+        # 检查是否是因为澄清而 plan 为空
+        extracted_filters = state.get("extracted_filters")
+        messages = state.get("messages", [])
+        if extracted_filters is None and messages:
+            last_msg = messages[-1]
+            if isinstance(last_msg, dict) and last_msg.get("type") == "clarification":
+                # 已生成澄清问题，直接结束，不进入 analyzer
+                return "clarify"
         return "analyzer"
     return "executor"
 
@@ -230,13 +238,14 @@ async def create_graph(permission: PermissionContext):
     # retrieval 完成后总是进入 intent_planner（由 intent_planner 决定是否澄清）
     workflow.add_edge("retrieval", "intent_planner")
 
-    # intent_planner -> executor 或 analyzer
+    # intent_planner -> executor, analyzer, or END (clarification)
     workflow.add_conditional_edges(
         "intent_planner",
         should_continue_to_executor,
         {
             "executor": "executor",
-            "analyzer": "analyzer"
+            "analyzer": "analyzer",
+            "clarify": END
         }
     )
 

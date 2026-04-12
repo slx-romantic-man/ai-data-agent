@@ -174,14 +174,19 @@
     - 两个示例合并为单行紧凑 JSON 格式
     - 保留所有核心约束（禁止虚构API、SQL安全、python_exec禁止import）
     - 保留 missing_info 和 clarification_question 的判定规则
+  🔧 Bug修复: clarification 追问在下游 chat API 中返回通用错误
+    - 根因: should_continue_to_executor 在 plan=[] 时无条件路由到 analyzer,
+      analyzer_node 检测到 not plan and not data_context 后覆盖澄清消息
+    - 修复: graph.py 中 should_continue_to_executor 增加 extracted_filters is None
+      + clarification message 检测，走新的 "clarify" 路由直接 END
+    - 修改文件: backend/app/agent/graph.py
   🧪 E2E 验证:
     - 天气查询 (查询北京的天气): ✅ 正确识别 weather_api，提取 location=北京，1步计划生成
     - 股票查询 (查询AAPL的股票价格): ✅ 正确提取 stock_symbol=AAPL, market=US，生成调用计划
     - IP查询 (查询 8.8.8.8 的IP地址信息): ✅ 正确识别 geo API，返回地理位置
-    - 缺失信息 (查询天气): ✅ LLM 返回 missing_info=["地点"] + clarification_question
+    - 缺失信息 (查询天气): ✅ 返回 "请问您想查询哪个城市的天气？"
+    - 追问补全 (北京, 同一session): ✅ 返回北京天气数据
     - 响应时间: ~2.3s (天气查询，走 F-01 快速路径)
-  ⚠️ 遗留: "查询天气" 的 clarification_question 在下游 chat API 中返回了通用错误而非反问文案，
-     这是预存问题（intent_planner 已正确生成反问），非本次变更引入。
   📊 状态: 4/12 功能完成 | 下一个: F-05 (intent_planner max_tokens=1024)
 
   ⚠️ 后续 Agent 注意: 所有进度记录请追加在七、进度日志 部分，在已有 Session 记录之后新增条目，
