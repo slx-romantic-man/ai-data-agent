@@ -2,228 +2,262 @@
   "project_features": [
     {
       "id": "F-CM-01",
-      "priority": 1,
-      "category": "functional",
+      "priority": 100,
+      "category": "legacy_completed",
       "description": "股票查询多轮澄清上下文记忆：用户补充时间范围后系统应记住初始意图",
       "steps": [
-        "使用curl或浏览器访问 http://localhost:8002/docs 打开API文档",
-        "调用 POST /api/v1/chat 接口，发送第一条消息：{\"message\": \"分析苹果美股股价变化\", \"session_id\": \"test-stock-session\"}",
-        "验证响应包含澄清问题（如\"请问您需要分析哪个时间范围的股价？\"）",
-        "使用相同session_id发送第二条消息：{\"message\": \"近期的\", \"session_id\": \"test-stock-session\"}",
-        "验证系统正确理解合并意图（\"苹果股价，时间范围：近期\"）",
-        "验证响应包含股票数据结果，而非再次询问\"请问您具体想查询什么数据\"",
-        "检查backend/sessions.json确认test-stock-session包含完整对话历史"
+        "调用 POST /api/v1/chat 发送：{\"message\": \"分析苹果美股股价变化\", \"session_id\": \"test-stock-session\"}",
+        "验证响应包含澄清问题",
+        "使用相同 session_id 发送：{\"message\": \"近期的\"}",
+        "验证系统返回股票数据结果而非再次询问"
       ],
-      "passes": true,
-      "validation_criteria": {
-        "must_not_ask_redundant_question": true,
-        "must_return_data": true,
-        "session_history_length": ">= 4 messages (2 user + 2 assistant)"
-      }
+      "passes": true
     },
     {
       "id": "F-CM-02",
-      "priority": 2,
-      "category": "functional",
-      "description": "天气查询补充地点：用户补充城市名后系统应直接执行查询而非再次询问",
-      "steps": [
-        "调用 POST /api/v1/chat 接口：{\"message\": \"查询天气\", \"session_id\": \"test-weather-session\"}",
-        "验证响应包含澄清问题（如\"请问您想查询哪个城市的天气？\"）",
-        "发送补充消息：{\"message\": \"北京\", \"session_id\": \"test-weather-session\"}",
-        "验证系统执行北京天气查询并返回数据",
-        "验证响应不包含其他澄清问题（如\"请问具体日期\"）",
-        "使用浏览器打开 frontend/index.html，在UI界面重复上述对话",
-        "验证前端UI显示完整对话历史（包含第一条\"查询天气\"）"
-      ],
-      "passes": true,
-      "validation_criteria": {
-        "must_execute_api": true,
-        "must_not_ask_additional_question": true,
-        "frontend_history_display": true
-      }
+      "priority": 100,
+      "category": "legacy_completed",
+      "description": "天气查询补充地点上下文记忆",
+      "steps": [],
+      "passes": true
     },
     {
       "id": "F-CM-03",
-      "priority": 3,
-      "category": "functional",
-      "description": "连续独立查询不混淆：完成一个查询后开启新查询，系统不应混入历史上下文",
-      "steps": [
-        "发送第一条完整查询：{\"message\": \"最近7天的订单量\", \"session_id\": \"test-independent-session\"}",
-        "验证返回数据（无澄清问题）",
-        "发送第二条新查询：{\"message\": \"分析用户增长趋势\", \"session_id\": \"test-independent-session\"}",
-        "验证第二条查询返回增长趋势分析，而非订单量数据",
-        "验证系统不会将\"最近7天\"误应用到\"用户增长趋势\"查询",
-        "检查backend/sessions.json确认两条查询均被记录但未混淆"
-      ],
-      "passes": true,
-      "validation_criteria": {
-        "queries_independent": true,
-        "no_cross_contamination": true,
-        "session_history_correct": true
-      }
+      "priority": 100,
+      "category": "legacy_completed",
+      "description": "连续独立查询不混淆",
+      "steps": [],
+      "passes": true
     },
     {
       "id": "F-CM-04",
-      "priority": 4,
-      "category": "functional",
-      "description": "状态初始化历史加载：chat.py第164行initial_state应包含完整对话历史",
-      "steps": [
-        "查看backend/app/api/v1/chat.py第159-177行代码",
-        "验证第164行initial_state['messages']从session['messages']加载历史",
-        "验证历史格式为[{'role': 'user/assistant', 'content': '...'}]",
-        "添加日志验证：logger.info(f\"Loaded {len(formatted_history)} history messages\")",
-        "运行init.sh启动服务器，查看logs/app.log确认日志输出",
-        "进行多轮对话测试，验证每轮请求initial_state包含历史"
-      ],
-      "passes": true,
-      "validation_criteria": {
-        "code_review": "initial_state['messages'] contains session history",
-        "log_verification": "History loaded message appears in logs",
-        "format_correct": "messages format matches LangGraph requirements"
-      }
+      "priority": 100,
+      "category": "legacy_completed",
+      "description": "状态初始化历史加载",
+      "steps": [],
+      "passes": true
     },
     {
       "id": "F-CM-05",
-      "priority": 5,
-      "category": "functional",
-      "description": "意图节点历史消歧：intent_node.py应检测澄清回复并合并历史意图",
-      "steps": [
-        "查看backend/app/agent/nodes/intent_node.py第27-77行",
-        "验证代码读取state['messages']而非仅state['query']",
-        "验证检测澄清问题的逻辑（检查历史中assistant消息包含\"请问\"）",
-        "验证_merge_with_history函数存在并正确合并意图",
-        "添加日志：logger.info(f\"Detected clarification follow-up\")",
-        "运行股票查询测试（F-CM-01），查看logs确认\"Detected clarification follow-up\"日志",
-        "验证合并后的query传递给LLM（如\"苹果股价，补充信息：近期\"）"
-      ],
-      "passes": true,
-      "validation_criteria": {
-        "history_usage": "intent_node reads state['messages']",
-        "merge_logic": "_merge_with_history function exists",
-        "log_output": "Clarification detection logged",
-        "merged_query_correct": true
-      }
+      "priority": 100,
+      "category": "legacy_completed",
+      "description": "意图节点历史消歧",
+      "steps": [],
+      "passes": true
     },
     {
       "id": "F-CM-06",
-      "priority": 6,
-      "category": "functional",
-      "description": "Prompt模板历史字段：intent_prompt.py应包含对话历史字段并传递给LLM",
-      "steps": [
-        "查看backend/app/agent/prompts/intent_prompt.py",
-        "验证get_intent_prompt函数签名包含history参数",
-        "验证Prompt模板包含\"### 对话历史\"字段",
-        "验证历史格式化为最近6轮对话（3个来回）",
-        "验证Prompt说明\"结合历史上下文理解用户完整意图\"",
-        "在intent_node.py中调用get_intent_prompt时传递history",
-        "使用调试工具或日志打印完整Prompt，验证历史字段存在"
-      ],
-      "passes": true,
-      "validation_criteria": {
-        "function_signature": "get_intent_prompt(query, api_list, history=None)",
-        "prompt_template": "### 对话历史 section exists",
-        "history_passed": "intent_node passes state['messages'] to prompt",
-        "llm_context_complete": true
-      }
+      "priority": 100,
+      "category": "legacy_completed",
+      "description": "Prompt模板历史字段",
+      "steps": [],
+      "passes": true
     },
     {
       "id": "F-CM-07",
-      "priority": 7,
-      "category": "functional",
-      "description": "Stream Chat历史格式清洗：stream_chat endpoint应清洗历史格式为LangGraph标准",
-      "steps": [
-        "查看backend/app/api/v1/chat.py第508-539行（stream_chat函数）",
-        "验证conversation_history格式清洗逻辑（去掉timestamp等字段）",
-        "验证formatted_history只保留role和content字段",
-        "验证initial_state使用formatted_history而非原始conversation_history",
-        "测试stream endpoint：POST /api/v1/chat/stream发送多轮对话",
-        "验证流式输出中每轮处理正确理解历史上下文",
-        "检查backend/sessions.json格式一致性"
-      ],
-      "passes": true,
-      "validation_criteria": {
-        "format_cleaning": "formatted_history removes extra fields",
-        "stream_correct": "Stream endpoint handles history correctly",
-        "format_consistency": "Session format matches LangGraph format"
-      }
+      "priority": 100,
+      "category": "legacy_completed",
+      "description": "Stream Chat历史格式清洗",
+      "steps": [],
+      "passes": true
     },
     {
       "id": "F-CM-08",
-      "priority": 8,
-      "category": "regression",
-      "description": "回归测试：单轮完整查询不受影响（如\"今天北京天气\"直接执行）",
-      "steps": [
-        "发送完整查询无需澄清：{\"message\": \"今天北京天气\", \"session_id\": \"test-single-turn\"}",
-        "验证系统直接执行查询返回天气数据",
-        "验证无澄清问题返回",
-        "发送另一完整查询：{\"message\": \"最近7天订单量\", \"session_id\": \"test-single-turn\"}",
-        "验证直接返回订单数据",
-        "验证响应时间符合预期（无额外澄清轮次延迟）"
-      ],
-      "passes": true,
-      "validation_criteria": {
-        "no_unnecessary_clarification": true,
-        "direct_execution": true,
-        "response_time_acceptable": true
-      }
+      "priority": 100,
+      "category": "legacy_completed",
+      "description": "回归测试：单轮完整查询不受影响",
+      "steps": [],
+      "passes": true
     },
     {
       "id": "F-CM-09",
-      "priority": 9,
-      "category": "edge_case",
-      "description": "边界测试：用户补充无关信息时系统应识别并重新询问",
-      "steps": [
-        "发送第一条查询：{\"message\": \"查询订单量\", \"session_id\": \"test-edge-session\"}",
-        "验证返回澄清问题\"请问时间范围\"",
-        "发送无关补充：{\"message\": \"我想吃苹果\", \"session_id\": \"test-edge-session\"}",
-        "验证系统识别补充信息无关，重新询问时间范围",
-        "验证不误执行\"苹果股价\"查询",
-        "验证不混淆\"订单量\"和\"苹果\"意图"
-      ],
-      "passes": true,
-      "validation_criteria": {
-        "intent_discrimination": true,
-        "no_wrong_execution": true,
-        "appropriate_re_ask": true
-      }
+      "priority": 100,
+      "category": "legacy_completed",
+      "description": "边界测试：无关信息识别",
+      "steps": [],
+      "passes": true
     },
     {
       "id": "F-CM-10",
-      "priority": 10,
-      "category": "integration",
+      "priority": 100,
+      "category": "legacy_completed",
       "description": "端到端集成验证：前端UI完整多轮对话流程",
+      "steps": [],
+      "passes": true
+    },
+    {
+      "id": "F-PERF-01",
+      "priority": 1,
+      "category": "performance",
+      "description": "简单查询跳过 Analyzer LLM：单步执行计划 + 数据行数 ≤ 5 的查询直接用 Python 格式化数据返回，完全不调用 Analyzer LLM",
       "steps": [
-        "运行bash init.sh启动后端服务器",
-        "打开浏览器访问frontend/index.html",
-        "在聊天界面输入\"分析苹果股价\"",
-        "验证前端显示assistant澄清问题",
-        "输入\"近期的\"",
-        "验证前端显示股票数据结果",
-        "验证前端对话历史显示完整4条消息（含第一条）",
-        "点击\"新建聊天\"按钮，验证新会话不包含历史对话",
-        "在新会话输入\"查询天气\"，验证重新开始澄清流程"
+        "运行 bash init.sh 启动后端服务器",
+        "发送简单查询：POST /api/v1/chat/stream，body={\"message\": \"查询北京的天气\", \"session_id\": \"perf-test-simple\"}",
+        "用 time 计时或在前端观察，确认总耗时 < 60s（原为 ~121s）",
+        "检查 backend/logs/app.log 确认出现 [AnalyzerNode] Simple query detected, skipping LLM 日志",
+        "确认响应内容包含天气数据的核心字段（温度、湿度、风速等），且格式可读",
+        "发送另一简单查询：{\"message\": \"查询IP 8.8.8.8的地理位置\", \"session_id\": \"perf-test-ip\"}",
+        "确认同样跳过 Analyzer LLM 且返回了 IP 地理位置数据",
+        "发送复杂查询验证不误跳：{\"message\": \"查询AAPL的股票价格并分析趋势\", \"session_id\": \"perf-test-complex\"}",
+        "确认复杂查询（多行数据）仍走 LLM Analyzer 路径，日志无 skipping LLM 字样"
       ],
-      "passes": true,
-      "validation_criteria": {
-        "frontend_history_complete": true,
-        "new_session_clean": true,
-        "ui_no_context_loss": true,
-        "end_to_end_flow": true
-      }
+      "passes": false,
+      "rationale": "Analyzer LLM 占总耗时 62-65%（约 80-88s）。简单查询的 API 返回数据本身就是答案，无需 LLM '分析'。跳过后预计简单查询耗时降至 20-45s。",
+      "files_to_modify": [
+        "backend/app/agent/nodes/analyzer_node.py"
+      ]
+    },
+    {
+      "id": "F-PERF-02",
+      "priority": 2,
+      "category": "performance",
+      "description": "精简 intent_planner Prompt：压缩 intent_planner_prompt.py 模板从 ~120 行到 ~50 行，移除冗余示例和无用输出字段（metrics/dimensions/confidence）",
+      "steps": [
+        "运行 bash init.sh 启动后端服务器",
+        "发送测试查询：POST /api/v1/chat/stream，body={\"message\": \"查询北京的天气\", \"session_id\": \"perf-prompt-test\"}",
+        "检查 backend/logs/app.log 中 [IntentPlannerNode] LLM Response 日志，确认 LLM 返回了有效 JSON",
+        "确认 JSON 中包含 intent_type、entities、steps 字段",
+        "确认 JSON 中不再包含 metrics、dimensions、confidence 字段（已移除）",
+        "发送股票查询验证：{\"message\": \"查询AAPL的股票价格\", \"session_id\": \"perf-prompt-stock\"}",
+        "确认 intent_planner 正确识别 api_id=alpha_vantage_stock 并生成有效 plan",
+        "发送澄清测试：{\"message\": \"查询天气\", \"session_id\": \"perf-prompt-clarify\"}",
+        "确认系统仍然正确返回澄清问题（未因 prompt 精简而丢失澄清能力）"
+      ],
+      "passes": false,
+      "rationale": "intent_planner 占总耗时 30-33%（约 37-46s）。当前 Prompt 过长导致输入 token 多、示例冗余导致输出 token 多。精简后预计 intent_planner 耗时降至 15-20s。",
+      "files_to_modify": [
+        "backend/app/agent/prompts/intent_planner_prompt.py"
+      ]
+    },
+    {
+      "id": "F-PERF-03",
+      "priority": 3,
+      "category": "performance",
+      "description": "精简 Analyzer Prompt：将 UNIVERSAL_ANALYSIS_PROMPT 从 7 段式报告压缩为 3 段式（核心数据、主要发现、注意事项），新增 SIMPLE_ANALYSIS_PROMPT 用于低数据量场景",
+      "steps": [
+        "运行 bash init.sh 启动后端服务器",
+        "发送复杂查询（100行数据）：{\"message\": \"查询AAPL的股票价格\", \"session_id\": \"perf-analysis-test\"}",
+        "确认响应包含分析报告且结构为 3 段（非原先 7 段）",
+        "用 time 或日志时间戳确认 analyzer 节点耗时 < 40s（原 ~85s）",
+        "验证报告质量：包含核心价格数据、趋势发现、数据局限性说明",
+        "确认报告未出现结构乱序或遗漏关键信息"
+      ],
+      "passes": false,
+      "rationale": "原 7 段式报告导致 LLM 输出 2000-3000 tokens（耗 60-90s）。压缩到 3 段后输出约 800-1200 tokens，预计 analyzer 耗时降至 25-40s。",
+      "files_to_modify": [
+        "backend/app/agent/prompts/analysis_prompt.py"
+      ]
+    },
+    {
+      "id": "F-PERF-04",
+      "priority": 4,
+      "category": "performance",
+      "description": "降低各节点 max_tokens：intent_planner 调用 LLM 时使用 max_tokens=1024（而非默认 4096），analyzer 简单查询用 512，复杂查询用 2048",
+      "steps": [
+        "运行 bash init.sh 启动后端服务器",
+        "发送查询：{\"message\": \"查询北京的天气\", \"session_id\": \"perf-tokens-test\"}",
+        "检查 backend/logs/app.log 中 LLM Request 日志，确认 intent_planner 调用的 max_tokens=1024",
+        "如果是简单查询跳过 Analyzer 则无需校验 analyzer max_tokens",
+        "发送复杂查询验证：{\"message\": \"查询AAPL的股票价格\", \"session_id\": \"perf-tokens-complex\"}",
+        "检查日志确认 analyzer 调用的 max_tokens=2048（非 4096）",
+        "确认两个查询均返回正确且完整的结果，无截断"
+      ],
+      "passes": false,
+      "rationale": "max_tokens 影响 LLM 推理时间。intent_planner 输出为结构化 JSON（200-500 tokens），使用 4096 存在大量冗余。降低后可减少 LLM 端推理开销约 30%。",
+      "files_to_modify": [
+        "backend/app/agent/nodes/intent_planner_node.py",
+        "backend/app/agent/core/data_analyzer.py"
+      ]
+    },
+    {
+      "id": "F-PERF-05",
+      "priority": 5,
+      "category": "performance",
+      "description": "Analyzer 流式 SSE 输出：将 analyzer 节点改为使用 chat_stream() 输出，使用户在 LLM 开始输出时就能看到首字（感知提速）",
+      "steps": [
+        "运行 bash init.sh 启动后端服务器",
+        "在浏览器打开 frontend/index.html",
+        "发送复杂查询：「查询AAPL的股票价格」",
+        "观察前端界面：在 analyzer 阶段应逐字/逐句显示分析内容（而非等待全部完成后一次性显示）",
+        "使用浏览器开发者工具（Network → EventStream）检查 SSE 事件流",
+        "确认存在多个类型为 analysis_stream 的 SSE 事件（每个事件携带部分文本）",
+        "确认最终完整拼接的分析报告内容与非流式版本一致",
+        "记录从发送请求到看到第一个分析文字的时间，应 < 50s（整体 intent+executor+analyzer首字符）"
+      ],
+      "passes": false,
+      "rationale": "流式输出不减少总耗时，但将用户感知等待时间从 '发送请求后等 2 分钟' 降至 '发送请求后约 45s 开始看到分析文字逐步出现'。这是关键的 UX 优化。",
+      "files_to_modify": [
+        "backend/app/agent/core/data_analyzer.py",
+        "backend/app/agent/nodes/analyzer_node.py"
+      ]
+    },
+    {
+      "id": "F-PERF-06",
+      "priority": 6,
+      "category": "regression",
+      "description": "性能优化后回归验证：确认所有上下文记忆功能（F-CM-01 ~ F-CM-10）在性能优化后仍正常工作",
+      "steps": [
+        "运行 bash init.sh 启动后端服务器",
+        "执行澄清流程回归：发送{\"message\": \"查询天气\"}，确认返回澄清问题",
+        "发送{\"message\": \"北京\"}（同 session），确认返回天气数据（非再次询问）",
+        "执行独立查询回归：发送完整查询{\"message\": \"今天北京天气\", \"session_id\": \"new\"}",
+        "确认直接返回天气数据（无多余澄清）",
+        "检查 backend/sessions.json 确认会话历史格式正确（含 type 字段）",
+        "在前端 UI 重复上述测试，确认对话历史完整显示",
+        "确认所有查询的最终响应质量可接受（无乱码、无截断、含必要信息）"
+      ],
+      "passes": false,
+      "rationale": "性能优化（Prompt 精简、跳过 Analyzer、降低 max_tokens）可能破坏已有的上下文记忆功能。此回归测试确保 F-CM 系列功能不受影响。",
+      "files_to_modify": []
+    },
+    {
+      "id": "F-PERF-07",
+      "priority": 7,
+      "category": "benchmark",
+      "description": "性能基准测试：运行标准三件套查询（天气/股票/IP），记录各节点耗时，确认简单查询 < 60s 且各项显著优于基线",
+      "steps": [
+        "运行 bash init.sh 启动后端服务器",
+        "准备计时工具：使用 time curl 或 Python 脚本记录请求耗时",
+        "执行查询1：{\"message\": \"查询北京的天气\"}，记录总耗时",
+        "执行查询2：{\"message\": \"查询AAPL的股票价格\"}，记录总耗时",
+        "执行查询3：{\"message\": \"查询IP 8.8.8.8的地理位置\"}，记录总耗时",
+        "检查日志分析各节点耗时（retrieval、intent_planner、executor、analyzer）",
+        "对比基线数据：天气 121s、股票 134s、IP 139s",
+        "验证天气查询和 IP 查询耗时 < 60s（跳过了 Analyzer）",
+        "验证股票查询耗时 < 90s（Prompt 精简 + max_tokens 降低）",
+        "将结果记录到 claude-progress.txt"
+      ],
+      "passes": false,
+      "rationale": "最终验收基准。基线数据来自用户报告的三次查询。通过对比确认优化效果达标。",
+      "files_to_modify": []
     }
   ],
   "metadata": {
-    "project_name": "AI Data Agent - Context Memory Fix",
-    "version": "v4.2",
-    "created_at": "2026-04-02",
-    "total_features": 10,
-    "priority_distribution": {
-      "P0_critical": 3,
-      "P1_important": 4,
-      "P2_regression": 1,
-      "P3_edge_case": 1,
-      "P4_integration": 1
+    "project_name": "AI Data Agent - Performance Optimization",
+    "version": "v4.3",
+    "created_at": "2026-04-12",
+    "last_updated": "2026-04-12",
+    "total_features_legacy": 10,
+    "total_features_perf": 7,
+    "baseline_performance": {
+      "weather_query_seconds": 121,
+      "stock_query_seconds": 134,
+      "ip_query_seconds": 139,
+      "bottleneck": "两次 LLM 调用合计占总耗时 96%+，analyzer 单独占 62-65%"
     },
-    "success_criteria": "All F-CM-01 to F-CM-10 must pass=true before production deployment"
+    "target_performance": {
+      "simple_query_seconds": "< 60",
+      "complex_query_seconds": "< 90"
+    },
+    "priority_distribution": {
+      "P1_skip_analyzer": 1,
+      "P2_slim_intent_prompt": 1,
+      "P3_slim_analysis_prompt": 1,
+      "P4_reduce_max_tokens": 1,
+      "P5_streaming_analyzer": 1,
+      "P6_regression": 1,
+      "P7_benchmark": 1
+    },
+    "success_criteria": "F-PERF-01 ~ F-PERF-07 全部 passes=true，且 F-PERF-07 基准测试耗时符合目标"
   }
 }

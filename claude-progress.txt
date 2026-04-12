@@ -1427,3 +1427,206 @@ Session 12 结束 - F-CM-10 验证完成 ✅
 - F-CM-08 (P3): 回归测试 - 单轮完整查询不受影响 ✅
 - F-CM-09 (P3): 边界测试 - 无关信息识别 ✅
 - F-CM-10 (P4): 端到端集成验证 - 前端UI完整多轮对话流程 ✅
+
+
+################################################################################
+################################################################################
+##                                                                            ##
+##   ====  新项目分割线  ====                                                  ##
+##   AI DATA AGENT v4.3 — 性能优化项目 (Performance Optimization)              ##
+##   以下内容属于新一阶段工作                                                    ##
+##                                                                            ##
+################################################################################
+################################################################################
+
+================================================================================
+AI DATA AGENT v4.3 — 性能优化项目
+Claude 智能体交接日志 (Session Handoff Log)
+================================================================================
+
+【本轮会话：初始化智能体 (Initializer Agent)】
+会话日期：2026-04-12
+智能体角色：Initializer Agent（基建搭建，零业务代码）
+任务目标：为性能优化项目搭建跨 Session 接力的外部基建栈
+任务状态：✅ COMPLETED
+
+================================================================================
+一、项目背景与目标 (Project Context)
+================================================================================
+
+前一阶段项目（Context Memory Fix, v4.2）已全部完成（F-CM-01 ~ F-CM-10 passes=true）。
+
+本阶段目标：**大幅压缩查询响应耗时**。
+
+基线性能报告（用户实测）：
+  - 查询1 "查询北京的天气"     → 总耗时 120.78s
+  - 查询2 "查询AAPL的股票价格"  → 总耗时 134.48s
+  - 查询3 "查询IP 8.8.8.8"    → 总耗时 139.12s
+
+耗时瓶颈分析：
+  - retrieval（向量搜索）        → ~1s   (0.7%)    → ✅ 无需优化
+  - intent_planner（LLM 意图+规划）→ ~42s  (32%)   → ❌ Prompt 过长
+  - executor（API 调用）          → ~4s   (3%)     → ✅ 无需优化
+  - analyzer（LLM 报告生成）      → ~85s  (64%)   → ❌ 最大瓶颈
+  - 两次 LLM 调用合计占总耗时 96%+
+
+目标性能：
+  - 简单查询（天气/IP 等单步+少量数据）：< 60s
+  - 复杂查询（股票等多行数据）：< 90s
+
+================================================================================
+二、本轮基建清单 (Infrastructure Deliverables)
+================================================================================
+
+本轮创建/更新了以下文件：
+
+1. init.sh（更新）— 防御性环境启动脚本
+   - 新增：trap 清理机制（出错自动 kill server）
+   - 新增：Qdrant lock 文件自动清理
+   - 新增：指数退避健康检查（最大 60s）
+   - 新增：PID 文件管理，支持重复启动
+   - 新增：log 目录自动创建
+   - 修复：.env 校验逻辑（支持空值检测）
+
+2. feature_list.json（更新）— 性能优化功能卡片
+   - 保留 F-CM-01 ~ F-CM-10（legacy_completed, priority=100）
+   - 新增 F-PERF-01 ~ F-PERF-07（7 张原子化功能卡片，passes=false）
+
+3. claude-progress.txt（本文件）— 追加新项目交接日志
+
+4. .gitignore — 审查无需修改（已覆盖所有必要排除项）
+
+================================================================================
+三、技术栈与规范铁律 (Tech Stack & Iron Rules)
+================================================================================
+
+【后端技术栈 — 禁止替换】
+  - 框架：FastAPI + uvicorn（端口 8002）
+  - Agent 框架：LangGraph（状态机模式，Plan-and-Execute）
+  - LLM 调用：OpenAI compatible API（当前模型 qwen3.6-plus）
+  - 向量数据库：Qdrant（local file mode）
+  - Embedding：sentence-transformers/all-MiniLM-L6-v2
+  - 关系数据库：MySQL + aiomysql
+  - 状态持久化：SQLite（via langgraph-checkpoint-sqlite）
+  - HTTP 客户端：httpx（async）
+  - 数据处理：pandas + numpy
+
+【前端技术栈 — 禁止替换】
+  - 纯静态 HTML + CSS + JS（无构建步骤）
+  - 入口：frontend/index.html
+  - 通信：SSE (Server-Sent Events)
+
+【铁律】
+  🚫 禁止引入新的 LLM 框架（如 LangChain 替代 LangGraph）
+  🚫 禁止引入新的前端框架（如 React/Vue）
+  🚫 禁止修改 LLM_PROVIDER / LLM_API_BASE 配置（除非用户明确要求）
+  🚫 禁止修改数据库 schema（本项目只涉及性能优化，不改数据模型）
+  ✅ 允许修改 Prompt 内容
+  ✅ 允许修改 LLM 调用参数（max_tokens, temperature）
+  ✅ 允许新增代码文件（如 fast_formatter.py）
+  ✅ 允许修改 Agent 节点逻辑（analyzer_node.py 等）
+
+================================================================================
+四、环境启动方式 (How to Bootstrap)
+================================================================================
+
+【标准启动序列 — 后续每个智能体必须依次执行】
+
+  Step 1: pwd
+          → 确认工作目录为 ai-data-agent - v4.3 根目录
+
+  Step 2: cat claude-progress.txt
+          → 阅读本文件，理解项目状态和前任进度
+
+  Step 3: cat feature_list.json | python3 -m json.tool
+          → 查看功能卡片清单，找到 priority 最小且 passes=false 的卡片
+
+  Step 4: bash init.sh
+          → 安装依赖 → 启动服务器 → 健康检查 → 进入可测试状态
+
+  Step 5: 开始开发（按认领的功能卡片编码并测试）
+
+================================================================================
+五、功能卡片清单摘要 (Feature Card Summary)
+================================================================================
+
+【已完成 — 上下文记忆修复（v4.2 遗产）】
+  F-CM-01 ~ F-CM-10: 10 张卡片，全部 passes=true，priority=100
+
+【待实施 — 性能优化（v4.3 当前）】
+  F-PERF-01 (P1): 简单查询跳过 Analyzer LLM          → passes=false
+  F-PERF-02 (P2): 精简 intent_planner Prompt          → passes=false
+  F-PERF-03 (P3): 精简 Analyzer Prompt (7段→3段)       → passes=false
+  F-PERF-04 (P4): 降低各节点 max_tokens               → passes=false
+  F-PERF-05 (P5): Analyzer 流式 SSE 输出              → passes=false
+  F-PERF-06 (P6): 回归验证（CM功能不被破坏）           → passes=false
+  F-PERF-07 (P7): 性能基准测试（三件套对比基线）       → passes=false
+
+  共 7 张卡片，全部 passes=false
+
+================================================================================
+六、工作纪律 (Work Discipline for Future Agents)
+================================================================================
+
+  1. 每次会话只做一个功能卡片（按 priority 选最小的 passes=false 卡片）
+  2. 完成后更新 feature_list.json 的 passes 字段为 true
+  3. 更新本文件 claude-progress.txt 记录进展
+  4. 提交 Git（附带清晰的 commit message）
+  5. 如果发现已完成功能出现回归，立即停止新开发，优先修复回归
+
+  【失败模式警告】
+  🚫 禁止一次性实现多个功能卡片
+  🚫 禁止仅凭代码存在就判断功能完成 — 必须以 feature_list.json 为唯一真相源
+  🚫 禁止跳过 E2E 验证直接标记 passes=true
+  🚫 禁止在未读 claude-progress.txt 的情况下开始编码
+
+================================================================================
+七、关键代码文件速查表 (Key Files Quick Reference)
+================================================================================
+
+  性能瓶颈相关（本项目核心修改对象）：
+  - backend/app/agent/nodes/analyzer_node.py     ← Analyzer 节点（最大瓶颈）
+  - backend/app/agent/core/data_analyzer.py      ← DataAnalyzer 类（LLM 分析调用）
+  - backend/app/agent/prompts/analysis_prompt.py  ← 分析 Prompt（7段式→3段式）
+  - backend/app/agent/nodes/intent_planner_node.py ← IntentPlanner 节点
+  - backend/app/agent/prompts/intent_planner_prompt.py ← 规划 Prompt（需精简）
+
+  LLM 配置：
+  - backend/app/config/llm_config.py              ← LLM 客户端（支持 max_tokens override）
+  - backend/app/config/settings.py                ← 全局配置
+  - .env                                         ← 环境变量（LLM_API_KEY 等）
+
+  工作流图：
+  - backend/app/agent/graph.py                    ← LangGraph 图定义
+  - backend/app/agent/state.py                    ← AgentState 状态结构
+
+  基建文件：
+  - init.sh                                      ← 环境启动脚本
+  - feature_list.json                            ← 功能卡片（唯一真相源）
+  - claude-progress.txt                          ← 本文件（交接日志）
+
+================================================================================
+八、本轮工作纪律执行情况 (Discipline Compliance)
+================================================================================
+
+  ✅ 遵守 "零业务代码" 原则：未写任何业务逻辑代码
+  ✅ 遵守 "三大神器" 完备性：init.sh + feature_list.json + claude-progress.txt 全部产出
+  ✅ 遵守 ".gitignore" 防御性配置：已审查确认覆盖所有排除项
+  ✅ 遵守 "Git 锚点提交" 要求：执行 git add + commit
+
+================================================================================
+九、会话历史追加 (Session History Append)
+================================================================================
+
+  Session 1-12 (2026-04-02 ~ 04-03): 上下文记忆修复项目 v4.2 ✅ (全部完成)
+
+  Session 13 (2026-04-12): 性能优化项目 v4.3 — 初始化智能体 ✅
+    - 更新 init.sh（防御性增强）
+    - 更新 feature_list.json（新增 F-PERF-01~07）
+    - 更新 claude-progress.txt（追加新项目段落）
+    - 审查 .gitignore（无需修改）
+    - Git 锚点提交
+
+================================================================================
+Session 13 结束 — 初始化基建完成 ✅
+================================================================================
