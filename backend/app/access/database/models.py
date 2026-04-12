@@ -157,6 +157,7 @@ class APIConfig(Base):
     category_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("api_categories.id"), nullable=True)
     auth_fields: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     owner_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    recommended_questions: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
 
     # 关联分类
     category: Mapped[Optional["APICategory"]] = relationship(

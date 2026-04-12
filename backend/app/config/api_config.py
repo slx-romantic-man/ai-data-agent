@@ -79,6 +79,9 @@ class APIConfig(BaseModel):
     # 是否为系统默认配置（不可删除）
     is_system: bool = False
 
+    # 推荐问题列表
+    recommended_questions: List[str] = Field(default_factory=list)
+
 
 class APIRegistry:
     """API注册表 - 管理所有API配置
@@ -183,7 +186,8 @@ class APIRegistry:
             enabled=db_config.is_active,
             timeout=db_config.timeout,
             retry_count=db_config.retry_count,
-            is_system=db_config.is_system
+            is_system=db_config.is_system,
+            recommended_questions=db_config.recommended_questions or []
         )
 
     def _pydantic_to_db_dict(self, api_id: str, config: APIConfig, created_by: int = None) -> dict:
@@ -200,7 +204,8 @@ class APIRegistry:
             "retry_count": config.retry_count,
             "is_system": config.is_system,
             "is_active": config.enabled,
-            "created_by": created_by
+            "created_by": created_by,
+            "recommended_questions": config.recommended_questions if config.recommended_questions else None
         }
 
     def register_api(self, api_id: str, config: APIConfig, persist: bool = True):

@@ -38,8 +38,8 @@ async def retrieval_node(state: AgentState, permission=None) -> Dict[str, Any]:
     # 获取检索服务实例
     retrieval_service = get_api_retrieval_service()
 
-    # 执行两阶段检索（向量召回 + LLM 精排）
-    retrieved_apis = await retrieval_service.get_apis_for_query(
+    # 执行向量检索（无需LLM精排，由后续的intent_planner统一处理）
+    retrieved_apis = await retrieval_service.get_apis_for_query_vector_only(
         query=query,
         user_id=user_id,
         top_k=10

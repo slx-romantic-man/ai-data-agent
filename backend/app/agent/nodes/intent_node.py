@@ -9,6 +9,7 @@ from app.agent.state import AgentState
 from app.config.llm_config import get_llm
 from app.agent.prompts.intent_prompt import get_intent_prompt
 from app.agent.router.api_router import get_api_router
+from app.utils.llm_cache import get_llm_cache
 from app.utils.logger import get_logger
 
 logger = get_logger()
@@ -86,7 +87,15 @@ async def intent_clarification_node(state: AgentState) -> AgentState:
         llm_messages.extend(messages[-6:])  # Last 6 messages (3 rounds)
     llm_messages.append({"role": "user", "content": prompt})
 
-    response = await llm.chat(llm_messages)
+    # Check cache first
+    cache = get_llm_cache()
+    cached_response = cache.get(llm_messages)
+    if cached_response is not None:
+        logger.info(f"[IntentNode] Cache hit for intent: {query}")
+        response = cached_response
+    else:
+        response = await llm.chat(llm_messages)
+        cache.set(llm_messages, response)
 
     # 解析 LLM 响应
     intent_data = _parse_llm_response(response)

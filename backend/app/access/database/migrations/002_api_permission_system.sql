@@ -17,11 +17,30 @@ CREATE TABLE IF NOT EXISTS api_categories (
     INDEX idx_sort_order (sort_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 扩展现有 api_configs 表
-ALTER TABLE api_configs
-    ADD COLUMN IF NOT EXISTS category_id INT NULL,
-    ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE,
-    ADD COLUMN IF NOT EXISTS auth_config TEXT NULL COMMENT '加密后的认证信息';
+-- 扩展现有 api_configs 表（MySQL 不支持 ADD COLUMN IF NOT EXISTS）
+-- 使用 INFORMATION_SCHEMA 检查列是否存在
+SET @dbname = DATABASE();
+
+SET @col1 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = 'api_configs' AND COLUMN_NAME = 'category_id');
+SET @sql1 = IF(@col1 = 0, 'ALTER TABLE api_configs ADD COLUMN category_id INT NULL', 'SELECT 1');
+PREPARE stmt1 FROM @sql1;
+EXECUTE stmt1;
+DEALLOCATE PREPARE stmt1;
+
+SET @col2 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = 'api_configs' AND COLUMN_NAME = 'is_active');
+SET @sql2 = IF(@col2 = 0, 'ALTER TABLE api_configs ADD COLUMN is_active BOOLEAN DEFAULT TRUE', 'SELECT 1');
+PREPARE stmt2 FROM @sql2;
+EXECUTE stmt2;
+DEALLOCATE PREPARE stmt2;
+
+SET @col3 = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = 'api_configs' AND COLUMN_NAME = 'auth_config');
+SET @sql3 = IF(@col3 = 0, "ALTER TABLE api_configs ADD COLUMN auth_config TEXT NULL COMMENT '加密后的认证信息'", 'SELECT 1');
+PREPARE stmt3 FROM @sql3;
+EXECUTE stmt3;
+DEALLOCATE PREPARE stmt3;
 
 -- auth_config 存储加密后的认证信息（含 Key）
 -- 原始结构示例：{"type": "api_key", "header": "X-API-Key", "value": "sk-xxx"}
@@ -31,9 +50,9 @@ ALTER TABLE api_configs
     ADD CONSTRAINT fk_api_category
     FOREIGN KEY (category_id) REFERENCES api_categories(id) ON DELETE SET NULL;
 
--- 创建分类索引
-CREATE INDEX IF NOT EXISTS idx_api_configs_category ON api_configs(category_id);
-CREATE INDEX IF NOT EXISTS idx_api_configs_is_active ON api_configs(is_active);
+-- 创建分类索引（MySQL 不支持 CREATE INDEX IF NOT EXISTS，用 IGNORE 跳过重复）
+CREATE INDEX idx_api_configs_category ON api_configs(category_id);
+CREATE INDEX idx_api_configs_is_active ON api_configs(is_active);
 
 -- 用户 API 权限表
 CREATE TABLE IF NOT EXISTS user_api_permissions (
@@ -76,5 +95,5 @@ CREATE TABLE IF NOT EXISTS api_call_logs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 创建用户权限索引
-CREATE INDEX IF NOT EXISTS idx_user_api_perm_user ON user_api_permissions(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_api_perm_status ON user_api_permissions(status);
+CREATE INDEX idx_user_api_perm_user ON user_api_permissions(user_id);
+CREATE INDEX idx_user_api_perm_status ON user_api_permissions(status);

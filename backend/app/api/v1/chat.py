@@ -607,8 +607,8 @@ async def stream_chat(
                     # Emit node execution event
                     yield f"data: {_json_dumps({'type': 'thought', 'data': {'content': f'[{node_name}] 节点执行中...'}}, ensure_ascii=False)}\n\n"
 
-                    # Handle intent node output
-                    if node_name == "intent":
+                    # Handle intent_planner node output
+                    if node_name == "intent_planner":
                         messages = node_output.get("messages", [])
                         if messages:
                             last_msg = messages[-1]

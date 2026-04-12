@@ -19,6 +19,8 @@ class SuggestionService:
     1. User's configured APIs and their endpoints
     2. Recent conversation patterns
     3. API-specific question templates
+
+    Format: "具体问题……（API名称）"
     """
 
     # Question templates for different API types
@@ -69,37 +71,52 @@ class SuggestionService:
                     return api_type
         return "generic"
 
+    def _fill_template(self, template: str, api_config: APIConfig) -> str:
+        """Fill a template with sample values."""
+        if "{city}" in template:
+            cities = ["北京", "上海", "广州", "深圳", "杭州"]
+            return template.format(city=random.choice(cities))
+        elif "{symbol}" in template:
+            symbols = ["AAPL", "腾讯", "阿里巴巴", "茅台"]
+            return template.format(symbol=random.choice(symbols))
+        elif "{ip}" in template:
+            return template.format(ip="8.8.8.8")
+        elif "{name}" in template:
+            return template.format(name=api_config.name)
+        else:
+            return template
+
     def _generate_questions_for_api(
         self,
         api_id: str,
         api_config: APIConfig
     ) -> List[str]:
-        """Generate question suggestions for a specific API."""
-        questions = []
-        api_type = self._get_api_type(api_config)
+        """Generate question suggestions for a specific API.
 
-        # Get templates for this API type
+        Format: "具体问题……（API名称）"
+        Priority: pre-configured recommended_questions > template-based fallback
+        """
+        questions = []
+        api_name = api_config.name
+
+        # Priority 1: Use pre-configured recommended questions
+        if api_config.recommended_questions:
+            for q in api_config.recommended_questions[:3]:
+                questions.append(f"{q}（{api_name}）")
+            return questions
+
+        # Priority 2: Template-based fallback
+        api_type = self._get_api_type(api_config)
         templates = self.API_TEMPLATES.get(api_type, self.API_TEMPLATES["generic"])
 
-        # Generate questions from templates
-        for template in templates[:2]:  # Limit to 2 questions per API
-            if "{city}" in template:
-                cities = ["北京", "上海", "广州", "深圳", "杭州"]
-                questions.append(template.format(city=random.choice(cities)))
-            elif "{symbol}" in template:
-                symbols = ["AAPL", "腾讯", "阿里巴巴", "茅台"]
-                questions.append(template.format(symbol=random.choice(symbols)))
-            elif "{ip}" in template:
-                questions.append(template.format(ip="8.8.8.8"))
-            elif "{name}" in template:
-                questions.append(template.format(name=api_config.name))
-            else:
-                questions.append(template)
+        for template in templates[:2]:
+            filled = self._fill_template(template, api_config)
+            questions.append(f"{filled}（{api_name}）")
 
-        # Generate questions from endpoints
+        # Priority 3: Endpoint description-based
         for ep_name, endpoint in list(api_config.endpoints.items())[:2]:
             if endpoint.description:
-                questions.append(f"{api_config.name}: {endpoint.description}")
+                questions.append(f"{api_config.name}: {endpoint.description}（{api_name}）")
 
         return questions
 
@@ -136,6 +153,8 @@ class SuggestionService:
         """
         Get smart question suggestions for a user.
 
+        Each suggestion is formatted as: "具体问题……（API名称）"
+
         Args:
             user_id: User ID
             max_suggestions: Maximum number of suggestions to return
@@ -150,7 +169,7 @@ class SuggestionService:
             api_registry = get_api_registry()
             user_apis = api_registry.get_apis_for_user(user_id)
 
-            # Generate suggestions from user's APIs
+            # Generate suggestions from user's APIs (in order, no shuffle)
             for api_id, api_config in list(user_apis.items())[:4]:
                 api_questions = self._generate_questions_for_api(api_id, api_config)
                 suggestions.extend(api_questions)
@@ -168,8 +187,6 @@ class SuggestionService:
                     seen.add(s)
                     unique_suggestions.append(s)
 
-            # Shuffle and limit
-            random.shuffle(unique_suggestions)
             return unique_suggestions[:max_suggestions]
 
         except Exception as e:

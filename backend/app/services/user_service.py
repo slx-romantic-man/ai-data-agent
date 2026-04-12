@@ -278,7 +278,24 @@ class UserService:
             if db_user.role == "admin" or (db_user.quota and db_user.quota.daily_limit == -1):
                 return True
 
-            if not db_user.quota or db_user.quota.current_balance < credits:
+            if not db_user.quota:
+                # Missing quota record: auto-create with 0 balance, then check if enough
+                from app.access.database.models import UserQuota
+                try:
+                    now = datetime.now()
+                    db_quota = UserQuotaDB(
+                        user_id=db_user.id,
+                        daily_limit=100,
+                        current_balance=0,
+                        last_reset=now,
+                    )
+                    session.add(db_quota)
+                    await session.flush()
+                    await session.refresh(db_user, ["quota"])
+                except Exception:
+                    return False
+
+            if db_user.quota.current_balance < credits:
                 return False
 
             db_user.quota.current_balance -= credits
@@ -291,6 +308,9 @@ class UserService:
 
     async def _add_credits_async(self, login_id: str, credits: int) -> bool:
         """Add credits to user's balance in database."""
+        from sqlalchemy.exc import IntegrityError
+        from app.access.database.models import UserQuota
+
         db = await self._get_db()
         async with db.get_session() as session:
             db_user = await self._get_user_by_login_id_db(session, login_id)
@@ -302,7 +322,24 @@ class UserService:
                 return True
 
             if not db_user.quota:
-                return False
+                # Auto-create missing quota record (handle race condition)
+                try:
+                    now = datetime.now()
+                    db_quota = UserQuotaDB(
+                        user_id=db_user.id,
+                        daily_limit=100,
+                        current_balance=0,
+                        last_reset=now,
+                    )
+                    session.add(db_quota)
+                    await session.flush()
+                    await session.refresh(db_user, ["quota"])
+                except IntegrityError:
+                    # Another request already created the quota, re-query
+                    await session.rollback()
+                    db_user = await self._get_user_by_login_id_db(session, login_id)
+                    if not db_user or not db_user.quota:
+                        return False
 
             db_user.quota.current_balance += credits
             db_user.updated_at = datetime.now()

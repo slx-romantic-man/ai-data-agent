@@ -23,9 +23,16 @@ class AgentState(TypedDict):
     # 当前执行到的步骤索引
     current_step: int
 
+    # 检索到的API和数据库表列表（从 retrieval 传递到 intent_planner）
+    retrieved_apis: Optional[List[Dict[str, Any]]]
+    retrieved_tables: Optional[List[Dict[str, Any]]]
+
     # 数据上下文：存储各步骤查询结果
     # key 格式: step_{idx}_{api_id}
     data_context: Dict[str, Any]
 
     # 是否需要人工审批
     requires_approval: bool
+
+    # 已完成步骤的 step_id 列表（用于并行执行依赖追踪）
+    completed_step_ids: list

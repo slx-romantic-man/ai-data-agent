@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, ValidationError
 from app.agent.state import AgentState
 from app.config.llm_config import get_llm
 from app.agent.prompts.planner_prompt import get_planner_prompt
+from app.utils.llm_cache import get_llm_cache
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -58,10 +59,20 @@ async def planner_node(state: AgentState, retrieved_apis: list, retrieved_tables
 
     logger.info(f"[PlannerNode] Prompt sent to LLM:\n{prompt[:2000]}")
 
-    response = await llm.chat([
+    llm_messages = [
         {"role": "system", "content": "你是一个专业的数据查询规划师，擅长将复杂查询拆解为结构化的执行步骤。"},
         {"role": "user", "content": prompt}
-    ])
+    ]
+
+    # Check cache first
+    cache = get_llm_cache()
+    cached_response = cache.get(llm_messages)
+    if cached_response is not None:
+        logger.info(f"[PlannerNode] Cache hit for plan: {query}")
+        response = cached_response
+    else:
+        response = await llm.chat(llm_messages)
+        cache.set(llm_messages, response)
 
     logger.info(f"[PlannerNode] LLM Response: {response[:1000]}")
 
@@ -85,6 +96,7 @@ async def planner_node(state: AgentState, retrieved_apis: list, retrieved_tables
     # 更新状态
     state["plan"] = plan_data
     state["current_step"] = 0
+    state["completed_step_ids"] = []
 
     return state
 

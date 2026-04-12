@@ -206,6 +206,7 @@ class APIPermissionService:
                 timeout=data.timeout,
                 retry_count=data.retry_count,
                 is_active=data.is_active,
+                recommended_questions=data.recommended_questions,
                 created_by=admin_id
             )
             session.add(api)
@@ -274,6 +275,10 @@ class APIPermissionService:
                     api.auth_config = encrypt_auth_config(auth_dict)
                 else:
                     api.auth_config = None
+
+            # Update recommended questions
+            if data.recommended_questions is not None:
+                api.recommended_questions = data.recommended_questions
 
             await session.commit()
             await session.refresh(api)
@@ -403,6 +408,7 @@ class APIPermissionService:
             retry_count=api.retry_count,
             is_system=api.is_system,
             is_active=api.is_active,
+            recommended_questions=api.recommended_questions,
             created_at=api.created_at,
             updated_at=api.updated_at
         )
@@ -585,25 +591,42 @@ class APIPermissionService:
         """
         Get APIs accessible by a user.
         IMPORTANT: Returns APIConfigPublic which does NOT include auth_config!
+        Admin users have access to all active APIs.
         """
         db = await self._ensure_db()
         async with db.get_session() as session:
-            result = await session.execute(
-                select(APIConfig, UserAPIPermission)
-                .join(UserAPIPermission, APIConfig.id == UserAPIPermission.api_config_id)
-                .where(
-                    and_(
-                        UserAPIPermission.user_id == user_id,
-                        UserAPIPermission.status == "active",
-                        APIConfig.is_active == True
-                    )
-                )
-                .order_by(APIConfig.name)
+            # Check if user is admin
+            user_result = await session.execute(
+                select(UserAccount).where(UserAccount.user_id == user_id)
             )
-            rows = result.all()
+            user = user_result.scalar_one_or_none()
+            is_admin = user and user.role == "admin"
+
+            if is_admin:
+                # Admin: return all active APIs
+                result = await session.execute(
+                    select(APIConfig).where(APIConfig.is_active == True).order_by(APIConfig.name)
+                )
+                api_objects = result.scalars().all()
+            else:
+                # Non-admin: only return APIs with active permission
+                result = await session.execute(
+                    select(APIConfig, UserAPIPermission)
+                    .join(UserAPIPermission, APIConfig.id == UserAPIPermission.api_config_id)
+                    .where(
+                        and_(
+                            UserAPIPermission.user_id == user_id,
+                            UserAPIPermission.status == "active",
+                            APIConfig.is_active == True
+                        )
+                    )
+                    .order_by(APIConfig.name)
+                )
+                # Extract just the APIConfig objects from the (APIConfig, UserAPIPermission) tuples
+                api_objects = [row[0] for row in result.all()]
 
             apis = []
-            for api, perm in rows:
+            for api in api_objects:
                 # Get category path
                 category_path = None
                 if api.category_id:
@@ -736,13 +759,18 @@ class APIPermissionService:
             if not api:
                 return None
 
-            # Decrypt auth config
-            auth_config = None
+            # Decrypt auth config (or use as-is if not encrypted)
+            auth_config = api.auth_config
             if api.auth_config:
-                try:
-                    auth_config = decrypt_auth_config(api.auth_config)
-                except Exception as e:
-                    logger.error(f"Failed to decrypt auth config: {e}")
+                if isinstance(api.auth_config, str):
+                    # Encrypted string - decrypt it
+                    try:
+                        auth_config = decrypt_auth_config(api.auth_config)
+                    except Exception as e:
+                        logger.error(f"Failed to decrypt auth config: {e}")
+                elif isinstance(api.auth_config, dict):
+                    # Already a plain dict - use as-is
+                    auth_config = api.auth_config
 
             return {
                 "id": api.id,

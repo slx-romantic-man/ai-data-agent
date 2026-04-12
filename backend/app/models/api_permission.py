@@ -107,6 +107,7 @@ class APIConfigCreate(BaseModel):
     timeout: int = Field(30, ge=1, le=300, description="超时时间(秒)")
     retry_count: int = Field(3, ge=0, le=10, description="重试次数")
     is_active: bool = Field(True, description="是否启用")
+    recommended_questions: Optional[List[str]] = Field(None, description="推荐问题列表")
 
 
 class APIConfigUpdate(BaseModel):
@@ -120,6 +121,7 @@ class APIConfigUpdate(BaseModel):
     timeout: Optional[int] = Field(None, ge=1, le=300)
     retry_count: Optional[int] = Field(None, ge=0, le=10)
     is_active: Optional[bool] = None
+    recommended_questions: Optional[List[str]] = Field(None, description="推荐问题列表")
 
 
 class APIConfigPublic(BaseModel):
@@ -165,6 +167,7 @@ class APIConfigAdmin(BaseModel):
     retry_count: int = 3
     is_system: bool = False
     is_active: bool
+    recommended_questions: Optional[List[str]] = Field(None, description="推荐问题列表")
     created_at: datetime
     updated_at: datetime
 

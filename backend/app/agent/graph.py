@@ -5,13 +5,14 @@ LangGraph 工作流图定义
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.agent.state import AgentState
-from app.agent.nodes.intent_node import intent_clarification_node
 from app.agent.nodes.retrieval_node import retrieval_node as _retrieval_node
-from app.agent.nodes.planner_node import planner_node as _planner_node
-from app.agent.nodes.executor_node import executor_node
+from app.agent.nodes.intent_planner_node import intent_planner_node
+from app.agent.nodes.executor_node import executor_node, execute_single_step
 from app.agent.nodes.analyzer_node import analyzer_node
 from app.models.permission import PermissionContext
 from app.utils.logger import get_logger
+
+import asyncio
 
 logger = get_logger(__name__)
 
@@ -20,37 +21,45 @@ _retrieved_apis_cache = []
 _retrieved_tables_cache = []
 
 
+def should_continue_to_executor(state: AgentState) -> str:
+    """路由从 intent_planner: 去 executor 还是 analyzer（错误路径）"""
+    plan = state.get("plan") or []
+    if not plan:
+        return "analyzer"
+    return "executor"
+
+
 def should_continue_execution(state: AgentState) -> str:
     """判断 Executor 是否需要继续执行"""
     plan = state.get("plan") or []
-    current_step = state.get("current_step", 0)
+    completed_step_ids = set(state.get("completed_step_ids", []))
 
-    if current_step < len(plan):
+    # Check if there are any uncompleted steps
+    remaining = [
+        step for step in plan
+        if step.get("step_id", 0) not in completed_step_ids
+    ]
+
+    if remaining:
         return "executor"
     return "analyzer"
 
 
-def should_require_approval(state: AgentState) -> str:
-    """判断是否需要人工审批或权限检查失败"""
-    # 检查是否有权限错误
-    plan = state.get("plan") or []
-    if not plan:
-        # 计划为空，直接跳到 analyzer 返回错误
-        return "analyzer"
-
-    requires_approval = state.get("requires_approval", False)
-    if requires_approval:
-        return "approval_gate"
-    return "executor"
+def should_analyze_or_end(state: AgentState) -> str:
+    """判断是否需要调用 analyzer LLM，或直接结束"""
+    data_context = state.get("data_context", {})
+    if not data_context:
+        return END
+    return "analyzer"
 
 
-def should_clarify(state: AgentState) -> str:
-    """判断 Intent 节点后是否需要澄清"""
+def should_clarify_or_continue(state: AgentState) -> str:
+    """判断 Intent Planner 节点后是否需要澄清"""
     extracted_filters = state.get("extracted_filters")
 
     if extracted_filters is None:
         return END
-    return "retrieval"
+    return "intent_planner"
 
 
 async def create_graph(permission: PermissionContext):
@@ -65,17 +74,23 @@ async def create_graph(permission: PermissionContext):
     """
 
     async def retrieval_wrapper(state: AgentState) -> AgentState:
-        """Retrieval 节点包装器，缓存检索结果"""
+        """Retrieval 节点包装器，缓存检索结果到 state 中"""
         global _retrieved_apis_cache, _retrieved_tables_cache
         result = await _retrieval_node(state, permission)
         _retrieved_apis_cache = result.get("retrieved_apis", [])
         _retrieved_tables_cache = result.get("retrieved_tables", [])
+        # 将检索结果存入 state，供 intent_planner 使用
+        state["retrieved_apis"] = _retrieved_apis_cache
+        state["retrieved_tables"] = _retrieved_tables_cache
         return state
 
-    async def planner_wrapper(state: AgentState) -> AgentState:
-        """Planner 节点包装器，传递缓存的检索结果和权限信息"""
+    async def intent_planner_wrapper(state: AgentState) -> AgentState:
+        """
+        Combined Intent + Planner 节点包装器：
+        单次 LLM 调用同时完成意图识别和执行计划生成。
+        """
         global _retrieved_apis_cache, _retrieved_tables_cache
-        result = await _planner_node(
+        result = await intent_planner_node(
             state, _retrieved_apis_cache, _retrieved_tables_cache
         )
 
@@ -137,53 +152,95 @@ async def create_graph(permission: PermissionContext):
                         )
                         break
 
-        # 不再需要审批流程
-        result["requires_approval"] = False
-
         return result
 
     async def executor_wrapper(state: AgentState) -> AgentState:
-        """Executor 节点包装器"""
-        return await executor_node(state, permission)
+        """
+        Executor wrapper: find all ready steps, execute in parallel,
+        aggregate results, and update completed_step_ids.
+        """
+        plan = state.get("plan") or []
+        data_context = state.get("data_context", {})
+        completed_step_ids = list(state.get("completed_step_ids", []))
+
+        # Find all steps whose depends_on are fully satisfied
+        ready_steps = []
+        for index, step in enumerate(plan):
+            step_id = step.get("step_id", index)
+            if step_id in completed_step_ids:
+                continue  # already completed
+            depends_on = step.get("depends_on", [])
+            if all(dep in completed_step_ids for dep in depends_on):
+                ready_steps.append((index, step))
+
+        if not ready_steps:
+            # No ready steps but plan is not fully complete — shouldn't normally happen
+            logger.warning("[ExecutorWrapper] No ready steps found, plan may have unresolvable dependencies")
+            return state
+
+        logger.info(
+            f"[ExecutorWrapper] Executing {len(ready_steps)} step(s) in parallel: "
+            f"step_ids={[s.get('step_id', i) for i, s in ready_steps]}"
+        )
+
+        # Execute all ready steps concurrently
+        coros = [
+            execute_single_step(step, index, data_context, permission)
+            for index, step in ready_steps
+        ]
+        results = await asyncio.gather(*coros, return_exceptions=True)
+
+        # Aggregate results into data_context
+        for (context_key, execution_result, step_id), (index, step) in zip(results, ready_steps):
+            if isinstance(execution_result, Exception):
+                logger.error(f"[ExecutorWrapper] Step {step_id} raised exception: {execution_result}")
+                execution_result = {"success": False, "error": str(execution_result)}
+            data_context[context_key] = execution_result
+            completed_step_ids.append(step_id)
+            logger.info(f"[ExecutorWrapper] Completed step {step_id}, stored in data_context['{context_key}']")
+
+        # Determine next current_step (first uncompleted step index, or len(plan) if done)
+        next_step = None
+        for i, step in enumerate(plan):
+            sid = step.get("step_id", i)
+            if sid not in completed_step_ids:
+                next_step = i
+                break
+        if next_step is None:
+            next_step = len(plan)
+
+        state["data_context"] = data_context
+        state["current_step"] = next_step
+        state["completed_step_ids"] = completed_step_ids
+
+        return state
 
     # 创建状态图
     workflow = StateGraph(AgentState)
 
     # 添加节点
-    workflow.add_node("intent", intent_clarification_node)
     workflow.add_node("retrieval", retrieval_wrapper)
-    workflow.add_node("planner", planner_wrapper)
-    workflow.add_node("approval_gate", lambda state: state)
+    workflow.add_node("intent_planner", intent_planner_wrapper)
     workflow.add_node("executor", executor_wrapper)
     workflow.add_node("analyzer", analyzer_node)
 
-    # 设置入口点
-    workflow.set_entry_point("intent")
+    # 设置入口点：先检索
+    workflow.set_entry_point("retrieval")
 
-    # 配置边
+    # retrieval 完成后总是进入 intent_planner（由 intent_planner 决定是否澄清）
+    workflow.add_edge("retrieval", "intent_planner")
+
+    # intent_planner -> executor 或 analyzer
     workflow.add_conditional_edges(
-        "intent",
-        should_clarify,
-        {
-            "retrieval": "retrieval",
-            END: END
-        }
-    )
-
-    workflow.add_edge("retrieval", "planner")
-
-    workflow.add_conditional_edges(
-        "planner",
-        should_require_approval,
+        "intent_planner",
+        should_continue_to_executor,
         {
             "executor": "executor",
-            "approval_gate": "approval_gate",
             "analyzer": "analyzer"
         }
     )
 
-    workflow.add_edge("approval_gate", "executor")
-
+    # executor -> executor（循环）或 analyzer
     workflow.add_conditional_edges(
         "executor",
         should_continue_execution,
@@ -193,6 +250,7 @@ async def create_graph(permission: PermissionContext):
         }
     )
 
+    # analyzer -> END (无条件)
     workflow.add_edge("analyzer", END)
 
     # 初始化 AsyncSqliteSaver 用于状态持久化
@@ -219,11 +277,8 @@ async def create_graph(permission: PermissionContext):
 
     memory = AsyncSqliteSaver(conn)
 
-    # 编译图（在 approval_gate 前中断）
-    graph = workflow.compile(
-        checkpointer=memory,
-        interrupt_before=["approval_gate"]
-    )
+    # 编译图（移除 interrupt_before，不再需要审批）
+    graph = workflow.compile(checkpointer=memory)
 
     logger.info("[Graph] LangGraph workflow compiled with AsyncSqliteSaver")
     return graph

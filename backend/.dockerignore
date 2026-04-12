@@ -1,0 +1,33 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.env
+.venv/
+venv/
+.env.local
+
+# Data files - not needed in container (will be generated)
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/qdrant/
+
+# Logs
+logs/*.log
+
+# Test files
+test_*.py
+*_test.py
+test_*.json
+test_*.log
+*_e2e_test.py
+
+# Windows batch files
+*.bat
+
+# Misc
+claude-progress.txt
+ip_test_result.json
+weather_test_result.json
+sessions.json

@@ -13,34 +13,33 @@ from app.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-async def executor_node(state: AgentState, permission: PermissionContext) -> AgentState:
+async def execute_single_step(
+    step: Dict[str, Any],
+    step_index: int,
+    data_context: Dict[str, Any],
+    permission: PermissionContext
+) -> tuple:
     """
-    Executor Node: 执行当前步骤的工具调用
+    Execute a single step and return (context_key, result, step_id).
 
     Args:
-        state: 当前 AgentState
-        permission: 用户权限上下文
+        step: The plan step dict
+        step_index: Index in the plan list
+        data_context: Current data context for python_exec injection
+        permission: User permission context
 
     Returns:
-        更新后的 AgentState，包含执行结果和递增的 current_step
+        Tuple of (context_key, result_dict, step_id)
     """
-    plan = state.get("plan") or []
-    current_step = state.get("current_step", 0)
-    data_context = state.get("data_context", {})
-
-    if not plan or current_step >= len(plan):
-        logger.warning(f"[ExecutorNode] No more steps to execute (step {current_step}/{len(plan)})")
-        return state
-
-    step = plan[current_step]
     tool_name = step.get("tool")
     api_id = step.get("api_id", "")
     params = step.get("params", {})
     description = step.get("description", "")
+    step_id = step.get("step_id", step_index)
 
-    logger.info(f"[ExecutorNode] Executing step {current_step + 1}/{len(plan)}: {description}")
+    logger.info(f"[ExecutorNode] Executing step {step_id}: {description}")
 
-    # 路由到对应工具
+    # Route to the appropriate tool
     result = None
     if tool_name == "sql_query":
         result = await _execute_sql_query(params, permission)
@@ -52,13 +51,39 @@ async def executor_node(state: AgentState, permission: PermissionContext) -> Age
         logger.error(f"[ExecutorNode] Unknown tool: {tool_name}")
         result = {"success": False, "error": f"Unknown tool: {tool_name}"}
 
-    # 存储结果到 data_context，key 格式: step_{idx}_{api_id}
-    context_key = f"step_{current_step}_{api_id or tool_name}"
-    data_context[context_key] = result
+    # Build context key: step_{idx}_{api_id}
+    context_key = f"step_{step_index}_{api_id or tool_name}"
+    return (context_key, result, step_id)
 
+
+async def executor_node(state: AgentState, permission: PermissionContext) -> AgentState:
+    """
+    Executor Node: Execute current step's tool call
+
+    Args:
+        state: Current AgentState
+        permission: User permission context
+
+    Returns:
+        Updated AgentState with execution result and incremented current_step
+    """
+    plan = state.get("plan") or []
+    current_step = state.get("current_step", 0)
+    data_context = state.get("data_context", {})
+
+    if not plan or current_step >= len(plan):
+        logger.warning(f"[ExecutorNode] No more steps to execute (step {current_step}/{len(plan)})")
+        return state
+
+    step = plan[current_step]
+    result = await execute_single_step(step, current_step, data_context, permission)
+    context_key, execution_result, _ = result
+
+    # Store result in data_context
+    data_context[context_key] = execution_result
     logger.info(f"[ExecutorNode] Stored result in data_context['{context_key}']")
 
-    # 更新状态
+    # Update state
     state["data_context"] = data_context
     state["current_step"] = current_step + 1
 

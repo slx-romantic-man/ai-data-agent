@@ -350,24 +350,19 @@ class APIRetrievalService:
                 logger.error("LLM returned empty response")
                 return candidates[:3]
 
-            # Extract JSON from response
+            # Extract JSON from response (handle markdown code blocks)
+            import re
+            json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', content)
+            if json_match:
+                json_text = json_match.group(1)
+            else:
+                json_text = content.strip()
+
             try:
-                # Try to parse directly
-                result = json.loads(content)
+                result = json.loads(json_text)
             except json.JSONDecodeError as e:
-                logger.error(f"JSON decode error: {e}")
-                # Try to extract JSON from markdown code block
-                import re
-                json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', content)
-                if json_match:
-                    try:
-                        result = json.loads(json_match.group(1))
-                    except json.JSONDecodeError as e2:
-                        logger.error(f"Failed to parse extracted JSON: {e2}")
-                        return candidates[:3]
-                else:
-                    logger.error(f"No JSON found in LLM response. Full response: {content}")
-                    return candidates[:3]
+                logger.error(f"JSON decode error: {e}. Content: {json_text[:200]}")
+                return candidates[:3]
 
             selected = result.get("selected_apis", [])
 
@@ -494,6 +489,38 @@ class APIRetrievalService:
         selected = await self.select_apis_with_llm(query, candidates)
 
         return selected[:top_k]
+
+    async def get_apis_for_query_vector_only(
+        self,
+        query: str,
+        user_id: str,
+        top_k: int = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Vector-only API retrieval (no LLM re-ranking).
+        Used when retrieval is done before intent_planner which handles selection.
+
+        Args:
+            query: User's natural language query
+            user_id: User ID for permission filtering
+            top_k: Maximum number of APIs to return
+
+        Returns:
+            List of candidate APIs enriched with full metadata
+        """
+        if top_k is None:
+            top_k = getattr(settings, 'API_RETRIEVAL_FINAL_TOP_K', 10)
+
+        # Vector recall only
+        candidates = await self.retrieve_candidate_apis(query, user_id, top_k=top_k)
+
+        if not candidates:
+            return []
+
+        # Enrich with full metadata but skip LLM re-ranking
+        enriched = await self._enrich_with_full_metadata(candidates)
+
+        return enriched
 
     def get_indexed_count(self) -> int:
         """

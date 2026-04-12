@@ -1,22 +1,43 @@
-INFO:     Will watch for changes in these directories: ['D:\\Users\\Desktop\\ʵϰ����\\day2\\ai-data-agent - v3.1']
-INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
-INFO:     Started reloader process [4680] using StatReload
-D:\Users\Desktop\ʵϰ����\day2\ai-data-agent - v3.1\app\access\metadata\table_metadata.py:32: UserWarning: Field name "schema" in "TableMetadata" shadows an attribute in parent "BaseModel"
-  class TableMetadata(BaseModel):
-INFO:     Started server process [16984]
-INFO:     Waiting for application startup.
-2026-03-23 15:28:12 - ai_data_agent - INFO - Starting AI Data Agent...
-2026-03-23 15:28:12 - ai_data_agent - INFO - Environment: development
-2026-03-23 15:28:12 - ai_data_agent - INFO - Debug mode: True
-2026-03-23 15:28:12 - ai_data_agent - INFO - Initializing database connection...
-2026-03-23 15:28:12 - ai_data_agent - INFO - Database connection established
-2026-03-23 15:28:12 - ai_data_agent - INFO - Initializing tool router...
-2026-03-23 15:28:12 - ai_data_agent - INFO - Tools registered: ['sql_query', 'api_fetch', 'data_analysis', 'export_excel']
-2026-03-23 15:28:12 - ai_data_agent - INFO - Initializing LLM client...
-2026-03-23 15:28:12 - ai_data_agent - INFO - LLM Provider: anthropic
-2026-03-23 15:28:12 - ai_data_agent - INFO - LLM Model: MiniMax-M2.7
-2026-03-23 15:28:12 - ai_data_agent - INFO - LLM client initialized: AnthropicClient
-2026-03-23 15:28:12 - ai_data_agent - INFO - AI Data Agent started successfully
-INFO:     Application startup complete.
-WARNING:  StatReload detected changes in 'app\config\settings.py'. Reloading...
- 
+🚀 AI-Data-Agent v4.2 - Environment Initialization Script
+========================================================
+📋 Purpose: Zero-Token environment bootstrap for multi-round context memory fix project
+
+📌 Checking Python version...
+✅ Python 3.12.7 detected
+📌 Checking pip...
+✅ pip available
+📌 Checking curl...
+✅ curl available
+
+📌 Checking .env configuration...
+✅ .env configuration valid
+
+📌 Checking port 8002 availability...
+✅ Port 8002 available
+
+📦 Checking backend dependencies...
+✅ All dependencies already installed
+
+🔧 Checking database initialization...
+✅ Database check complete
+
+🔥 Starting backend server on port 8002...
+⏳ Waiting for server to be ready...
+
+✅ Backend server ready!
+   API docs: http://localhost:8002/docs
+   Health: http://localhost:8002/health
+
+📱 Frontend:
+   Location: frontend/index.html (static, no build required)
+   Access: Open frontend/index.html directly in browser
+   Or visit: http://localhost:8002 (if backend serves static files)
+
+🎯 Application is now in TESTABLE STATE
+📝 Backend PID: 2004
+📋 Session memory location: backend/sessions.json
+📊 Vector store: backend/data/qdrant/
+
+To stop server: kill 2004
+To monitor logs: tail -f logs/init_server.log
+

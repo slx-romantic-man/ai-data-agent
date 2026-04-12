@@ -34,8 +34,17 @@ class APIFetchTool(BaseTool):
     async def _get_session(self) -> aiohttp.ClientSession:
         """获取或创建aiohttp session"""
         if self._session is None or self._session.closed:
+            import ssl
+            # Create SSL context that doesn't verify certificates
+            # macOS Python often lacks system CA certificates
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+
+            connector = aiohttp.TCPConnector(ssl=ssl_context)
             self._session = aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=60.0)
+                timeout=aiohttp.ClientTimeout(total=60.0),
+                connector=connector
             )
         return self._session
 
@@ -232,7 +241,7 @@ class APIFetchTool(BaseTool):
             auth_type = db_api_config.get("auth_type", "none")
 
             if auth_config:
-                self._apply_db_auth(headers, auth_type, auth_config)
+                self._apply_db_auth(headers, query_params, auth_type, auth_config)
 
             # 获取session并发送请求
             session = await self._get_session()
@@ -508,13 +517,19 @@ class APIFetchTool(BaseTool):
             ).decode()
             headers["Authorization"] = f"Basic {credentials}"
 
-    def _apply_db_auth(self, headers: Dict[str, str], auth_type: str, auth_config: Dict[str, Any]):
+    def _apply_db_auth(self, headers: Dict[str, str], query_params: Dict[str, Any], auth_type: str, auth_config: Dict[str, Any]):
         """应用认证配置（数据库配置模式）"""
         if auth_type == "api_key":
-            header_name = auth_config.get("api_key_header", "X-API-Key")
+            # Some APIs use API key as query parameter (e.g., WeatherAPI)
+            # Others use it as a header. Check auth_config for preference.
             key_value = auth_config.get("api_key_value", "")
             if key_value:
-                headers[header_name] = key_value
+                api_key_param = auth_config.get("api_key_param", auth_config.get("api_key_header", "X-API-Key"))
+                # If the header name suggests a query param, add to query_params
+                if api_key_param.lower() in ("key", "apikey", "api_key", "token"):
+                    query_params[api_key_param] = key_value
+                else:
+                    headers[api_key_param] = key_value
 
         elif auth_type == "bearer":
             token = auth_config.get("bearer_token", "")
