@@ -609,6 +609,10 @@ async def stream_chat(
                 interrupt_before=["analyzer"],
             ):
                 for node_name, node_output in event.items():
+                    # Skip internal LangGraph interrupt events
+                    if node_name == "__interrupt__":
+                        continue
+
                     # Emit node execution event
                     yield f"data: {_json_dumps({'type': 'thought', 'data': {'content': f'[{node_name}] 节点执行中...'}}, ensure_ascii=False)}\n\n"
 
