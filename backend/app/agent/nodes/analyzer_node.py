@@ -204,9 +204,16 @@ async def analyzer_node(state: AgentState) -> AgentState:
                 # 使用 DataAnalyzer 生成洞察
                 analyzer = DataAnalyzer()
 
-                # F-06: 数据量小但未被 F-01 跳过的查询（如多步计划但返回 ≤5 行）
-                # 使用简化 prompt，只需一段话总结
-                complexity = "simple" if len(all_data) <= 5 else "normal"
+                # F-06/F-08: 根据数据量设置 query_complexity
+                # ≤5 行 → simple (max_tokens=512)
+                # 6-20 行 → normal (max_tokens=1024)
+                # >20 行 → complex (max_tokens=1500)
+                if len(all_data) <= 5:
+                    complexity = "simple"
+                elif len(all_data) <= 20:
+                    complexity = "normal"
+                else:
+                    complexity = "complex"
 
                 analysis_result = await analyzer.analyze(
                     data=all_data,

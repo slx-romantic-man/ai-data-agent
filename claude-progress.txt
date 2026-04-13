@@ -268,6 +268,29 @@
 
   📊 状态: 7/12 功能完成 | 下一个: F-08 (DataAnalyzer 支持 query_complexity 参数)
 
+  [2026-04-13] Session #8 — 编码智能体
+  ✅ F-08: DataAnalyzer.analyze() 支持 query_complexity 参数动态 max_tokens
+
+  📝 修改文件:
+    - backend/app/agent/core/data_analyzer.py
+      · analyze() 方法新增 complexity_max_tokens 字典:
+        simple → 512, normal → 1024, complex → 1500
+      · llm.chat() 的 max_tokens 从硬编码 512 改为动态选择
+      · 默认值 fallback 为 1024
+
+    - backend/app/agent/nodes/analyzer_node.py
+      · 复杂度判断从两级 (simple/normal) 升级为三级 (simple/normal/complex)
+      · ≤5 行 → simple (512), 6-20 行 → normal (1024), >20 行 → complex (1500)
+      · 日志记录复杂度选择
+
+  🧪 E2E 验证:
+    - 复杂查询 (100 行股票数据): ✅ 走 complex 路径, max_tokens=1500, 3 段报告完整
+    - 日志确认: "Using complex complexity prompt for 100 rows of data"
+    - 简单查询 (天气, 1 行): ✅ F-01 快速路径正常, 未退化
+    - 回归验证: F-01/F-02/F-03/F-06/F-07 未退化
+
+  📊 状态: 8/12 功能完成 | 下一个: F-09 (Analyzer 流式 SSE 输出)
+
   ⚠️ 后续 Agent 注意: 所有进度记录请追加在七、进度日志 部分，在已有 Session 记录之后新增条目，
      严禁删除或覆盖任何已有 Session 的记录！
 

@@ -98,11 +98,19 @@ class DataAnalyzer:
             else:
                 prompt = get_analysis_prompt(user_query=user_query, data=data_str)
 
+        # Select max_tokens based on query complexity
+        complexity_max_tokens = {
+            "simple": 512,
+            "normal": 1024,
+            "complex": 1500,
+        }
+        max_tokens = complexity_max_tokens.get(query_complexity, 1024)
+
         # Get LLM analysis
         response = await self.llm.chat([
             {"role": "system", "content": "你是一个专业的数据分析师，擅长从数据中发现洞察和趋势。"},
             {"role": "user", "content": prompt}
-        ], max_tokens=512)
+        ], max_tokens=max_tokens)
 
         return {
             "analysis": response,
