@@ -183,7 +183,7 @@
       ],
       "acceptance_criteria": "analyze_stream() 正确实现流式输出",
       "estimated_time_save": "感知提速（首 token < 3s）",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-10",

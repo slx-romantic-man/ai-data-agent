@@ -3,7 +3,7 @@ Data Analyzer module.
 Performs analysis on query results.
 """
 import json
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, AsyncGenerator
 from datetime import datetime, date
 from decimal import Decimal
 
@@ -118,6 +118,72 @@ class DataAnalyzer:
             "data_summary": self._generate_summary(data),
             "insights": self._extract_insights(response),
         }
+
+    async def analyze_stream(
+        self,
+        data: List[Dict[str, Any]],
+        user_query: str,
+        analysis_type: str = "summary",
+        dimensions: Optional[List[str]] = None,
+        metrics: Optional[List[str]] = None,
+        query_complexity: str = "normal",
+    ) -> AsyncGenerator[str, None]:
+        """
+        Stream analysis output chunk by chunk using llm.chat_stream().
+
+        Args:
+            data: Data rows to analyze
+            user_query: Original user query
+            analysis_type: Type of analysis (summary, trend, comparison, anomaly)
+            dimensions: Dimensions for analysis
+            metrics: Metrics to analyze
+            query_complexity: Complexity level (simple/normal/complex)
+
+        Yields:
+            String fragments of the analysis content as they arrive
+        """
+        if not data:
+            yield "无数据可供分析"
+            return
+
+        data_str = self._format_data_for_llm(data)
+
+        # Select prompt
+        if analysis_type == "trend":
+            prompt = get_trend_analysis_prompt(
+                data=data_str,
+                time_field=dimensions[0] if dimensions else "date",
+                value_fields=metrics or [],
+            )
+        elif analysis_type == "comparison":
+            prompt = get_comparison_analysis_prompt(
+                data=data_str,
+                dimensions=dimensions or [],
+                metrics=metrics or [],
+            )
+        elif analysis_type == "anomaly":
+            prompt = get_anomaly_analysis_prompt(
+                data=data_str,
+                fields=metrics or [],
+            )
+        else:
+            if query_complexity == "simple":
+                prompt = get_simple_analysis_prompt(user_query=user_query, data=data_str)
+            else:
+                prompt = get_analysis_prompt(user_query=user_query, data=data_str)
+
+        complexity_max_tokens = {
+            "simple": 512,
+            "normal": 1024,
+            "complex": 1500,
+        }
+        max_tokens = complexity_max_tokens.get(query_complexity, 1024)
+
+        async for chunk in self.llm.chat_stream([
+            {"role": "system", "content": "你是一个专业的数据分析师，擅长从数据中发现洞察和趋势。"},
+            {"role": "user", "content": prompt}
+        ], max_tokens=max_tokens):
+            yield chunk
 
     def _format_data_for_llm(self, data: List[Dict[str, Any]], max_rows: int = 20) -> str:
         """Format data for LLM input. Uses smart sampling to preserve trends while minimizing tokens."""
