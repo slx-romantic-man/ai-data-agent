@@ -122,7 +122,7 @@
       ],
       "acceptance_criteria": "SIMPLE_ANALYSIS_PROMPT 存在且能生成简洁的一段话分析",
       "estimated_time_save": "~40s",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-07",

@@ -97,6 +97,23 @@ COMPARISON_ANALYSIS_PROMPT = """对比分析以下数据。
 
 输出格式：Markdown"""
 
+SIMPLE_ANALYSIS_PROMPT = """分析以下数据，用一段话总结核心结果。
+
+## 用户问题
+{user_query}
+
+## 数据
+{data}
+
+## 要求
+- 只用一段话（3-5 句）总结核心数据
+- 包含关键数值和结论
+- 语言自然、简洁，不要分章节
+- 输出格式：纯文本或简单 Markdown
+- 不要包含局限性说明、免责声明或推测
+"""
+
+
 ANOMALY_ANALYSIS_PROMPT = """检测以下数据中的异常点。
 
 ## 数据
@@ -112,6 +129,11 @@ ANOMALY_ANALYSIS_PROMPT = """检测以下数据中的异常点。
 4. 处理建议
 
 输出格式：Markdown"""
+
+def get_simple_analysis_prompt(user_query: str, data: str) -> str:
+    """Get simple analysis prompt for small datasets (≤5 rows)."""
+    return SIMPLE_ANALYSIS_PROMPT.format(user_query=user_query, data=data)
+
 
 def get_analysis_prompt(user_query: str, data: str) -> str:
     """Get general analysis prompt using universal template."""

@@ -201,6 +201,27 @@
     - 所有查询 LLM 响应状态 200，JSON 未被截断
   📊 状态: 5/12 功能完成 | 下一个: F-06 (SIMPLE_ANALYSIS_PROMPT 模板)
 
+  [2026-04-13] Session #6 — 编码智能体
+  ✅ F-06: 新增 SIMPLE_ANALYSIS_PROMPT 模板 + query_complexity 路由
+  📝 修改文件:
+    - backend/app/agent/prompts/analysis_prompt.py
+      · 新增 SIMPLE_ANALYSIS_PROMPT: 要求一段话（3-5句）总结核心数据，领域中立
+      · 新增 get_simple_analysis_prompt() getter 函数
+    - backend/app/agent/core/data_analyzer.py
+      · analyze() 新增 query_complexity 参数 (simple/normal/complex)
+      · simple → 使用 SIMPLE_ANALYSIS_PROMPT，normal → 使用 UNIVERSAL_ANALYSIS_PROMPT
+    - backend/app/agent/nodes/analyzer_node.py
+      · len(all_data) <= 5 时自动设置 query_complexity="simple"
+      · 记录复杂度选择日志
+  🧪 E2E 验证:
+    - 简单复杂度 (3行数据): ✅ 单段回复，0 章节，~179 tokens，~29s 完成
+    - 正常复杂度 (3行数据): ✅ 7段报告，~1788 tokens，~108s 完成
+    - 简单查询 (天气, 1步1行): ✅ F-01 快速路径，跳过所有 Analyzer LLM
+    - F-02/F-03 回归: ✅ is_simple_query + format_simple_response 正常
+  ⏱️ 耗时对比:
+    - 简单复杂度 LLM 耗时: ~29s (vs 正常 ~108s, 节省 ~73s)
+  📊 状态: 6/12 功能完成 | 下一个: F-07 (压缩 UNIVERSAL_ANALYSIS_PROMPT 到 3 段)
+
   ⚠️ 后续 Agent 注意: 所有进度记录请追加在七、进度日志 部分，在已有 Session 记录之后新增条目，
      严禁删除或覆盖任何已有 Session 的记录！
 

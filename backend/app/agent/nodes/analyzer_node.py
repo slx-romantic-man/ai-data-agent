@@ -203,10 +203,20 @@ async def analyzer_node(state: AgentState) -> AgentState:
             else:
                 # 使用 DataAnalyzer 生成洞察
                 analyzer = DataAnalyzer()
+
+                # F-06: 数据量小但未被 F-01 跳过的查询（如多步计划但返回 ≤5 行）
+                # 使用简化 prompt，只需一段话总结
+                complexity = "simple" if len(all_data) <= 5 else "normal"
+
                 analysis_result = await analyzer.analyze(
                     data=all_data,
                     user_query=query,
-                    analysis_type="summary"
+                    analysis_type="summary",
+                    query_complexity=complexity,
+                )
+                logger.info(
+                    f"[AnalyzerNode] Using {complexity} complexity prompt "
+                    f"for {len(all_data)} rows of data"
                 )
                 analysis_report = analysis_result.get("analysis", "分析完成")
 

@@ -10,6 +10,7 @@ from decimal import Decimal
 from app.config.llm_config import BaseLLMClient, get_llm
 from app.agent.prompts.analysis_prompt import (
     get_analysis_prompt,
+    get_simple_analysis_prompt,
     get_trend_analysis_prompt,
     get_comparison_analysis_prompt,
     get_anomaly_analysis_prompt,
@@ -48,6 +49,7 @@ class DataAnalyzer:
         analysis_type: str = "summary",
         dimensions: Optional[List[str]] = None,
         metrics: Optional[List[str]] = None,
+        query_complexity: str = "normal",
     ) -> Dict[str, Any]:
         """
         Analyze data and generate insights.
@@ -58,6 +60,7 @@ class DataAnalyzer:
             analysis_type: Type of analysis (summary, trend, comparison, anomaly)
             dimensions: Dimensions for analysis
             metrics: Metrics to analyze
+            query_complexity: Complexity level (simple/normal/complex)
 
         Returns:
             Dict with analysis results and insights
@@ -90,7 +93,10 @@ class DataAnalyzer:
                 fields=metrics or [],
             )
         else:
-            prompt = get_analysis_prompt(user_query=user_query, data=data_str)
+            if query_complexity == "simple":
+                prompt = get_simple_analysis_prompt(user_query=user_query, data=data_str)
+            else:
+                prompt = get_analysis_prompt(user_query=user_query, data=data_str)
 
         # Get LLM analysis
         response = await self.llm.chat([
