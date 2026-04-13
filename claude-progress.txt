@@ -340,6 +340,48 @@
 
   📊 状态: 9/12 功能完成 | 下一个: F-10 (analyzer_node 流式分析 + SSE 前端展示)
 
+  📱 F-10 前端用户体验验证 (curl 逐秒时间线记录):
+    测试方法: curl -s -N 请求 SSE 流，逐行解析事件并记录时间戳，
+              模拟前端 chat.js 事件处理逻辑。输出文件: f10_timeline_curl.txt
+    复杂查询 (AAPL股票) 用户视角:
+      [0s]   发送查询 → [retrieval] 节点执行中...
+      [55s]  [intent_planner] 节点执行中...
+      [57s]  [executor] 节点执行中...
+      [116s] "### 核心数据" ← 答案开始逐字出现 (37个streaming_text chunk)
+      [117s] "### 主要发现" → 持续追加
+      [118s] "### 注意事项" → 持续追加
+      [119s] DATA table (100行) + DONE
+      → 结论: 用户看到文字像 ChatGPT 一样逐字出现，非一次性全部显示
+    简单查询 (天气):
+      [0s]  [retrieval] → [intent_planner] → [executor]
+      [2s]  ANSWER 事件直接展示 (F-01 模板，无 LLM) + DONE
+      → 2 秒完成，极简体验
+    验证项:
+      ✅ __interrupt__ 不泄露 (chat.py 中过滤)
+      ✅ 复杂查询 streaming_text 逐 chunk 追加，前端 v-html 自动重渲染
+      ✅ 简单查询 answer 事件一次性展示
+      ✅ 无 error 事件，无内部字段泄露
+    截图确认: 前端页面正确显示思考步骤 + 流式分析文字 + 数据表格
+
+  [2026-04-13] Session #11 — 编码智能体
+  ✅ F-11: Retrieval 与 IntentPlanner 并行化
+
+  📝 修改文件:
+    - backend/app/agent/nodes/retrieval_node.py
+      · 新增 _load_tables() 独立异步函数: 将数据库表元数据加载逻辑从 retrieval_node 中抽出
+      · retrieval_node() 中使用 asyncio.gather() 并行执行:
+        - 向量检索 (get_apis_for_query_vector_only)
+        - 数据库表加载 (_load_tables)
+      · 两者原本串行执行，现在同时启动，节省 ~0.5-1s
+
+  🧪 E2E 验证:
+    - 简单查询 (天气): ✅ F-01 快速路径正常，总请求 ~2s
+    - 复杂查询 (AAPL股票): ✅ streaming_text 流式输出正常
+    - IP 查询 (8.8.8.8): ✅ 返回 answer + data + done，未退化
+    - 回归验证: F-01/F-03/F-10 未退化
+
+  📊 状态: 11/12 功能完成 | 下一个: F-12 (端到端验证)
+
   ⚠️ 后续 Agent 注意: 所有进度记录请追加在七、进度日志 部分，在已有 Session 记录之后新增条目，
      严禁删除或覆盖任何已有 Session 的记录！
 

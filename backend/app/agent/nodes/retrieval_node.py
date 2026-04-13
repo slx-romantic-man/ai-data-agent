@@ -3,6 +3,7 @@ API Retrieval Node - 工具检索节点
 从向量数据库召回 Top-K API Schema 并传递给下游节点
 同时检索数据库表元数据用于 SQL 查询
 """
+import asyncio
 from typing import Dict, Any
 from app.agent.state import AgentState
 from app.services.api_retrieval_service import get_api_retrieval_service
@@ -13,9 +14,34 @@ from app.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+async def _load_tables() -> list:
+    """加载数据库表元数据（独立异步任务，可与向量检索并行）"""
+    try:
+        schema_loader = get_schema_loader()
+        db_client = await get_mysql_client()
+        await schema_loader.init(db_client)
+        db_metadata = await schema_loader.load_schema()
+
+        retrieved_tables = []
+        for table_name, table_meta in db_metadata.tables.items():
+            retrieved_tables.append({
+                "config_id": f"table_{table_name}",
+                "name": table_name,
+                "description": table_meta.description or f"数据库表: {table_name}",
+                "type": "sql_table",
+                "schema": table_meta.to_schema_description()
+            })
+
+        logger.info(f"[Retrieval Node] Retrieved {len(retrieved_tables)} database tables")
+        return retrieved_tables
+    except Exception as e:
+        logger.warning(f"[Retrieval Node] Failed to load table metadata: {e}")
+        return []
+
+
 async def retrieval_node(state: AgentState, permission=None) -> Dict[str, Any]:
     """
-    API 检索节点：根据用户查询召回相关 API Schema 和数据库表
+    API 检索节点：并行执行向量检索和数据库表元数据加载
 
     Args:
         state: 当前 AgentState
@@ -31,47 +57,23 @@ async def retrieval_node(state: AgentState, permission=None) -> Dict[str, Any]:
     logger.info(f"[Retrieval Node] Processing query: {query}")
     logger.info(f"[Retrieval Node] Intent type: {intent_type}")
 
-    # 获取用户ID
     user_id = permission.user_id if permission else "1"
     logger.info(f"[Retrieval Node] Using user_id: {user_id}")
 
-    # 获取检索服务实例
     retrieval_service = get_api_retrieval_service()
 
-    # 执行向量检索（无需LLM精排，由后续的intent_planner统一处理）
-    retrieved_apis = await retrieval_service.get_apis_for_query_vector_only(
-        query=query,
-        user_id=user_id,
-        top_k=10
+    # F-11: 向量检索和数据库表加载并行执行
+    retrieved_apis, retrieved_tables = await asyncio.gather(
+        retrieval_service.get_apis_for_query_vector_only(
+            query=query,
+            user_id=user_id,
+            top_k=10
+        ),
+        _load_tables(),
     )
 
     logger.info(f"[Retrieval Node] Retrieved {len(retrieved_apis)} APIs")
 
-    # 检索数据库表元数据
-    retrieved_tables = []
-    try:
-        schema_loader = get_schema_loader()
-        db_client = await get_mysql_client()
-        await schema_loader.init(db_client)
-
-        # 加载所有表的元数据
-        db_metadata = await schema_loader.load_schema()
-
-        # 将表元数据转换为类似 API 的格式供 Planner 使用
-        for table_name, table_meta in db_metadata.tables.items():
-            retrieved_tables.append({
-                "config_id": f"table_{table_name}",
-                "name": table_name,
-                "description": table_meta.description or f"数据库表: {table_name}",
-                "type": "sql_table",
-                "schema": table_meta.to_schema_description()
-            })
-
-        logger.info(f"[Retrieval Node] Retrieved {len(retrieved_tables)} database tables")
-    except Exception as e:
-        logger.warning(f"[Retrieval Node] Failed to load table metadata: {e}")
-
-    # 返回临时变量，不写入 AgentState
     return {
         "retrieved_apis": retrieved_apis,
         "retrieved_tables": retrieved_tables

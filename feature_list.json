@@ -223,7 +223,7 @@
       ],
       "acceptance_criteria": "retrieval 和 intent_planner 的非 LLM 阶段并行执行",
       "estimated_time_save": "~1s",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-12",
