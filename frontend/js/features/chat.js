@@ -118,28 +118,33 @@ window.AppModules.createChatFeature = function(deps) {
 
     const getBufferedAnswer = (assistantMsg) => `${assistantMsg.content || ''}${assistantMsg.answerBuffer || ''}`;
 
-    const startAnswerTypewriter = (assistantMsg) => {
-        if (assistantMsg.answerTypewriterInterval || !assistantMsg.answerBuffer) {
-            if (assistantMsg.streamEnded && !assistantMsg.answerBuffer) {
-                tryFinalizeAssistantMessage(assistantMsg);
-            }
-            return;
+    // Typewriter using requestAnimationFrame to force Vue 3 reactivity to
+    // flush DOM updates for objects inside a ref array. setInterval at 18ms
+    // is silently batched by Vue's scheduler and never rendered.
+    const runAnswerTypewriter = async (assistantMsg, idx) => {
+        if (assistantMsg.answerTypewriterInterval) return;
+        assistantMsg.answerTypewriterInterval = true;
+
+        while (assistantMsg.answerBuffer.length > 0) {
+            assistantMsg.content += assistantMsg.answerBuffer[0];
+            assistantMsg.answerBuffer = assistantMsg.answerBuffer.slice(1);
+
+            // Replace the array element to force Vue to re-render v-for+v-html
+            messages.value.splice(idx, 1, { ...assistantMsg });
+
+            scrollToBottom();
+            await nextTick();
+            await new Promise(r => setTimeout(r, 18));
         }
 
-        assistantMsg.answerTypewriterInterval = setInterval(() => {
-            if (assistantMsg.answerBuffer.length > 0) {
-                assistantMsg.content += assistantMsg.answerBuffer[0];
-                assistantMsg.answerBuffer = assistantMsg.answerBuffer.slice(1);
-                scrollToBottom();
-                return;
+        assistantMsg.answerTypewriterInterval = null;
+        if (assistantMsg.streamEnded) {
+            tryFinalizeAssistantMessage(assistantMsg);
+            // Also update the object in the array (splice created a new copy)
+            if (idx >= 0 && idx < messages.value.length) {
+                tryFinalizeAssistantMessage(messages.value[idx]);
             }
-
-            clearInterval(assistantMsg.answerTypewriterInterval);
-            assistantMsg.answerTypewriterInterval = null;
-            if (assistantMsg.streamEnded) {
-                tryFinalizeAssistantMessage(assistantMsg);
-            }
-        }, 18);
+        }
     };
 
     const startAnswerPhase = (assistantMsg) => {
@@ -166,7 +171,13 @@ window.AppModules.createChatFeature = function(deps) {
         }
 
         assistantMsg.answerBuffer += nextText;
-        startAnswerTypewriter(assistantMsg);
+
+        // Start the nextTick-based typewriter if not already running
+        // Find the index of this assistantMsg in messages
+        const idx = messages.value.indexOf(assistantMsg);
+        if (!assistantMsg.answerTypewriterInterval && idx >= 0) {
+            runAnswerTypewriter(assistantMsg, idx);
+        }
     };
 
     const mergeReasoningLog = (assistantMsg, reasoningLog) => {
