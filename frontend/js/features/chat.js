@@ -19,6 +19,267 @@ window.AppModules.createChatFeature = function(deps) {
         parseMarkdownTables
     } = deps;
 
+    const scrollToBottom = () => {
+        nextTick(() => {
+            if (chatContainer.value) {
+                chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+            }
+        });
+    };
+
+    const createAssistantMessage = () => ({
+        role: 'assistant',
+        content: '',
+        reasoningLog: { steps: [], total_steps: 0, is_complete: false },
+        showThinking: true,
+        isTyping: true,
+        isThinking: true,
+        isAnswerTyping: false,
+        streamEnded: false,
+        answerBuffer: '',
+        answerTypewriterInterval: null,
+        thoughtTypewriterInterval: null
+    });
+
+    const ensureReasoningStep = (assistantMsg, stepNum) => {
+        while (assistantMsg.reasoningLog.steps.length <= stepNum) {
+            assistantMsg.reasoningLog.steps.push({
+                step_number: assistantMsg.reasoningLog.steps.length + 1,
+                thought: '',
+                targetThought: '',
+                action: null,
+                observation: null
+            });
+        }
+        assistantMsg.reasoningLog.total_steps = assistantMsg.reasoningLog.steps.length;
+        return assistantMsg.reasoningLog.steps[stepNum];
+    };
+
+    const flushThoughtTyping = (assistantMsg) => {
+        if (assistantMsg.thoughtTypewriterInterval) {
+            clearInterval(assistantMsg.thoughtTypewriterInterval);
+            assistantMsg.thoughtTypewriterInterval = null;
+        }
+
+        for (const step of assistantMsg.reasoningLog.steps) {
+            if (typeof step.targetThought === 'string' && step.targetThought.length > 0) {
+                step.thought = step.targetThought;
+            }
+        }
+    };
+
+    const tryFinalizeAssistantMessage = (assistantMsg) => {
+        const thoughtActive = Boolean(assistantMsg.thoughtTypewriterInterval);
+        const answerActive = Boolean(assistantMsg.answerTypewriterInterval) || Boolean(assistantMsg.answerBuffer);
+
+        if (!assistantMsg.streamEnded || thoughtActive || answerActive) {
+            return;
+        }
+
+        assistantMsg.isTyping = false;
+        assistantMsg.isThinking = false;
+        assistantMsg.isAnswerTyping = false;
+        assistantMsg.reasoningLog.is_complete = true;
+        chatLoading.value = false;
+        saveChatHistory();
+    };
+
+    const startThoughtTypewriter = (assistantMsg, step, targetText) => {
+        step.targetThought = targetText || '';
+        if (!step.targetThought) {
+            return;
+        }
+
+        if (!step.targetThought.startsWith(step.thought)) {
+            step.thought = '';
+        }
+
+        if (assistantMsg.thoughtTypewriterInterval) {
+            clearInterval(assistantMsg.thoughtTypewriterInterval);
+        }
+
+        assistantMsg.isTyping = true;
+        assistantMsg.isThinking = true;
+
+        assistantMsg.thoughtTypewriterInterval = setInterval(() => {
+            if (step.thought.length < step.targetThought.length) {
+                step.thought += step.targetThought[step.thought.length];
+                scrollToBottom();
+                return;
+            }
+
+            clearInterval(assistantMsg.thoughtTypewriterInterval);
+            assistantMsg.thoughtTypewriterInterval = null;
+            if (assistantMsg.streamEnded) {
+                tryFinalizeAssistantMessage(assistantMsg);
+            }
+        }, 20);
+    };
+
+    const getBufferedAnswer = (assistantMsg) => `${assistantMsg.content || ''}${assistantMsg.answerBuffer || ''}`;
+
+    const startAnswerTypewriter = (assistantMsg) => {
+        if (assistantMsg.answerTypewriterInterval || !assistantMsg.answerBuffer) {
+            if (assistantMsg.streamEnded && !assistantMsg.answerBuffer) {
+                tryFinalizeAssistantMessage(assistantMsg);
+            }
+            return;
+        }
+
+        assistantMsg.answerTypewriterInterval = setInterval(() => {
+            if (assistantMsg.answerBuffer.length > 0) {
+                assistantMsg.content += assistantMsg.answerBuffer[0];
+                assistantMsg.answerBuffer = assistantMsg.answerBuffer.slice(1);
+                scrollToBottom();
+                return;
+            }
+
+            clearInterval(assistantMsg.answerTypewriterInterval);
+            assistantMsg.answerTypewriterInterval = null;
+            if (assistantMsg.streamEnded) {
+                tryFinalizeAssistantMessage(assistantMsg);
+            }
+        }, 18);
+    };
+
+    const startAnswerPhase = (assistantMsg) => {
+        flushThoughtTyping(assistantMsg);
+        assistantMsg.isThinking = false;
+        assistantMsg.isAnswerTyping = true;
+        assistantMsg.isTyping = true;
+        assistantMsg.reasoningLog.is_complete = assistantMsg.reasoningLog.steps.length > 0;
+    };
+
+    const enqueueAnswerText = (assistantMsg, text) => {
+        if (!text) return;
+
+        startAnswerPhase(assistantMsg);
+
+        let nextText = text;
+        const draft = getBufferedAnswer(assistantMsg);
+        if (draft && nextText.startsWith(draft)) {
+            nextText = nextText.slice(draft.length);
+        }
+
+        if (!nextText) {
+            return;
+        }
+
+        assistantMsg.answerBuffer += nextText;
+        startAnswerTypewriter(assistantMsg);
+    };
+
+    const mergeReasoningLog = (assistantMsg, reasoningLog) => {
+        if (!reasoningLog || !reasoningLog.steps) return;
+
+        reasoningLog.steps.forEach((newStep, index) => {
+            const step = ensureReasoningStep(assistantMsg, index);
+            step.step_number = newStep.step_number || index + 1;
+            step.targetThought = newStep.thought || step.targetThought || '';
+            if (!assistantMsg.isThinking) {
+                step.thought = step.targetThought;
+            }
+            step.action = newStep.action;
+            step.observation = newStep.observation;
+        });
+
+        assistantMsg.reasoningLog.total_steps = reasoningLog.total_steps || assistantMsg.reasoningLog.steps.length;
+        if (reasoningLog.is_complete) {
+            assistantMsg.reasoningLog.is_complete = true;
+        }
+    };
+
+    const processStreamEvent = (assistantMsg, event) => {
+        const type = event.type;
+        const data = event.data || {};
+
+        if (type === 'thought') {
+            const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length;
+            const currentStep = ensureReasoningStep(assistantMsg, stepNum);
+            startThoughtTypewriter(assistantMsg, currentStep, data.content || '');
+        }
+        else if (type === 'action') {
+            const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length - 1;
+            if (stepNum >= 0) {
+                const currentStep = ensureReasoningStep(assistantMsg, stepNum);
+                currentStep.action = data.action;
+            }
+        }
+        else if (type === 'executing') {
+            const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length - 1;
+            if (stepNum >= 0) {
+                const currentStep = ensureReasoningStep(assistantMsg, stepNum);
+                currentStep.observation = `正在尝试调用: ${data.tool}...`;
+            }
+        }
+        else if (type === 'observation') {
+            const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length - 1;
+            if (stepNum >= 0) {
+                const currentStep = ensureReasoningStep(assistantMsg, stepNum);
+                currentStep.observation = data.content;
+            }
+        }
+        else if (type === 'answer') {
+            mergeReasoningLog(assistantMsg, data.reasoning_log);
+            enqueueAnswerText(assistantMsg, data.content || '');
+        }
+        else if (type === 'streaming_text') {
+            enqueueAnswerText(assistantMsg, data.content || '');
+        }
+        else if (type === 'data') {
+            assistantMsg.data = {
+                columns: data.columns,
+                rows: data.rows,
+                total: data.total
+            };
+            assistantMsg.sql = data.sql;
+        }
+        else if (type === 'approval_required') {
+            assistantMsg.approval = {
+                thread_id: data.thread_id,
+                plan: data.plan,
+                current_step: data.current_step,
+                status: 'pending'
+            };
+        }
+        else if (type === 'done') {
+            assistantMsg.streamEnded = true;
+            tryFinalizeAssistantMessage(assistantMsg);
+        }
+        else if (type === 'quota') {
+            if (userQuota.value && !userQuota.value.is_unlimited) {
+                userQuota.value.current_balance = data.balance_after;
+            }
+        }
+        else if (type === 'error') {
+            if (assistantMsg.thoughtTypewriterInterval) {
+                clearInterval(assistantMsg.thoughtTypewriterInterval);
+                assistantMsg.thoughtTypewriterInterval = null;
+            }
+            if (assistantMsg.answerTypewriterInterval) {
+                clearInterval(assistantMsg.answerTypewriterInterval);
+                assistantMsg.answerTypewriterInterval = null;
+            }
+
+            assistantMsg.answerBuffer = '';
+            assistantMsg.streamEnded = true;
+            assistantMsg.isThinking = false;
+            assistantMsg.isAnswerTyping = false;
+            assistantMsg.isTyping = false;
+
+            if (data.quota) {
+                assistantMsg.content = '积分不足，请等待每日重置或联系管理员充值。\n当前积分: ' + data.quota.current_balance + '/' + data.quota.daily_limit;
+            } else {
+                assistantMsg.content = '抱歉，处理请求时出错：' + (data.message || '未知错误');
+            }
+
+            chatLoading.value = false;
+            saveChatHistory();
+        }
+
+        scrollToBottom();
+    };
+
     const sendMessage = async () => {
         if (!chatInput.value.trim() || chatLoading.value) return;
 
@@ -27,13 +288,7 @@ window.AppModules.createChatFeature = function(deps) {
         messages.value.push({ role: 'user', content: question });
         chatLoading.value = true;
 
-        const assistantMsg = {
-            role: 'assistant',
-            content: '',
-            reasoningLog: { steps: [], total_steps: 0, is_complete: false },
-            showThinking: true,
-            isTyping: true
-        };
+        const assistantMsg = createAssistantMessage();
         messages.value.push(assistantMsg);
 
         if (!currentSessionId.value) {
@@ -42,136 +297,14 @@ window.AppModules.createChatFeature = function(deps) {
 
         try {
             await api.streamChat(currentSessionId.value, question, (event) => {
-                const type = event.type;
-                const data = event.data;
-
-                if (type === 'thought') {
-                    const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length;
-
-                    // Ensure steps array has enough elements
-                    while (assistantMsg.reasoningLog.steps.length <= stepNum) {
-                        assistantMsg.reasoningLog.steps.push({
-                            step_number: assistantMsg.reasoningLog.steps.length + 1,
-                            thought: '',
-                            action: null,
-                            observation: null
-                        });
-                    }
-
-                    const targetText = data.content || '';
-                    const currentStep = assistantMsg.reasoningLog.steps[stepNum];
-
-                    if (currentStep && currentStep.thought !== targetText) {
-                        let currentIndex = currentStep.thought.length;
-
-                        if (assistantMsg.typewriterInterval) clearInterval(assistantMsg.typewriterInterval);
-                        assistantMsg.isTyping = true;
-
-                        assistantMsg.typewriterInterval = setInterval(() => {
-                            if (currentIndex < targetText.length) {
-                                currentStep.thought += targetText[currentIndex];
-                                currentIndex++;
-                            } else {
-                                clearInterval(assistantMsg.typewriterInterval);
-                                assistantMsg.typewriterInterval = null;
-                            }
-                            nextTick(() => {
-                                const container = document.querySelector('.flex-1.overflow-y-auto');
-                                if (container) container.scrollTop = container.scrollHeight;
-                            });
-                        }, 20);
-                    }
-
-                    assistantMsg.reasoningLog.total_steps = assistantMsg.reasoningLog.steps.length;
-                }
-                else if (type === 'action') {
-                    const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length - 1;
-                    if (stepNum >= 0 && assistantMsg.reasoningLog.steps[stepNum]) {
-                        assistantMsg.reasoningLog.steps[stepNum].action = data.action;
-                    }
-                }
-                else if (type === 'executing') {
-                    const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length - 1;
-                    if (stepNum >= 0 && assistantMsg.reasoningLog.steps[stepNum]) {
-                        assistantMsg.reasoningLog.steps[stepNum].observation = `正在尝试调用: ${data.tool}...`;
-                    }
-                }
-                else if (type === 'observation') {
-                    const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length - 1;
-                    if (stepNum >= 0 && assistantMsg.reasoningLog.steps[stepNum]) {
-                        assistantMsg.reasoningLog.steps[stepNum].observation = data.content;
-                    }
-                }
-                else if (type === 'answer') {
-                    assistantMsg.content = data.content;
-                    if (data.reasoning_log && data.reasoning_log.steps) {
-                        data.reasoning_log.steps.forEach((newStep, i) => {
-                            if (!assistantMsg.reasoningLog.steps[i]) {
-                                assistantMsg.reasoningLog.steps.push(newStep);
-                            } else {
-                                const oldStep = assistantMsg.reasoningLog.steps[i];
-                                if (!assistantMsg.typewriterInterval || i < (data.reasoning_log.steps.length - 1)) {
-                                    oldStep.thought = newStep.thought;
-                                }
-                                oldStep.action = newStep.action;
-                                oldStep.observation = newStep.observation;
-                            }
-                        });
-                        assistantMsg.reasoningLog.total_steps = data.reasoning_log.total_steps;
-                    }
-                }
-                else if (type === 'data') {
-                    // F-10: Progressive streaming of analysis text
-                    assistantMsg.data = {
-                        columns: data.columns,
-                        rows: data.rows,
-                        total: data.total
-                    };
-                    assistantMsg.sql = data.sql;
-                }
-                else if (type === 'streaming_text') {
-                    // F-10: Append streaming analysis text progressively
-                    assistantMsg.content += (data.content || '');
-                }
-                else if (type === 'approval_required') {
-                    assistantMsg.approval = {
-                        thread_id: data.thread_id,
-                        plan: data.plan,
-                        current_step: data.current_step,
-                        status: 'pending'
-                    };
-                }
-                else if (type === 'done') {
-                    if (assistantMsg.typewriterInterval) clearInterval(assistantMsg.typewriterInterval);
-                    assistantMsg.isTyping = false;
-                    assistantMsg.reasoningLog.is_complete = true;
-                    chatLoading.value = false;
-                    saveChatHistory();
-                }
-                else if (type === 'quota') {
-                    if (userQuota.value && !userQuota.value.is_unlimited) {
-                        userQuota.value.current_balance = data.balance_after;
-                    }
-                }
-                else if (type === 'error') {
-                    if (assistantMsg.typewriterInterval) clearInterval(assistantMsg.typewriterInterval);
-                    if (data.quota) {
-                        assistantMsg.content = '积分不足，请等待每日重置或联系管理员充值。\n当前积分: ' + data.quota.current_balance + '/' + data.quota.daily_limit;
-                    } else {
-                        assistantMsg.content = '抱歉，处理请求时出错：' + (data.message || '未知错误');
-                    }
-                    assistantMsg.isTyping = false;
-                    chatLoading.value = false;
-                }
-
-                nextTick(() => {
-                    if (chatContainer.value) {
-                        chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
-                    }
-                });
+                processStreamEvent(assistantMsg, event);
             });
         } catch (err) {
             assistantMsg.content = '抱歉，处理您的请求时出现错误：' + (err.message || '未知错误');
+            assistantMsg.answerBuffer = '';
+            assistantMsg.streamEnded = true;
+            assistantMsg.isThinking = false;
+            assistantMsg.isAnswerTyping = false;
             assistantMsg.isTyping = false;
             chatLoading.value = false;
             saveChatHistory();
@@ -327,22 +460,13 @@ window.AppModules.createChatFeature = function(deps) {
 
             if (action === 'approve') {
                 chatLoading.value = true;
+                msg.streamEnded = false;
+                msg.isTyping = true;
+                msg.isThinking = true;
+                msg.isAnswerTyping = false;
+                msg.answerBuffer = '';
                 await api.streamChat(currentSessionId.value, '', (event) => {
-                    const type = event.type;
-                    const data = event.data;
-
-                    if (type === 'answer') {
-                        msg.content = data.content;
-                    } else if (type === 'data') {
-                        msg.data = {
-                            columns: data.columns,
-                            rows: data.rows,
-                            total: data.total
-                        };
-                        msg.sql = data.sql;
-                    } else if (type === 'done') {
-                        chatLoading.value = false;
-                    }
+                    processStreamEvent(msg, event);
                 });
             }
         } catch (err) {

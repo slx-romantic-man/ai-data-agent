@@ -414,6 +414,54 @@
   ⚠️ 后续 Agent 注意: 所有进度记录请追加在七、进度日志 部分，在已有 Session 记录之后新增条目，
      严禁删除或覆盖任何已有 Session 的记录！
 
+  [2026-04-13] Session #13 — Codex
+  ⚠️ F-13: 前端双阶段流式输出已实现主要代码路径，但暂未确认真实页面端到端完全达标
+
+  📝 本轮完成:
+    - 后端 SSE 协议增强:
+      · backend/app/api/v1/chat.py
+      · 将 stream_chat 改为分阶段发送 thought / action / executing / observation / streaming_text / data / done
+      · 不再只发送“节点执行中”占位文案，而是把检索、规划、执行、分析各阶段拆成可展示事件
+      · 澄清问题与简单查询也改为 streaming_text 流式输出
+      · 修复 session 保存时只写入前 100 个字符的问题，改为保存完整回答
+    - LangGraph 状态补充:
+      · backend/app/agent/state.py
+      · backend/app/agent/nodes/intent_planner_node.py
+      · 新增 planning_reasoning 字段，让规划阶段的 reasoning 可以传到 SSE 层展示
+    - 前端消息渲染改造:
+      · frontend/js/features/chat.js
+      · 新增独立的 thoughtTypewriter 与 answerTypewriter 队列
+      · 先逐字渲染推理步骤，再无缝切换到正文逐字输出
+      · 审批后的继续执行流也复用同一套流式处理逻辑
+      · frontend/js/app-template.js
+      · 推理面板新增“思考中/回答中”状态文案
+      · 正文区域新增独立回答光标，避免只在推理区显示打字状态
+
+  🧪 本轮验证:
+    - Python 静态检查: ✅
+      · python3 -m py_compile backend/app/api/v1/chat.py backend/app/agent/nodes/intent_planner_node.py backend/app/agent/state.py
+    - 前端脚本语法检查: ✅
+      · node --check frontend/js/features/chat.js
+      · node --check frontend/js/app-template.js
+    - 进程内流式协议验证: ✅
+      · 通过直接调用 stream_chat() 并 mock graph / service 依赖，确认事件顺序包含
+        thought -> action -> executing -> observation -> streaming_text -> data -> done
+      · 确认流式正文拼接结果与 session 中保存的 assistant content 完全一致
+
+  🕳️ 未闭环 / 留下的坑:
+    - 当前环境下未完成真实浏览器端到端确认，因此 feature_list.json 中 F-13 仍保持 passes=false
+    - bash init.sh 执行时提示 8002 端口被旧进程占用，且当前沙箱内 curl 无法直连本地 8002
+    - 直接走 ASGI 请求时，默认依赖会触发 MySQL 连接；本轮只能通过 mock 依赖验证流式协议，无法在当前环境中完成真实登录后页面联调
+    - git status 中存在本轮之外的运行产物/环境文件变更（如 checkpoints.db、sessions.json、日志文件）；按用户要求将统一提交，下一任接手时请先核对这些是否属于可接受的工作态
+
+  📌 下一任建议:
+    - 先清理或确认 8002 端口占用进程，再用真实浏览器打开前端页面验证 F-13
+    - 优先验证 3 类场景:
+      · 澄清问题场景：思考后流式输出反问
+      · 简单查询场景：思考后正文以模板内容流式输出
+      · 复杂查询场景：思考后 Analyzer 内容持续 streaming_text 输出
+    - 若真实页面表现稳定，再将 feature_list.json 中 F-13 的 passes 改为 true
+
 ================================================================================
   八、环境信息速查
 ================================================================================

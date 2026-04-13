@@ -1,0 +1,18 @@
+{
+  "stream-test": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "上海天气怎么样",
+        "timestamp": "2026-04-13T21:20:30.854042"
+      },
+      {
+        "role": "assistant",
+        "content": "以下是您查询的结果：\n\n- **City**: Shanghai\n- **Temp C**: 21\n- **Condition**: Sunny",
+        "timestamp": "2026-04-13T21:20:30.854130"
+      }
+    ],
+    "created_at": "2026-04-13T21:20:30.853662",
+    "updated_at": "2026-04-13T21:20:30.854215"
+  }
+}

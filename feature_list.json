@@ -1,8 +1,8 @@
 {
   "project_name": "AI Data Agent v4.3 — 性能优化",
   "baseline_commit": "PENDING_INITIAL_COMMIT",
-  "last_updated": "2026-04-12",
-  "total_features": 12,
+  "last_updated": "2026-04-13",
+  "total_features": 13,
   "project_features": [
     {
       "id": "F-01",
@@ -244,6 +244,30 @@
       "acceptance_criteria": "简单查询 < 30s，复杂查询 < 60s，数据正确性无退化",
       "estimated_time_save": "N/A（验证项）",
       "passes": true
+    },
+    {
+      "id": "F-13",
+      "priority": 3,
+      "category": "ux",
+      "strategy": "前端与 SSE 联动的双阶段流式输出",
+      "description": "用户在前端提问后，先以打字机效果流式展示 agent 的思考过程，再在思考结束后继续以流式方式逐字展示最终回复，并保留完整会话内容",
+      "files_to_modify": [
+        "backend/app/api/v1/chat.py",
+        "backend/app/agent/nodes/intent_planner_node.py",
+        "backend/app/agent/state.py",
+        "frontend/js/features/chat.js",
+        "frontend/js/app-template.js"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "使用浏览器打开前端页面并登录",
+        "输入一个会触发多阶段处理的问题，观察推理面板是否逐步出现 thought/action/observation",
+        "确认思考阶段结束后，正文区域继续以打字机效果流式输出，而不是一次性整段渲染",
+        "刷新页面或重新打开历史对话，确认保存的是完整回答而非前 100 个字符"
+      ],
+      "acceptance_criteria": "前端真实页面中，思考过程与最终回答均可稳定流式展示，且历史会话保存完整正文",
+      "estimated_time_save": "感知提速",
+      "passes": false
     }
   ]
 }

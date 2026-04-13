@@ -20,6 +20,9 @@ class AgentState(TypedDict):
     # Planner 生成的执行计划
     plan: Optional[List[Dict[str, Any]]]
 
+    # 规划阶段生成的可展示推理说明
+    planning_reasoning: Optional[str]
+
     # 当前执行到的步骤索引
     current_step: int
 

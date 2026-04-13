@@ -245,13 +245,14 @@ window.AppTemplate = `
                                                     </div>
                                                     <span class="text-xs font-bold text-zinc-900 uppercase tracking-widest">推理过程</span>
                                                     <span v-if="msg.reasoningLog" class="text-[10px] text-zinc-400 font-mono">({{ msg.reasoningLog.total_steps || 0 }} 步)</span>
-                                                    <span v-if="msg.isTyping" class="text-[10px] text-zinc-400 animate-pulse italic">思考中...</span>
+                                                    <span v-if="msg.isThinking" class="text-[10px] text-zinc-400 animate-pulse italic">思考中...</span>
+                                                    <span v-else-if="msg.isAnswerTyping" class="text-[10px] text-zinc-400 animate-pulse italic">回答中...</span>
                                                 </div>
-                                                <svg :class="['w-3.5 h-3.5 text-zinc-400 transition-transform duration-300', (msg.showThinking || msg.isTyping) ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg :class="['w-3.5 h-3.5 text-zinc-400 transition-transform duration-300', (msg.showThinking || msg.isThinking) ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                                 </svg>
                                             </button>
-                                            <div v-if="msg.showThinking || msg.isTyping" class="px-3 py-2 bg-purple-50 border-t border-gray-200">
+                                            <div v-if="msg.showThinking || msg.isThinking" class="px-3 py-2 bg-purple-50 border-t border-gray-200">
                                                 <!-- ReAct Steps -->
                                                 <div v-if="msg.reasoningLog && msg.reasoningLog.steps && msg.reasoningLog.steps.length > 0" class="space-y-3">
                                                     <div v-for="(step, stepIdx) in msg.reasoningLog.steps" :key="stepIdx" class="border-l-2 border-purple-300 pl-3">
@@ -264,7 +265,7 @@ window.AppTemplate = `
                                                                 </svg>
                                                                 <span>思考：</span>
                                                             </div>
-                                                            <div class="text-xs text-gray-600 bg-blue-50 p-2 rounded mt-1">{{ step.thought }}<span v-if="msg.isTyping && step === msg.reasoningLog.steps[msg.reasoningLog.steps.length - 1] && !step.action && !step.observation" class="typewriter-cursor"></span></div>
+                                                            <div class="text-xs text-gray-600 bg-blue-50 p-2 rounded mt-1">{{ step.thought }}<span v-if="msg.isThinking && step === msg.reasoningLog.steps[msg.reasoningLog.steps.length - 1] && !step.action && !step.observation" class="typewriter-cursor"></span></div>
                                                         </div>
                                                         <!-- Action -->
                                                         <div v-if="step.action" class="mb-2">
@@ -321,7 +322,10 @@ window.AppTemplate = `
                                             </div>
                                         </div>
 
-                                        <div class="text-gray-800 markdown-content" v-html="renderMarkdown(msg.content)"></div>
+                                        <div class="text-gray-800 markdown-content">
+                                            <div v-html="renderMarkdown(msg.content)"></div>
+                                            <span v-if="msg.isAnswerTyping" class="typewriter-cursor mt-1"></span>
+                                        </div>
 
                                         <!-- Data Table -->
                                         <div v-if="msg.data && msg.data.rows && msg.data.rows.length > 0" class="mt-4">

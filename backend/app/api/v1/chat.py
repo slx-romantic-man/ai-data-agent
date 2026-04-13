@@ -519,6 +519,69 @@ async def stream_chat(
     - quota: Quota information after deduction
     """
     async def event_generator():
+        def _sse(event_type: str, data: Dict[str, Any] | None = None) -> str:
+            return f"data: {_json_dumps({'type': event_type, 'data': data or {}}, ensure_ascii=False)}\n\n"
+
+        async def _stream_text(text: str, chunk_size: int = 8):
+            normalized = text or ""
+            for index in range(0, len(normalized), chunk_size):
+                yield _sse("streaming_text", {"content": normalized[index:index + chunk_size]})
+
+        def _build_plan_thought(
+            plan: list,
+            planning_reasoning: str,
+            extracted_filters: Dict[str, Any] | None,
+        ) -> str:
+            if planning_reasoning:
+                return planning_reasoning
+
+            intent_type = (extracted_filters or {}).get("intent_type", "api_query")
+            if not plan:
+                return f"我已经识别出当前问题属于 {intent_type}，但还需要进一步确认结果该如何返回。"
+
+            step_descriptions = [
+                step.get("description", f"步骤 {idx + 1}")
+                for idx, step in enumerate(plan[:3])
+            ]
+            suffix = "，然后继续后续处理。" if len(plan) > 3 else "。"
+            return (
+                f"我已经识别出当前问题属于 {intent_type}，"
+                f"接下来会按顺序执行：{'；'.join(step_descriptions)}{suffix}"
+            )
+
+        def _build_action_payload(step: Dict[str, Any]) -> Dict[str, Any]:
+            params = step.get("params", {})
+            return {
+                "tool": step.get("tool", "unknown"),
+                "name": step.get("description", ""),
+                "parameters": params,
+            }
+
+        def _count_rows(raw_data: Any) -> int:
+            if isinstance(raw_data, dict) and "rows" in raw_data:
+                rows = raw_data.get("rows", [])
+                return len(rows) if isinstance(rows, list) else 0
+            if isinstance(raw_data, list):
+                return len(raw_data)
+            if isinstance(raw_data, dict):
+                return 1
+            return 0
+
+        def _summarize_execution_result(result: Dict[str, Any] | None) -> str:
+            if not isinstance(result, dict):
+                return "执行完成。"
+
+            if result.get("success"):
+                row_count = _count_rows(result.get("data"))
+                if row_count > 0:
+                    return f"执行成功，获取到 {row_count} 条数据。"
+                return "执行成功，已拿到结果。"
+
+            error_message = result.get("error")
+            if error_message:
+                return f"执行失败：{error_message}"
+            return "执行结束，但没有返回可用结果。"
+
         try:
             # Get services
             user_service = get_user_service()
@@ -528,28 +591,20 @@ async def stream_chat(
             # Get user account for credit check
             user_account = user_service.get_user_by_user_id(user.user_id)
             if not user_account:
-                error_event = _json_dumps({
-                    "type": "error",
-                    "data": {"message": "用户不存在"}
-                }, ensure_ascii=False)
-                yield f"data: {error_event}\n\n"
+                yield _sse("error", {"message": "用户不存在"})
                 return
 
             # Check quota (skip for admin)
             if not user_account.has_unlimited_credits():
                 user_service.check_and_reset_if_needed(user.user_id)
                 if user_account.quota.current_balance <= 0:
-                    error_event = _json_dumps({
-                        "type": "error",
-                        "data": {
-                            "message": "积分不足，请等待每日重置或联系管理员充值",
-                            "quota": {
-                                "current_balance": user_account.quota.current_balance,
-                                "daily_limit": user_account.quota.daily_limit
-                            }
-                        }
-                    }, ensure_ascii=False)
-                    yield f"data: {error_event}\n\n"
+                    yield _sse("error", {
+                        "message": "积分不足，请等待每日重置或联系管理员充值",
+                        "quota": {
+                            "current_balance": user_account.quota.current_balance,
+                            "daily_limit": user_account.quota.daily_limit,
+                        },
+                    })
                     return
 
             # Get or create session
@@ -586,6 +641,15 @@ async def stream_chat(
             final_data = None
             total_tokens = 0
             is_clarification = False  # Track if response is a clarification
+            next_reasoning_step = 0
+            seen_completed_step_ids = set()
+            execution_step_numbers: Dict[int, int] = {}
+            plan_by_step_id: Dict[int, tuple[int, Dict[str, Any]]] = {}
+
+            def allocate_reasoning_step() -> int:
+                nonlocal next_reasoning_step
+                next_reasoning_step += 1
+                return next_reasoning_step
 
             # Create LangGraph workflow
             graph = await create_graph(permission)
@@ -596,6 +660,7 @@ async def stream_chat(
                 "query": user_message,
                 "extracted_filters": None,
                 "plan": None,
+                "planning_reasoning": None,
                 "current_step": 0,
                 "data_context": {}
             }
@@ -613,18 +678,80 @@ async def stream_chat(
                     if node_name == "__interrupt__":
                         continue
 
-                    # Emit node execution event
-                    yield f"data: {_json_dumps({'type': 'thought', 'data': {'content': f'[{node_name}] 节点执行中...'}}, ensure_ascii=False)}\n\n"
-
                     # Handle intent_planner node output (clarification)
-                    if node_name == "intent_planner":
+                    if node_name == "retrieval":
+                        reasoning_step = allocate_reasoning_step()
+                        api_count = len(node_output.get("retrieved_apis", []) or [])
+                        table_count = len(node_output.get("retrieved_tables", []) or [])
+                        thought = (
+                            f"我先检索当前可用的数据源，已找到 {api_count} 个 API"
+                            f" 和 {table_count} 张数据库表，接下来开始规划执行路径。"
+                        )
+                        yield _sse("thought", {"step": reasoning_step, "content": thought})
+                    elif node_name == "intent_planner":
+                        plan = node_output.get("plan", []) or []
+                        planning_reasoning = node_output.get("planning_reasoning", "") or ""
+                        extracted_filters = node_output.get("extracted_filters", {}) or {}
+                        reasoning_step = allocate_reasoning_step()
+                        yield _sse("thought", {
+                            "step": reasoning_step,
+                            "content": _build_plan_thought(plan, planning_reasoning, extracted_filters),
+                        })
+
+                        plan_by_step_id = {}
+                        for index, step in enumerate(plan):
+                            step_id = step.get("step_id", index)
+                            plan_by_step_id[step_id] = (index, step)
+
                         messages = node_output.get("messages", [])
                         if messages:
                             last_msg = messages[-1]
                             if last_msg.get("type") == "clarification":
                                 final_answer_text = last_msg.get("content", "")
                                 is_clarification = True
-                                yield f"data: {_json_dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
+                                async for payload in _stream_text(final_answer_text):
+                                    yield payload
+                    elif node_name == "executor":
+                        data_context = node_output.get("data_context", {}) or {}
+                        current_plan = node_output.get("plan", []) or []
+                        completed_step_ids = node_output.get("completed_step_ids", []) or []
+
+                        if current_plan and not plan_by_step_id:
+                            for index, step in enumerate(current_plan):
+                                step_id = step.get("step_id", index)
+                                plan_by_step_id[step_id] = (index, step)
+
+                        for step_id in completed_step_ids:
+                            if step_id in seen_completed_step_ids:
+                                continue
+
+                            seen_completed_step_ids.add(step_id)
+                            step_index, step = plan_by_step_id.get(step_id, (0, {}))
+                            step_number = execution_step_numbers.get(step_id)
+                            if step_number is None:
+                                step_number = allocate_reasoning_step()
+                                execution_step_numbers[step_id] = step_number
+
+                            context_key = (
+                                f"step_{step_index}_"
+                                f"{step.get('api_id') or step.get('tool', 'unknown')}"
+                            )
+                            execution_result = data_context.get(context_key)
+                            thought = step.get("description") or f"开始执行步骤 {step_id}"
+
+                            yield _sse("thought", {"step": step_number, "content": thought})
+                            yield _sse("action", {
+                                "step": step_number,
+                                "action": _build_action_payload(step),
+                            })
+                            yield _sse("executing", {
+                                "step": step_number,
+                                "tool": step.get("tool", "unknown"),
+                            })
+                            yield _sse("observation", {
+                                "step": step_number,
+                                "content": _summarize_execution_result(execution_result),
+                            })
 
             # Get state after graph paused at analyzer
             state = await graph.aget_state(config)
@@ -639,12 +766,19 @@ async def stream_chat(
                 has_analysis_data = bool(data_context and not error)
 
                 if has_analysis_data:
+                    analyzer_step = allocate_reasoning_step()
+                    yield _sse("thought", {
+                        "step": analyzer_step,
+                        "content": "数据已经准备好了，我正在整理结果并生成最终回复。",
+                    })
+
                     # F-10: Build state for run_analyzer_stream
                     stream_state: AgentState = {
                         "messages": state.values.get("messages", []),
                         "query": state.values.get("query", user_message),
                         "extracted_filters": state.values.get("extracted_filters"),
                         "plan": plan,
+                        "planning_reasoning": state.values.get("planning_reasoning"),
                         "current_step": state.values.get("current_step", 0),
                         "data_context": data_context,
                         "requires_approval": state.values.get("requires_approval", False),
@@ -659,14 +793,15 @@ async def stream_chat(
                     if _is_simple_query(plan, all_data):
                         logger.info("[StreamChat] Simple query via F-01, using template (no LLM)")
                         final_answer_text = _format_simple_response(all_data, user_message)
-                        yield f"data: {_json_dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
+                        async for payload in _stream_text(final_answer_text):
+                            yield payload
                     else:
                         # F-10: Stream analysis output chunk by chunk
                         logger.info("[StreamChat] Streaming analysis output via SSE")
                         streamed_text = ""
                         async for chunk in run_analyzer_stream(stream_state):
                             streamed_text += chunk
-                            yield f"data: {_json_dumps({'type': 'streaming_text', 'data': {'content': chunk}}, ensure_ascii=False)}\n\n"
+                            yield _sse("streaming_text", {"content": chunk})
                         final_answer_text = streamed_text
 
                     # Send normalized data
@@ -688,17 +823,24 @@ async def stream_chat(
                                 normalized_data = {"rows": [raw_data], "total": 1, "columns": columns}
                             else:
                                 normalized_data = {"rows": [], "total": 0, "columns": []}
-                            yield f"data: {_json_dumps({'type': 'data', 'data': normalized_data}, ensure_ascii=False)}\n\n"
+                            final_data = normalized_data
+                            yield _sse("data", normalized_data)
                             break
                 else:
                     # No data or error - emit error/empty response via analyzer fallback
+                    analyzer_step = allocate_reasoning_step()
+                    yield _sse("thought", {
+                        "step": analyzer_step,
+                        "content": "当前没有拿到可直接分析的数据，我改用解释型回复整理现有结果。",
+                    })
                     async for event in graph.astream(None, config, stream_mode="updates"):
                         for node_name, node_output in event.items():
                             if node_name == "analyzer":
                                 messages = node_output.get("messages", [])
                                 if messages:
                                     final_answer_text = messages[-1].get("content", "")
-                                    yield f"data: {_json_dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
+                                    async for payload in _stream_text(final_answer_text):
+                                        yield payload
 
             # Check if workflow is interrupted (waiting for approval) - skip if we interrupted before analyzer ourselves
             state = await graph.aget_state(config)
@@ -707,21 +849,14 @@ async def stream_chat(
             if len(next_nodes) == 1 and next_nodes[0] == "analyzer":
                 # This is our own interrupt_before, not an approval requirement
                 pass
-            if len(next_nodes) == 1 and next_nodes[0] == "analyzer":
-                # This is our own interrupt_before, not an approval requirement
-                pass
             elif state.next:
                 # Workflow is interrupted, send approval_required event
-                approval_event = _json_dumps({
-                    "type": "approval_required",
-                    "data": {
+                yield _sse("approval_required", {
                         "thread_id": session_id,
                         "plan": state.values.get("plan", []),
                         "current_step": state.values.get("current_step", 0)
-                    }
-                }, ensure_ascii=False)
-                yield f"data: {approval_event}\n\n"
-                yield f"data: {_json_dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
+                    })
+                yield _sse("done")
                 return
 
             # Save to session storage (for backward compatibility)
@@ -740,7 +875,7 @@ async def stream_chat(
                 })
                 assistant_msg = {
                     "role": "assistant",
-                    "content": final_answer_text[:100],
+                    "content": final_answer_text,
                     "timestamp": datetime.now().isoformat(),
                 }
                 if is_clarification:
@@ -751,7 +886,7 @@ async def stream_chat(
                 _save_sessions()
 
             # Send done event
-            yield f"data: {_json_dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
+            yield _sse("done")
 
             # Deduct credits (estimate tokens if not provided)
             # For now, use a simple estimation based on response length
@@ -802,11 +937,7 @@ async def stream_chat(
 
         except Exception as e:
             logger.error(f"Stream chat error: {str(e)}")
-            error_event = _json_dumps({
-                "type": "error",
-                "data": {"message": str(e)}
-            }, ensure_ascii=False)
-            yield f"data: {error_event}\n\n"
+            yield _sse("error", {"message": str(e)})
 
     return StreamingResponse(
         event_generator(),

@@ -111,6 +111,7 @@ async def intent_planner_node(state: AgentState, retrieved_apis: list, retrieved
     # 检查是否有缺失信息
     missing_info = result_data.get("missing_info")
     clarification_question = result_data.get("clarification_question")
+    state["planning_reasoning"] = result_data.get("reasoning", "")
 
     if missing_info and clarification_question:
         # 条件不完备，返回反问
