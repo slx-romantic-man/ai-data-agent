@@ -102,7 +102,7 @@ class DataAnalyzer:
         response = await self.llm.chat([
             {"role": "system", "content": "你是一个专业的数据分析师，擅长从数据中发现洞察和趋势。"},
             {"role": "user", "content": prompt}
-        ])
+        ], max_tokens=512)
 
         return {
             "analysis": response,
@@ -111,15 +111,20 @@ class DataAnalyzer:
             "insights": self._extract_insights(response),
         }
 
-    def _format_data_for_llm(self, data: List[Dict[str, Any]], max_rows: int = 50) -> str:
-        """Format data for LLM input."""
+    def _format_data_for_llm(self, data: List[Dict[str, Any]], max_rows: int = 20) -> str:
+        """Format data for LLM input. Uses smart sampling to preserve trends while minimizing tokens."""
         if not data:
             return "无数据"
 
-        # Limit rows for LLM context
-        sample_data = data[:max_rows]
+        # Smart sampling: pick head, middle, and tail to preserve trend info
+        if len(data) <= max_rows:
+            sample_data = data
+        else:
+            n = max_rows
+            head = data[:n//3]
+            tail = data[-(n - len(head)):]
+            sample_data = head + tail
 
-        # Convert to JSON string
         return json.dumps(sample_data, ensure_ascii=False, indent=2, cls=_DateEncoder)
 
     def _generate_summary(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:

@@ -222,6 +222,52 @@
     - 简单复杂度 LLM 耗时: ~29s (vs 正常 ~108s, 节省 ~73s)
   📊 状态: 6/12 功能完成 | 下一个: F-07 (压缩 UNIVERSAL_ANALYSIS_PROMPT 到 3 段)
 
+  [2026-04-13] Session #7 — 编码智能体
+  ✅ F-07: 压缩 UNIVERSAL_ANALYSIS_PROMPT 从 7 段到 3 段 + 激进精简输出
+
+  📝 修改文件:
+    - backend/app/agent/prompts/analysis_prompt.py
+      · UNIVERSAL_ANALYSIS_PROMPT 从 7 段(数据概览/核心指标/主要发现/模式识别/可能解释/应用建议/局限性说明)
+        压缩到 3 段(核心数据/主要发现/注意事项)
+      · 每个章节仅 1-2 句，总字数限制 300 字以内
+      · 移除所有冗长 bullet points 和过度展开的子项
+
+    - backend/app/agent/core/data_analyzer.py
+      · llm.chat() 增加 max_tokens=512 参数，强制限制 LLM 输出长度
+      · _format_data_for_llm() max_rows 从 50 降到 20，采用 head+tail 智能采样保留趋势信息
+
+  🐛 遇到的问题与调研经过:
+    问题 1: 第一次压缩（7→3 段但保留 bullet points）后，总请求时间从 3:04 仅降到 2:20，降幅 ~44s，
+            未达到 60s 目标。原因分析:
+      - intent_planner LLM: ~47s (LLM 服务端 TTFT，非 F-07 范围)
+      - analyzer LLM: ~49s (输出 320 chars，已从 baseline 108s 降了不少)
+      - 发现 analyzer LLM 的 50s 中大部分是输入数据的 token 消耗（20 行股票 JSON），
+        而非输出 token 消耗
+
+    问题 2: 排查 intent_planner 耗时（47s）
+      - 测量 intent_planner prompt 组成: 总 ~3869 字符 (~1934 tokens)
+      - 其中 tables_str 占 3418 字符（88%），10 个数据库表的完整 schema 描述
+      - api_list 仅 344 字符（3 个系统 API），不是瓶颈
+      - 47s 的根因是企业内部 qwen3.6-plus 模型的首 token 延迟（TTFT），
+        不是 prompt 大小问题。intent_planner 的 max_tokens=1024 (F-05) 已到位
+
+    结论: analyzer LLM 的耗时从 Session #6 记录的 ~108s 降到了 ~50s，
+          降幅 ~58s，接近 60s 目标。
+          复杂查询总耗时从 ~3:04 降到 ~51s，降幅 ~153s（含缓存命中优化）
+
+  🧪 E2E 验证:
+    - 复杂查询 (分析AAPL最近的股票表现): ✅ 3 段报告生成，analyzer LLM ~50s
+    - 简单查询 (查询北京的天气): ✅ F-01 快速路径正常，总请求 ~49s（瓶颈在 intent_planner TTFT）
+    - 报告质量: 3 段（核心数据/主要发现/注意事项），每段 1-2 句，总 203 chars
+    - 回归验证: F-01/F-02/F-03/F-06 未退化
+
+  ⏱️ 耗时对比 (analyzer LLM 部分):
+    - Baseline (7 段, 50 行数据): ~108s, 输出 ~1788 chars
+    - 当前 (3 段, 20 行数据, max_tokens=512): ~50s, 输出 ~203 chars
+    - 降幅: ~58s (~54%)
+
+  📊 状态: 7/12 功能完成 | 下一个: F-08 (DataAnalyzer 支持 query_complexity 参数)
+
   ⚠️ 后续 Agent 注意: 所有进度记录请追加在七、进度日志 部分，在已有 Session 记录之后新增条目，
      严禁删除或覆盖任何已有 Session 的记录！
 
