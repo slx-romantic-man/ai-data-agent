@@ -801,9 +801,7 @@ async def stream_chat(
             )
 
         except Exception as e:
-            import traceback
             logger.error(f"Stream chat error: {str(e)}")
-            logger.error(f"Traceback: {traceback.format_exc()}")
             error_event = _json_dumps({
                 "type": "error",
                 "data": {"message": str(e)}
