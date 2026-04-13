@@ -99,7 +99,7 @@ async def intent_planner_node(state: AgentState, retrieved_apis: list, retrieved
         logger.info(f"[IntentPlannerNode] Cache hit for query: {query}")
         response = cached_response
     else:
-        response = await llm.chat(llm_messages)
+        response = await llm.chat(llm_messages, max_tokens=1024)
         cache.set(llm_messages, response)
 
     logger.info(f"[IntentPlannerNode] LLM Response: {response[:1000]}")

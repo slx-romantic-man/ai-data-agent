@@ -189,6 +189,18 @@
     - 响应时间: ~2.3s (天气查询，走 F-01 快速路径)
   📊 状态: 4/12 功能完成 | 下一个: F-05 (intent_planner max_tokens=1024)
 
+  [2026-04-13] Session #5 — 编码智能体
+  ✅ F-05: intent_planner LLM 调用设置 max_tokens=1024
+  📝 修改文件: backend/app/agent/nodes/intent_planner_node.py
+    - line 102: llm.chat(llm_messages) → llm.chat(llm_messages, max_tokens=1024)
+    - 原默认值 4096，JSON 输出实际只需 200-500 tokens，改为 1024 减少响应时间
+  🧪 E2E 验证:
+    - 天气查询 (查询北京的天气): ✅ intent_planner 正确生成 1 步计划，LLM Content Length: 689 < 1024，JSON 完整
+    - IP 查询 (查询 8.8.8.8 的IP地址信息): ✅ intent_planner 正确识别 geo API，响应完整无截断
+    - 股票查询 (查询AAPL的股票价格): ✅ intent_planner 正确识别 alpha_vantage_stock API，计划生成完整
+    - 所有查询 LLM 响应状态 200，JSON 未被截断
+  📊 状态: 5/12 功能完成 | 下一个: F-06 (SIMPLE_ANALYSIS_PROMPT 模板)
+
   ⚠️ 后续 Agent 注意: 所有进度记录请追加在七、进度日志 部分，在已有 Session 记录之后新增条目，
      严禁删除或覆盖任何已有 Session 的记录！
 
