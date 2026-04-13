@@ -243,7 +243,7 @@
       ],
       "acceptance_criteria": "简单查询 < 30s，复杂查询 < 60s，数据正确性无退化",
       "estimated_time_save": "N/A（验证项）",
-      "passes": false
+      "passes": true
     }
   ]
 }
