@@ -26,6 +26,7 @@ from app.api.dependencies import get_user_context, get_permission_context
 from app.models.permission import PermissionContext
 from app.agent.graph import create_graph
 from app.agent.state import AgentState
+from app.agent.nodes.analyzer_node import run_analyzer_stream
 from app.access.database import get_mysql_client, get_postgres_client
 from app.access.metadata import get_schema_loader
 from app.config.settings import settings
@@ -602,12 +603,16 @@ async def stream_chat(
             # Stream events from LangGraph
             config = {"configurable": {"thread_id": session_id}}
 
-            async for event in graph.astream(initial_state, config, stream_mode="updates"):
+            # Phase 1: Run graph with interrupt_before=["analyzer"] to stop before analyzer
+            async for event in graph.astream(
+                initial_state, config, stream_mode="updates",
+                interrupt_before=["analyzer"],
+            ):
                 for node_name, node_output in event.items():
                     # Emit node execution event
                     yield f"data: {_json_dumps({'type': 'thought', 'data': {'content': f'[{node_name}] 节点执行中...'}}, ensure_ascii=False)}\n\n"
 
-                    # Handle intent_planner node output
+                    # Handle intent_planner node output (clarification)
                     if node_name == "intent_planner":
                         messages = node_output.get("messages", [])
                         if messages:
@@ -617,78 +622,91 @@ async def stream_chat(
                                 is_clarification = True
                                 yield f"data: {_json_dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
 
-                    # Check if this is the final analyzer output
-                    if node_name == "analyzer":
-                        messages = node_output.get("messages", [])
-                        if messages:
-                            final_answer_text = messages[-1].get("content", "")
-                            yield f"data: {_json_dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
-
-                        # Send normalized data immediately after analyzer output
-                        # Get the current state from the graph to access data_context
-                        current_state = await graph.aget_state(config)
-
-                        if current_state.values:
-                            data_context = current_state.values.get("data_context", {})
-                            logger.info(f"[SSE] data_context from state: {len(data_context)} keys, keys={list(data_context.keys())}")
-
-                            if data_context:
-                                for key, value in data_context.items():
-                                    if isinstance(value, dict) and "data" in value:
-                                        # Normalize data to {rows: [...], row_count: N} format
-                                        raw_data = value.get("data")
-                                        logger.info(f"[SSE] Normalizing data for key={key}, raw_data_type={type(raw_data).__name__}")
-
-                                        # Case 1: Already has 'rows' field
-                                        if isinstance(raw_data, dict) and "rows" in raw_data:
-                                            rows = raw_data.get("rows", [])
-                                            # Extract columns from first row if available
-                                            columns = list(rows[0].keys()) if rows and isinstance(rows[0], dict) else []
-                                            normalized_data = {
-                                                "rows": rows,
-                                                "total": len(rows),
-                                                "columns": columns
-                                            }
-                                            logger.info(f"[SSE] Case 1: Already has rows field, total={normalized_data['total']}, columns={len(columns)}")
-
-                                        # Case 2: List format
-                                        elif isinstance(raw_data, list):
-                                            # Extract columns from first item if available
-                                            columns = list(raw_data[0].keys()) if raw_data and isinstance(raw_data[0], dict) else []
-                                            normalized_data = {
-                                                "rows": raw_data,
-                                                "total": len(raw_data),
-                                                "columns": columns
-                                            }
-                                            logger.info(f"[SSE] Case 2: List format, total={normalized_data['total']}, columns={len(columns)}")
-
-                                        # Case 3: Single dict format (e.g., weather/IP API response)
-                                        elif isinstance(raw_data, dict):
-                                            columns = list(raw_data.keys())
-                                            normalized_data = {
-                                                "rows": [raw_data],
-                                                "total": 1,
-                                                "columns": columns
-                                            }
-                                            logger.info(f"[SSE] Case 3: Single dict format (weather/IP API), total=1, columns={len(columns)}")
-
-                                        # Case 4: No data or invalid format
-                                        else:
-                                            normalized_data = {
-                                                "rows": [],
-                                                "total": 0,
-                                                "columns": []
-                                            }
-                                            logger.warning(f"[SSE] Case 4: Invalid format or no data")
-
-                                        yield f"data: {_json_dumps({'type': 'data', 'data': normalized_data}, ensure_ascii=False)}\n\n"
-                                        logger.info(f"[SSE] Sent normalized data event with rows field")
-                                        break
-
-            # Check if workflow is interrupted (waiting for approval)
+            # Get state after graph paused at analyzer
             state = await graph.aget_state(config)
+            if not state.values:
+                logger.warning("[StreamChat] Graph state is empty after execution")
+            else:
+                data_context = state.values.get("data_context", {})
+                plan = state.values.get("plan", [])
+                error = state.values.get("error")
 
-            if state.next:
+                # Check if analyzer has data to process (non-error case)
+                has_analysis_data = bool(data_context and not error)
+
+                if has_analysis_data:
+                    # F-10: Build state for run_analyzer_stream
+                    stream_state: AgentState = {
+                        "messages": state.values.get("messages", []),
+                        "query": state.values.get("query", user_message),
+                        "extracted_filters": state.values.get("extracted_filters"),
+                        "plan": plan,
+                        "current_step": state.values.get("current_step", 0),
+                        "data_context": data_context,
+                        "requires_approval": state.values.get("requires_approval", False),
+                        "completed_step_ids": state.values.get("completed_step_ids", []),
+                    }
+
+                    # Check for simple query (F-01) - skip LLM, use template
+                    from app.agent.nodes.analyzer_node import is_simple_query as _is_simple_query, _format_simple_response as _format_simple_response
+                    from app.agent.nodes.analyzer_node import _extract_all_data as _extract_all_data_func
+                    all_data = _extract_all_data_func(data_context)
+
+                    if _is_simple_query(plan, all_data):
+                        logger.info("[StreamChat] Simple query via F-01, using template (no LLM)")
+                        final_answer_text = _format_simple_response(all_data, user_message)
+                        yield f"data: {_json_dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
+                    else:
+                        # F-10: Stream analysis output chunk by chunk
+                        logger.info("[StreamChat] Streaming analysis output via SSE")
+                        streamed_text = ""
+                        async for chunk in run_analyzer_stream(stream_state):
+                            streamed_text += chunk
+                            yield f"data: {_json_dumps({'type': 'streaming_text', 'data': {'content': chunk}}, ensure_ascii=False)}\n\n"
+                        final_answer_text = streamed_text
+
+                    # Send normalized data
+                    for key, value in data_context.items():
+                        if isinstance(value, dict) and "data" in value:
+                            raw_data = value.get("data")
+                            if isinstance(raw_data, dict) and "rows" in raw_data:
+                                rows = raw_data.get("rows", [])
+                                columns = list(rows[0].keys()) if rows and isinstance(rows[0], dict) else []
+                                normalized_data = {"rows": rows, "total": len(rows), "columns": columns}
+                            elif isinstance(raw_data, list):
+                                if raw_data and isinstance(raw_data[0], dict):
+                                    columns = list(raw_data[0].keys())
+                                    normalized_data = {"rows": raw_data, "total": len(raw_data), "columns": columns}
+                                else:
+                                    normalized_data = {"rows": raw_data, "total": len(raw_data), "columns": []}
+                            elif isinstance(raw_data, dict):
+                                columns = list(raw_data.keys())
+                                normalized_data = {"rows": [raw_data], "total": 1, "columns": columns}
+                            else:
+                                normalized_data = {"rows": [], "total": 0, "columns": []}
+                            yield f"data: {_json_dumps({'type': 'data', 'data': normalized_data}, ensure_ascii=False)}\n\n"
+                            break
+                else:
+                    # No data or error - emit error/empty response via analyzer fallback
+                    async for event in graph.astream(None, config, stream_mode="updates"):
+                        for node_name, node_output in event.items():
+                            if node_name == "analyzer":
+                                messages = node_output.get("messages", [])
+                                if messages:
+                                    final_answer_text = messages[-1].get("content", "")
+                                    yield f"data: {_json_dumps({'type': 'answer', 'data': {'content': final_answer_text}}, ensure_ascii=False)}\n\n"
+
+            # Check if workflow is interrupted (waiting for approval) - skip if we interrupted before analyzer ourselves
+            state = await graph.aget_state(config)
+            next_nodes = list(state.next) if state.next else []
+
+            if len(next_nodes) == 1 and next_nodes[0] == "analyzer":
+                # This is our own interrupt_before, not an approval requirement
+                pass
+            if len(next_nodes) == 1 and next_nodes[0] == "analyzer":
+                # This is our own interrupt_before, not an approval requirement
+                pass
+            elif state.next:
                 # Workflow is interrupted, send approval_required event
                 approval_event = _json_dumps({
                     "type": "approval_required",
@@ -779,7 +797,9 @@ async def stream_chat(
             )
 
         except Exception as e:
+            import traceback
             logger.error(f"Stream chat error: {str(e)}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
             error_event = _json_dumps({
                 "type": "error",
                 "data": {"message": str(e)}

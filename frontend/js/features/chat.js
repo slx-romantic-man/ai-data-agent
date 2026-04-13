@@ -121,12 +121,17 @@ window.AppModules.createChatFeature = function(deps) {
                     }
                 }
                 else if (type === 'data') {
+                    // F-10: Progressive streaming of analysis text
                     assistantMsg.data = {
                         columns: data.columns,
                         rows: data.rows,
                         total: data.total
                     };
                     assistantMsg.sql = data.sql;
+                }
+                else if (type === 'streaming_text') {
+                    // F-10: Append streaming analysis text progressively
+                    assistantMsg.content += (data.content || '');
                 }
                 else if (type === 'approval_required') {
                     assistantMsg.approval = {

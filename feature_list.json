@@ -203,7 +203,7 @@
       ],
       "acceptance_criteria": "用户可看到流式输出的分析文字，首 token 时间 < 3s",
       "estimated_time_save": "感知提速",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-11",

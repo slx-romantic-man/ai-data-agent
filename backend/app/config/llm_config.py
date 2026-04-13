@@ -141,7 +141,7 @@ class OpenAIClient(BaseLLMClient):
                         break
                     try:
                         chunk = json.loads(data)
-                        if chunk["choices"][0]["delta"].get("content"):
+                        if chunk.get("choices") and chunk["choices"][0]["delta"].get("content"):
                             yield chunk["choices"][0]["delta"]["content"]
                     except json.JSONDecodeError:
                         continue

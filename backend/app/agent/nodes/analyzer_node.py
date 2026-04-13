@@ -2,7 +2,7 @@
 Analyzer Node - 终局分析节点
 从 data_context 提取所有累积数据并生成最终洞察
 """
-from typing import Dict, Any, List
+from typing import Dict, Any, List, AsyncGenerator, Optional
 from app.agent.state import AgentState
 from app.agent.core.data_analyzer import DataAnalyzer
 from app.utils.logger import get_logger
@@ -286,3 +286,46 @@ def _extract_all_data(data_context: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     logger.info(f"[AnalyzerNode] Extracted {len(all_data)} total rows from data_context")
     return all_data
+
+
+async def run_analyzer_stream(
+    state: AgentState,
+) -> AsyncGenerator[str, None]:
+    """
+    Stream analyzer analysis chunk by chunk using analyze_stream().
+
+    Yields:
+        Text fragments of the analysis report as they arrive from LLM
+    """
+    data_context = state.get("data_context", {})
+    query = state.get("query", "")
+    plan = state.get("plan", [])
+
+    # Extract all data
+    all_data = _extract_all_data(data_context)
+
+    if not all_data:
+        yield "未查询到符合条件的数据。"
+        return
+
+    # F-08: 根据数据量设置 query_complexity
+    if len(all_data) <= 5:
+        complexity = "simple"
+    elif len(all_data) <= 20:
+        complexity = "normal"
+    else:
+        complexity = "complex"
+
+    logger.info(
+        f"[AnalyzerNodeStream] Using {complexity} complexity prompt "
+        f"for {len(all_data)} rows of data"
+    )
+
+    analyzer = DataAnalyzer()
+    async for chunk in analyzer.analyze_stream(
+        data=all_data,
+        user_query=query,
+        analysis_type="summary",
+        query_complexity=complexity,
+    ):
+        yield chunk
