@@ -267,7 +267,7 @@
       ],
       "acceptance_criteria": "前端真实页面中，思考过程与最终回答均可稳定流式展示，且历史会话保存完整正文",
       "estimated_time_save": "感知提速",
-      "passes": false
+      "passes": true
     }
   ]
 }
