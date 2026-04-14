@@ -361,7 +361,7 @@
         "确认 getBufferedAnswer 函数已不存在于 chat.js 中"
       ],
       "acceptance_criteria": "打字机使用 rAF + morphdom 局部更新，无 Vue 全量重渲染，CPU 占用正常，内容无截断",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-19",

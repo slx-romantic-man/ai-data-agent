@@ -648,3 +648,26 @@
 
   📊 状态: 17/19 功能完成 | 下一个: F-18 (chat.js rAF + morphdom 打字机)
 
+  [2026-04-15] Session #21 — 编码智能体
+  ✅ F-18: chat.js rAF + morphdom 打字机实现
+
+  📝 修改文件:
+    - frontend/js/features/chat.js
+      · 新增 throttledUpdateDOM(typingEl, assistantMsg): morphdom 局部 Diff，100ms 节流
+      · 重写 runAnswerTypewriter: rAF 循环 + setTimeout 18ms 退避驱动，每次移动一个字符后调用 throttledUpdateDOM
+      · 删除 getBufferedAnswer 纯函数
+      · 简化 enqueueAnswerText: 去掉 draft/deduplication 逻辑，直接追加 text 到 answerBuffer
+
+  🧪 E2E 验证 (Playwright headless Chrome):
+    - throttledUpdateDOM exists: ✅
+    - morphdom() called in throttledUpdateDOM: ✅
+    - requestAnimationFrame loop used: ✅
+    - 18ms setTimeout delay between chars: ✅
+    - getBufferedAnswer removed from chat.js: ✅
+    - messages.value.splice removed from runAnswerTypewriter: ✅
+    - enqueueAnswerText no longer references getBufferedAnswer: ✅
+    - AppModules.createChatFeature still works in browser: ✅
+    - Console errors: none ✅
+    - SSE streaming_text events sent correctly: ✅ (weather query returned streaming_text chunks)
+
+  📊 状态: 18/19 功能完成 | 下一个: F-19 (data_analyzer.py 禁止 Markdown 表格)

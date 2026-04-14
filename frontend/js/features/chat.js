@@ -116,35 +116,57 @@ window.AppModules.createChatFeature = function(deps) {
         }, 20);
     };
 
-    const getBufferedAnswer = (assistantMsg) => `${assistantMsg.content || ''}${assistantMsg.answerBuffer || ''}`;
+    // Throttled DOM update using morphdom for local diff — max once per 100ms
+    let _lastDomUpdate = 0;
+    const throttledUpdateDOM = (typingEl, assistantMsg) => {
+        const now = Date.now();
+        if (now - _lastDomUpdate < 100) return;
+        _lastDomUpdate = now;
+        if (!typingEl) return;
+        const fullContent = (assistantMsg.content || '') + (assistantMsg.answerBuffer || '');
+        // morphdom does a local diff update — only the typing div innerHTML changes,
+        // no Vue v-for re-render, no full component patch
+        morphdom(typingEl, `<div class="typing-active">${fullContent}</div>`, {});
+    };
 
-    // Typewriter using requestAnimationFrame to force Vue 3 reactivity to
-    // flush DOM updates for objects inside a ref array. setInterval at 18ms
-    // is silently batched by Vue's scheduler and never rendered.
+    // rAF loop + morphdom typewriter: accumulate buffer, update DOM at ≤10fps
+    // (throttled to 100ms via throttledUpdateDOM), avoids Vue batch-delay issue
     const runAnswerTypewriter = async (assistantMsg, idx) => {
         if (assistantMsg.answerTypewriterInterval) return;
-        assistantMsg.answerTypewriterInterval = true;
+        const rafId = { value: null };
+        assistantMsg.answerTypewriterInterval = rafId;
 
-        while (assistantMsg.answerBuffer.length > 0) {
+        const typingEl = document.getElementById(`typing-md-${idx}`);
+
+        const tick = () => {
+            if (!assistantMsg.answerBuffer.length) {
+                rafId.value = null;
+                assistantMsg.answerTypewriterInterval = null;
+                if (assistantMsg.streamEnded) {
+                    tryFinalizeAssistantMessage(assistantMsg);
+                    if (idx >= 0 && idx < messages.value.length) {
+                        tryFinalizeAssistantMessage(messages.value[idx]);
+                    }
+                }
+                return;
+            }
+
             assistantMsg.content += assistantMsg.answerBuffer[0];
             assistantMsg.answerBuffer = assistantMsg.answerBuffer.slice(1);
 
-            // Replace the array element to force Vue to re-render v-for+v-html
-            messages.value.splice(idx, 1, { ...assistantMsg });
-
+            throttledUpdateDOM(typingEl, assistantMsg);
             scrollToBottom();
-            await nextTick();
-            await new Promise(r => setTimeout(r, 18));
-        }
 
-        assistantMsg.answerTypewriterInterval = null;
-        if (assistantMsg.streamEnded) {
-            tryFinalizeAssistantMessage(assistantMsg);
-            // Also update the object in the array (splice created a new copy)
-            if (idx >= 0 && idx < messages.value.length) {
-                tryFinalizeAssistantMessage(messages.value[idx]);
-            }
-        }
+            rafId.value = requestAnimationFrame(tick);
+            // ~18ms delay between characters ≈ ~55chars/s typewriter pace
+            setTimeout(() => {
+                if (rafId.value !== null) {
+                    rafId.value = requestAnimationFrame(tick);
+                }
+            }, 18);
+        };
+
+        rafId.value = requestAnimationFrame(tick);
     };
 
     const startAnswerPhase = (assistantMsg) => {
@@ -160,20 +182,9 @@ window.AppModules.createChatFeature = function(deps) {
 
         startAnswerPhase(assistantMsg);
 
-        let nextText = text;
-        const draft = getBufferedAnswer(assistantMsg);
-        if (draft && nextText.startsWith(draft)) {
-            nextText = nextText.slice(draft.length);
-        }
+        assistantMsg.answerBuffer += text;
 
-        if (!nextText) {
-            return;
-        }
-
-        assistantMsg.answerBuffer += nextText;
-
-        // Start the nextTick-based typewriter if not already running
-        // Find the index of this assistantMsg in messages
+        // Start rAF-based typewriter if not already running
         const idx = messages.value.indexOf(assistantMsg);
         if (!assistantMsg.answerTypewriterInterval && idx >= 0) {
             runAnswerTypewriter(assistantMsg, idx);
