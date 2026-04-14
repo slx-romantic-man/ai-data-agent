@@ -627,3 +627,24 @@
 
   📊 状态: 16/19 功能完成 | 下一个: F-17 (app-template.js 双面人改造)
 
+  [2026-04-15] Session #20 — 编码智能体
+  ✅ F-17: app-template.js 双面人改造实现
+
+  📝 修改文件:
+    - frontend/js/app-template.js
+      · Line 206: scroll 容器 div 增加 id="chatContainer"（与 ref 共存）
+      · Line 235: assistant message 外层 div 增加 :class="{'hide-md-table': msg.data && msg.data.rows && msg.data.rows.length > 0}" 绑定
+      · Lines 325-331: 正文区域改造为 dual-face 结构:
+        - v-show="msg.isAnswerTyping" :id="'typing-md-' + idx" class="typing-active" v-html="msg.content"（打字分支，morphdom Diff 目标）
+        - v-show="!msg.isAnswerTyping && msg.content" class="markdown-body" v-html="renderSafeMarkdown(msg.content)"（静态分支，打字完成后接管）
+
+  🧪 E2E 验证 (Playwright headless Chrome):
+    - #chatContainer 存在: ✅ PASS
+    - .hide-md-table class 绑定生效: ✅ PASS
+    - [id^="typing-md-"] div 存在: ✅ PASS
+    - .markdown-body div 存在: ✅ PASS
+    - Console errors: 0 ✅
+    - 页面正常加载，Vue 渲染正常
+
+  📊 状态: 17/19 功能完成 | 下一个: F-18 (chat.js rAF + morphdom 打字机)
+

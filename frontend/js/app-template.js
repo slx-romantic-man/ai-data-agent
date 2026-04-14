@@ -203,7 +203,7 @@ window.AppTemplate = `
                         </div>
 
                         <!-- Chat Messages -->
-                        <div ref="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin bg-gray-50" style="min-height: 0;">
+                        <div id="chatContainer" ref="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin bg-gray-50" style="min-height: 0;">
                             <!-- Welcome Message -->
                             <div v-if="messages.length === 0" class="max-w-2xl mx-auto py-24 text-center">
                                 <div class="inline-flex items-center justify-center p-4 bg-zinc-100 rounded-2xl mb-8 shadow-inner">
@@ -232,7 +232,7 @@ window.AppTemplate = `
 
                                 <!-- Assistant Message -->
                                 <div v-else class="flex justify-start mb-6">
-                                    <div class="max-w-[85%] bg-white rounded-2xl px-6 py-4 shadow-card border border-zinc-100">
+                                    <div class="max-w-[85%] bg-white rounded-2xl px-6 py-4 shadow-card border border-zinc-100" :class="{'hide-md-table': msg.data && msg.data.rows && msg.data.rows.length > 0}">
                                         <!-- Thinking Process (Collapsible) -->
                                         <div v-if="msg.thinking || (msg.reasoningLog && msg.reasoningLog.steps && msg.reasoningLog.steps.length > 0)" class="mb-4 border border-zinc-100 rounded-lg overflow-hidden bg-zinc-50/80 backdrop-blur-sm">
                                             <button @click="msg.showThinking = !msg.showThinking"
@@ -323,7 +323,10 @@ window.AppTemplate = `
                                         </div>
 
                                         <div class="text-gray-800 markdown-content">
-                                            <div v-html="renderMarkdown(msg.content)"></div>
+                                            <!-- Typing face: morphdom target (F-17) -->
+                                            <div v-show="msg.isAnswerTyping" :id="'typing-md-' + idx" class="typing-active" v-html="msg.content"></div>
+                                            <!-- Static face: after typing done (F-17) -->
+                                            <div v-show="!msg.isAnswerTyping && msg.content" class="markdown-body" v-html="renderSafeMarkdown(msg.content)"></div>
                                             <span v-if="msg.isAnswerTyping" class="typewriter-cursor mt-1"></span>
                                         </div>
 
@@ -1695,7 +1698,7 @@ window.AppTemplate = `
                                             </div>
                                             <div v-else class="flex justify-start mb-3">
                                                 <div class="max-w-3xl bg-gray-100 rounded-2xl rounded-tl-sm px-4 py-3">
-                                                    <div class="text-gray-800 markdown-content" v-html="renderMarkdown(msg.content)"></div>
+                                                    <div class="text-gray-800 markdown-content" v-html="renderMarkdown(msg.content)" :data-vkey="msg._v || 0"></div>
                                                 </div>
                                             </div>
                                         </div>

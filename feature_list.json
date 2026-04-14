@@ -341,7 +341,7 @@
         "检查外层 div 有 :class=\"{'hide-md-table': msg.data && msg.data.rows && msg.data.rows.length > 0}\" 绑定"
       ],
       "acceptance_criteria": "双面人结构存在，v-show 切换正常，id 属性正确",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-18",
