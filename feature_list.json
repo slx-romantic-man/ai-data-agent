@@ -302,7 +302,7 @@
         "打字期间检查 typing-active 容器内的表格是否正常显示（不被隐藏规则影响）"
       ],
       "acceptance_criteria": "CSS 规则存在且生效，结构化数据场景下无双重表格",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-16",

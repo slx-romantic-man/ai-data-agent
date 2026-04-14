@@ -145,6 +145,13 @@
     max-height: 120px;
 }
 
+/* F-15: 隐藏 Markdown 原生表格（双重表格治理）
+   当消息 div 带有 .hide-md-table 时，隐藏 .markdown-body 内的原生表格，
+   但打字中容器 .typing-active 内的表格不受影响（打字机需实时显示） */
+.hide-md-table .markdown-body:not(.typing-active) table {
+    display: none;
+}
+
 /* Sample Questions */
 .sample-question-btn {
     background: #f4f4f5;

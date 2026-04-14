@@ -592,3 +592,21 @@
   - LLM_TEMPERATURE: 0.1
 
 ================================================================================
+
+  [2026-04-14] Session #18 — 编码智能体
+  ✅ F-15: .hide-md-table CSS 规则实现
+
+  📝 修改文件:
+    - frontend/css/chat.css
+      · 新增 .hide-md-table .markdown-body:not(.typing-active) table { display: none; }
+      · 当消息 div 带有 .hide-md-table 时，隐藏 .markdown-body 内的原生 Markdown 表格
+      · 豁免 .typing-active 容器（打字机期间需实时显示）
+
+  🧪 E2E 验证 (Playwright headless browser):
+    - CSS 文件加载: ✅
+    - .hide-md-table .markdown-body:not(.typing-active) table 规则存在: ✅
+    - display: none 属性存在: ✅
+    - 前端页面打开无 JS console 错误: ✅
+
+  📊 状态: 15/19 功能完成 | 下一个: F-16 (renderSafeMarkdown 全局函数)
+
