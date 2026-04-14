@@ -556,6 +556,23 @@
   ✅ chmod +x init.sh: 已执行
   📊 状态: 13/19 功能完成 | 下一个: F-14 (priority=1, passes=false)
 
+  [2026-04-14] Session #17 — 编码智能体
+  ✅ F-14: frontend/index.html 引入 DOMPurify@3.0.6 + morphdom-umd@2.7.1 CDN
+
+  📝 修改文件:
+    - frontend/index.html
+      · 在 marked.min.js 之后、js/*.js 之前插入两个 CDN 脚本
+      · DOMPurify: https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js
+      · morphdom-umd: https://cdn.jsdelivr.net/npm/morphdom@2.7.1/dist/morphdom-umd.min.js
+      · 两者均为 UMD 格式，加载后暴露 window.DOMPurify 和 window.morphdom
+
+  🧪 E2E 验证:
+    - DOMPurify CDN: ✅ HTTP 200, 11984 bytes, UMD module
+    - morphdom-umd CDN: ✅ HTTP 200, ~12KB, UMD module
+    - JS 执行顺序: DOMPurify + morphdom 在所有 js/*.js 之前加载，确保 app-setup.js / chat.js 可用
+
+  📊 状态: 14/19 功能完成 | 下一个: F-15 (.hide-md-table CSS 规则)
+
 ================================================================================
   八、环境信息速查
 ================================================================================

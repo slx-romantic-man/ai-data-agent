@@ -284,7 +284,7 @@
         "在 Network 面板确认 DOMPurify 和 morphdom-umd 两个 CDN 资源返回 200"
       ],
       "acceptance_criteria": "window.DOMPurify 和 window.morphdom 在 app-setup.js 和 chat.js 执行时已就绪",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-15",
