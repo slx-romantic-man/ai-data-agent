@@ -4,7 +4,7 @@
 ================================================================================
 
 📅 创建日期: 2026-04-12
-📝 最后更新: 2026-04-12 (初始化智能体 Session #1)
+  📝 最后更新: 2026-04-14 (初始化智能体 Session #16 — 流式渲染性能重构)
 🏷️ 项目目标: 将查询耗时从 120s+ 降至 30s 以内
 
 ================================================================================
@@ -55,7 +55,7 @@
   三、项目目录结构 (关键路径)
 ================================================================================
 
-  ai-data-agent - v4.3/
+  ai-data-agent - v5/
   ├── init.sh                    ← 一键启动脚本
   ├── feature_list.json          ← 功能校验清单 (唯一真相来源)
   ├── claude-progress.txt        ← 本交接日志
@@ -498,7 +498,63 @@
       · sessions.json 保存完整回答内容（72 字符），无 100 字符截断问题
       · stream_chat 端点正确保存 assistant_msg.content
 
-  📊 状态: 13/13 功能完成 | 🎉 全部完成
+  📊 状态: 13/19 功能完成 | 下一个: F-14 (流式渲染性能重构)
+
+================================================================================
+  九、本次 PR 变更清单 (流式渲染性能重构 — Session #16)
+================================================================================
+
+  变更范围: 6 个文件（5 前端 + 1 后端 Prompt），总改动 ≤ 100 行代码
+
+  前端文件:
+    frontend/index.html           → +2 行 CDN script (DOMPurify@3.0.6 + morphdom-umd@2.7.1)
+    frontend/css/chat.css        → +2 行 .hide-md-table CSS 规则
+    frontend/js/app-setup.js     → +14 行 全局 DOMPurify 配置 + renderSafeMarkdown
+                                   +1 行  return 暴露 renderSafeMarkdown
+    frontend/js/app-template.js  → ~1 行  滚动容器加 id="chatContainer"
+                                   ~8 行  消息渲染区 v-show 双面人改造
+    frontend/js/features/chat.js → +12 行 throttledUpdateDOM (morphdom 局部 Diff)
+                                   ~30 行 替换 runAnswerTypewriter (rAF + morphdom)
+                                   ~2 行  修正 enqueueAnswerText (去掉 getBufferedAnswer)
+                                   -7 行  删除 getBufferedAnswer 函数
+
+  后端文件:
+    backend/app/agent/core/data_analyzer.py → +5 行 x2 两处 system prompt 注入
+                                                「禁止 Markdown 表格」约束
+
+  验证清单 (F-14 ~ F-19):
+    F-14: CDN 加载正确，无 JS 报错
+    F-15: .hide-md-table CSS 规则存在且生效
+    F-16: renderSafeMarkdown 全局可用，XSS 防护生效
+    F-17: v-show 双面人结构正确，id 属性到位
+    F-18: rAF + morphdom 打字机正常，内容无截断
+    F-19: LLM 文本中无 Markdown 表格，无双重表格
+
+================================================================================
+  十、技术栈补充规范（本次 PR 新增）
+================================================================================
+
+  [前端新增依赖 — CDN 引入，禁止擅自改为 npm/pip 安装]
+  - DOMPurify@3.0.6   (XSS 防护，通过 window.DOMPurify 访问)
+  - morphdom@2.7.1    (DOM Diff，必须用 morphdom-umd.min.js 暴露 window.morphdom)
+  - marked@latest     (Markdown 解析，已有)
+
+  ⚠️ 新增依赖必须通过 CDN 引入，不允许改用 npm 包管理。
+     原因：纯静态 HTML 前端无构建步骤，CDN 是唯一合规引入方式。
+
+================================================================================
+  [2026-04-14] Session #16 — 初始化智能体
+  ✅ init.sh: 已存在，质量合格，无需修改 ✅
+  ✅ feature_list.json: 追加 F-14 ~ F-19 共 6 个新功能卡片
+     - F-14: CDN 引入 DOMPurify + morphdom-umd
+     - F-15: .hide-md-table CSS 规则
+     - F-16: renderSafeMarkdown 全局函数
+     - F-17: app-template.js 双面人改造
+     - F-18: chat.js rAF + morphdom 打字机
+     - F-19: data_analyzer.py Prompt 禁止 Markdown 表格
+  ✅ claude-progress.txt: 更新进度状态，新增第九节（变更清单）和第十节（技术栈补充）
+  ✅ chmod +x init.sh: 已执行
+  📊 状态: 13/19 功能完成 | 下一个: F-14 (priority=1, passes=false)
 
 ================================================================================
   八、环境信息速查

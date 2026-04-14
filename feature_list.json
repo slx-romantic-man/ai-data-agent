@@ -1,8 +1,8 @@
 {
   "project_name": "AI Data Agent v4.3 — 性能优化",
   "baseline_commit": "PENDING_INITIAL_COMMIT",
-  "last_updated": "2026-04-13",
-  "total_features": 13,
+  "last_updated": "2026-04-14",
+  "total_features": 19,
   "project_features": [
     {
       "id": "F-01",
@@ -268,6 +268,120 @@
       "acceptance_criteria": "前端真实页面中，思考过程与最终回答均可稳定流式展示，且历史会话保存完整正文",
       "estimated_time_save": "感知提速",
       "passes": true
+    },
+    {
+      "id": "F-14",
+      "priority": 1,
+      "category": "frontend-performance",
+      "description": "frontend/index.html 引入 DOMPurify + morphdom-umd CDN（位于 marked.min.js 之后、js/*.js 之前），支持 XSS 防护和局部 DOM Diff",
+      "files_to_modify": [
+        "frontend/index.html"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "用浏览器打开 frontend/index.html",
+        "打开 DevTools Console，确认无 'DOMPurify is not defined' 或 'morphdom is not defined' 报错",
+        "在 Network 面板确认 DOMPurify 和 morphdom-umd 两个 CDN 资源返回 200"
+      ],
+      "acceptance_criteria": "window.DOMPurify 和 window.morphdom 在 app-setup.js 和 chat.js 执行时已就绪",
+      "passes": false
+    },
+    {
+      "id": "F-15",
+      "priority": 1,
+      "category": "frontend-performance",
+      "description": "frontend/css/chat.css 新增 .hide-md-table 规则：当 msg.data.rows 存在时隐藏 Markdown 原生表格，但豁免 .typing-active 容器",
+      "files_to_modify": [
+        "frontend/css/chat.css"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "用浏览器打开 frontend/index.html 并完成登录",
+        "发一条会触发数据表格的查询（如股票分析）",
+        "在 DevTools Elements 面板检查消息 div，确认带有 .hide-md-table class 时原生 markdown 表格（.markdown-body:not(.typing-active) table）被 CSS 规则 display: none 隐藏",
+        "打字期间检查 typing-active 容器内的表格是否正常显示（不被隐藏规则影响）"
+      ],
+      "acceptance_criteria": "CSS 规则存在且生效，结构化数据场景下无双重表格",
+      "passes": false
+    },
+    {
+      "id": "F-16",
+      "priority": 1,
+      "category": "frontend-performance",
+      "description": "frontend/js/app-setup.js 新增全局 DOMPurify 配置（__DOMPURIFY_CONFIG__ 白名单）和安全渲染函数 renderSafeMarkdown，setup() return 中暴露该函数",
+      "files_to_modify": [
+        "frontend/js/app-setup.js"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "用浏览器打开 frontend/index.html",
+        "在 DevTools Console 执行 window.renderSafeMarkdown('<b>test</b>')，确认返回带加粗的 HTML 字符串",
+        "执行 window.renderSafeMarkdown('<script>alert(1)</script>')，确认 <script> 标签被净化移除",
+        "执行 window.__DOMPURIFY_CONFIG__，确认 ALLOWED_TAGS 包含 table、thead、tbody、tr、th、td",
+        "在前端发一条消息，检查 v-html 渲染的内容来自 renderSafeMarkdown（DevTools Elements 面板确认）"
+      ],
+      "acceptance_criteria": "renderSafeMarkdown 全局可用，XSS payload 被净化，表格相关标签在白名单中",
+      "passes": false
+    },
+    {
+      "id": "F-17",
+      "priority": 1,
+      "category": "frontend-performance",
+      "description": "frontend/js/app-template.js 滚动容器加 id='chatContainer'，消息渲染区改造为 v-show 双面人：打字中用 morphdom 局部更新 div#typing-md-{idx}，打字完成切换 v-html renderSafeMarkdown",
+      "files_to_modify": [
+        "frontend/js/app-template.js"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "用浏览器打开 frontend/index.html 并完成登录",
+        "发一条复杂查询（触发 analyzer streaming_text）",
+        "在 DevTools Elements 面板检查消息区域：打字期间存在 v-show=false 的 div（static 分支）和显示中的 typing-md-{idx} div（打字分支）",
+        "打字完成后确认 typing-md-{idx} 消失，static 分支 v-html 接管",
+        "滚动容器 div 确认有 id='chatContainer'",
+        "检查外层 div 有 :class=\"{'hide-md-table': msg.data && msg.data.rows && msg.data.rows.length > 0}\" 绑定"
+      ],
+      "acceptance_criteria": "双面人结构存在，v-show 切换正常，id 属性正确",
+      "passes": false
+    },
+    {
+      "id": "F-18",
+      "priority": 1,
+      "category": "frontend-performance",
+      "description": "frontend/js/features/chat.js 新增 throttledUpdateDOM 函数（复用 Utils.throttle，100ms）调用 morphdom 局部 Diff；替换 runAnswerTypewriter 为 rAF 循环 + morphdom 局部更新；修正 enqueueAnswerText 去掉 getBufferedAnswer 引用；删除 getBufferedAnswer 函数",
+      "files_to_modify": [
+        "frontend/js/features/chat.js"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "用浏览器打开 frontend/index.html 并完成登录",
+        "发一条复杂查询，观察文字是否逐字出现（打字机效果）",
+        "在 DevTools Performance 面板录制打字过程，确认不是满帧 rAF 空转（应有 setTimeout 退避）",
+        "打字结束后内容完整，无截断丢失字符",
+        "长文本输出时页面自动滚到底部（确认 scrollTop = scrollHeight）",
+        "确认 getBufferedAnswer 函数已不存在于 chat.js 中"
+      ],
+      "acceptance_criteria": "打字机使用 rAF + morphdom 局部更新，无 Vue 全量重渲染，CPU 占用正常，内容无截断",
+      "passes": false
+    },
+    {
+      "id": "F-19",
+      "priority": 1,
+      "category": "backend-prompt",
+      "description": "backend/app/agent/core/data_analyzer.py 两处 system prompt 均增加「禁止 Markdown 表格」约束：从源头阻止 LLM 在文本中输出 markdown 表格语法，彻底消除双重表格问题",
+      "files_to_modify": [
+        "backend/app/agent/core/data_analyzer.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "用浏览器打开 frontend/index.html 并完成登录",
+        "发一条股票分析查询，检查返回的 msg.content 中不包含 | col1 | col2 | 等 Markdown 表格语法",
+        "检查 msg.data.rows 数组是否有完整结构化数据",
+        "发一条营收对比查询，同样验证无 Markdown 表格",
+        "在 backend logs 中搜索 '|' 字符出现次数，确认远少于优化前",
+        "确认前端展示的是 msg.data 表格（业务表格）而非 Markdown 表格"
+      ],
+      "acceptance_criteria": "LLM 输出文本中无 Markdown 表格语法，前端只渲染 msg.data 业务表格，无双重表格",
+      "passes": false
     }
   ]
 }
