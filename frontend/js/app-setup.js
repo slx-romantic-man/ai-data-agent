@@ -232,7 +232,35 @@ window.AppSetup = function() {
             return roles[role] || role;
         };
 
-        // Markdown renderer
+        // DOMPurify configuration — XSS防护白名单（F-16）
+        window.__DOMPURIFY_CONFIG__ = {
+            ALLOWED_TAGS: [
+                'h1','h2','h3','h4','h5','h6',
+                'p','br','hr',
+                'ul','ol','li',
+                'strong','em','b','i','u','s','code','pre',
+                'blockquote',
+                'a',
+                'table','thead','tbody','tr','th','td',
+                'div','span',
+                'img'
+            ],
+            ALLOWED_ATTR: ['href','src','alt','title','class','id','data-vkey']
+        };
+
+        // Safe markdown renderer — uses DOMPurify to sanitize marked output（F-16）
+        const renderSafeMarkdown = (text) => {
+            if (!text) return '';
+            try {
+                const html = marked.parse(text);
+                return DOMPurify.sanitize(html, window.__DOMPURIFY_CONFIG__);
+            } catch (e) {
+                return text;
+            }
+        };
+        window.renderSafeMarkdown = renderSafeMarkdown;  // expose globally for console/testing（F-16）
+
+        // Markdown renderer (legacy alias for backward compatibility)
         const renderMarkdown = (text) => {
             if (!text) return '';
             try {
@@ -718,7 +746,7 @@ window.AppSetup = function() {
             selectedApi, apiToDelete, apiForm, newCategoryForm, categorySelectionByApi, availableCategories,
             getRoleName, handleLogin, quickLogin, handleLogout,
             sendMessage, askQuestion, startNewConversation, showTableData, exportToExcel, handleApproval,
-            renderMarkdown, hasExportableData, hasExportableDataRaw,
+            renderMarkdown, renderSafeMarkdown, hasExportableData, hasExportableDataRaw,
             loadApis, toggleDeleteMode, viewApiDetail, editApi, closeApiModal, saveApi, confirmDeleteApi, deleteApi,
             createCategoryFromApisView, moveApiToUncategorized, moveApiToCategory,
             // 新增的端点和参数管理函数

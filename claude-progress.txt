@@ -610,3 +610,20 @@
 
   📊 状态: 15/19 功能完成 | 下一个: F-16 (renderSafeMarkdown 全局函数)
 
+  [2026-04-15] Session #19 — 编码智能体
+  ✅ F-16: renderSafeMarkdown 全局函数实现
+
+  📝 修改文件:
+    - frontend/js/app-setup.js
+      · 新增 window.__DOMPURIFY_CONFIG__: ALLOWED_TAGS 包含 table/thead/tbody/tr/th/td 等
+      · 新增 window.renderSafeMarkdown(): DOMPurify.sanitize(marked.parse(text)) 管道
+      · window.renderSafeMarkdown = renderSafeMarkdown 显式暴露到 window 对象
+
+  🧪 E2E 验证 (Playwright headless Chrome):
+    - window.__DOMPURIFY_CONFIG__ 存在且 ALLOWED_TAGS 包含 table 相关标签: ✅
+    - window.renderSafeMarkdown('<b>test</b>') → <p><b>test</b></p>: ✅
+    - window.renderSafeMarkdown('<script>alert(1)</script>') → '' (script 被净化): ✅
+    - 无 console errors: ✅
+
+  📊 状态: 16/19 功能完成 | 下一个: F-17 (app-template.js 双面人改造)
+

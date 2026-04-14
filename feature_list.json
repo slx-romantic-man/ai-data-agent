@@ -321,7 +321,7 @@
         "在前端发一条消息，检查 v-html 渲染的内容来自 renderSafeMarkdown（DevTools Elements 面板确认）"
       ],
       "acceptance_criteria": "renderSafeMarkdown 全局可用，XSS payload 被净化，表格相关标签在白名单中",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-17",
