@@ -70,11 +70,17 @@ async def get_current_user(
             if user_context:
                 return user_context
 
-        # Log if user not found
-        if user_id:
-            logger.warning(f"User not found in UserService: {user_id}")
+            # User provided credentials but not found — DO NOT fall back to admin in DEBUG
+            # This prevents a malicious user from forging a JWT with a non-existent user_id
+            # to gain admin privileges
+            logger.warning(f"User not found in UserService: {user_id}, rejecting authentication")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
-    # Demo mode: return default user
+    # Demo mode: return default user ONLY when no credentials provided at all
     if settings.DEBUG:
         user_service = get_user_service()
         user_context = user_service.get_user_context("admin")
