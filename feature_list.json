@@ -405,7 +405,7 @@
     },
     {
       "id": "F-21",
-      "priority": 2,
+      "priority": 5,
       "category": "reliability",
       "description": "前端 SSE 客户端增加自动重连机制：axios fetch SSE 模式下，断连时自动以 exponential backoff 重试请求，已接收事件防重处理保证不出现重复文字",
       "files_to_modify": [
@@ -426,7 +426,7 @@
     },
     {
       "id": "F-22",
-      "priority": 1,
+      "priority": 2,
       "category": "ux",
       "description": "动态智能推荐问题：点击「新对话」、页面从后台恢复、登录成功时实时获取用户当前 API 权限对应的推荐问题，禁止向未授权用户展示推荐内容",
       "files_to_modify": [
@@ -448,7 +448,7 @@
     },
     {
       "id": "F-23",
-      "priority": 1,
+      "priority": 3,
       "category": "ux",
       "description": "历史记录增强：1）点历史进入对话后再返回，列表保持滚动位置并高亮选中项；2）所有历史对话详情展示 Agent 思考过程（折叠面板）；3）带数据的消息支持导出 Excel",
       "files_to_modify": [
@@ -470,7 +470,7 @@
     },
     {
       "id": "F-24",
-      "priority": 1,
+      "priority": 4,
       "category": "ui-fix",
       "description": "管理后台 UI 修复：权限概览页面的「员工筛选」输入框和筛选按钮从黑底黑字改为白底黑字，确保可读性",
       "files_to_modify": [
