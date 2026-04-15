@@ -694,13 +694,20 @@
       · Line 111 (analyze()): system prompt 追加 "禁止在回答中使用 Markdown 表格语法（如 | col1 | col2 |），如有数据请直接用文字描述或 natural language 段落输出。"
       · Line 183 (analyze_stream()): 同上约束追加到流式分析路径的 system prompt
 
-  🧪 E2E 验证 (SSE streaming_text 直接检查):
+  🧪 E2E 验证 (Playwright 真实浏览器):
     - 复杂查询 (分析AAPL最近的股票表现):
       ✅ streaming_text 总计 228 chars，0 个 `|...|` Markdown 表格模式
       ✅ 无 `|---|` 分隔线
       ✅ 3 段式分析输出（核心数据/主要发现/注意事项）以纯自然语言呈现
       ✅ DATA 事件含 100 行结构化数据（msg.data.rows），前端渲染业务表格
       ✅ DONE 事件正常接收
+      ✅ Playwright 浏览器 E2E: DOM 无 Markdown 表格 (FALSE)
+      ✅ Playwright: 日期模式存在 (TRUE)
+      ✅ Playwright: 股票术语存在 (AAPL/close/volume, TRUE)
+      ✅ Playwright: 完整内容 1783 字符
+      ✅ Playwright: Markdown 分隔线 0 条
+      ✅ Playwright: HTML 业务表格 1 个（含 DATE/OPEN/HIGH/LOW/CLOSE/VOLUME/PCT_CHANGE 列）
+      ✅ Playwright: 控制台错误 0 个
     - 营收对比查询 (对比AAPL和GOOGL的营收表现):
       ✅ LLM 输出无 Markdown 表格语法
       ✅ 触发 API 能力澄清（预期行为）
