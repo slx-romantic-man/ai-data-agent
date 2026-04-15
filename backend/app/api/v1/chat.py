@@ -346,11 +346,14 @@ async def get_history(
         for sid, s in _sessions.items()
     ]
 
-    # Sort by updated_at
-    user_sessions.sort(
-        key=lambda x: x.get("updated_at", x.get("created_at")),
-        reverse=True,
-    )
+    # Sort by updated_at (handle mixed datetime objects and ISO strings)
+    def _sort_key(x):
+        val = x.get("updated_at") or x.get("created_at")
+        if isinstance(val, str):
+            return datetime.fromisoformat(val.replace("Z", "+00:00"))
+        return val or datetime.min
+
+    user_sessions.sort(key=_sort_key, reverse=True)
 
     return {
         "sessions": user_sessions[:limit],
