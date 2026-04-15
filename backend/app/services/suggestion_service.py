@@ -199,6 +199,10 @@ class SuggestionService:
                     seen.add(s)
                     unique_suggestions.append(s)
 
+            # If no suggestions (no APIs + no conversation history), return fallback
+            if not unique_suggestions:
+                return self._get_fallback_suggestions(max_suggestions)
+
             return unique_suggestions[:max_suggestions]
 
         except Exception as e:
