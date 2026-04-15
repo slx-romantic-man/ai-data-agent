@@ -469,7 +469,7 @@
       ],
       "acceptance_criteria": "历史列表返回后保持位置和选中状态，思考过程以折叠面板展示，可导出带数据的消息为 Excel",
       "estimated_time_save": "N/A（体验优化）",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-24",
