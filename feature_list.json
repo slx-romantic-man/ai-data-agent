@@ -381,7 +381,7 @@
         "确认前端展示的是 msg.data 表格（业务表格）而非 Markdown 表格"
       ],
       "acceptance_criteria": "LLM 输出文本中无 Markdown 表格语法，前端只渲染 msg.data 业务表格，无双重表格",
-      "passes": false
+      "passes": true
     }
   ]
 }

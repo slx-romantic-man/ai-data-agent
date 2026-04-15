@@ -108,7 +108,7 @@ class DataAnalyzer:
 
         # Get LLM analysis
         response = await self.llm.chat([
-            {"role": "system", "content": "你是一个专业的数据分析师，擅长从数据中发现洞察和趋势。"},
+            {"role": "system", "content": "你是一个专业的数据分析师，擅长从数据中发现洞察和趋势。禁止在回答中使用 Markdown 表格语法（如 | col1 | col2 |），如有数据请直接用文字描述或 natural language 段落输出。"},
             {"role": "user", "content": prompt}
         ], max_tokens=max_tokens)
 
@@ -180,7 +180,7 @@ class DataAnalyzer:
         max_tokens = complexity_max_tokens.get(query_complexity, 1024)
 
         async for chunk in self.llm.chat_stream([
-            {"role": "system", "content": "你是一个专业的数据分析师，擅长从数据中发现洞察和趋势。"},
+            {"role": "system", "content": "你是一个专业的数据分析师，擅长从数据中发现洞察和趋势。禁止在回答中使用 Markdown 表格语法（如 | col1 | col2 |），如有数据请直接用文字描述或 natural language 段落输出。"},
             {"role": "user", "content": prompt}
         ], max_tokens=max_tokens):
             yield chunk
