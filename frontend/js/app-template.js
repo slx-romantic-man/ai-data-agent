@@ -324,7 +324,7 @@ window.AppTemplate = `
 
                                         <div class="text-gray-800 markdown-content">
                                             <!-- Typing face: morphdom target (F-17) -->
-                                            <div v-show="msg.isAnswerTyping" :id="'typing-md-' + idx" class="typing-active" v-html="msg.content"></div>
+                                            <div v-show="msg.isAnswerTyping" class="typing-active typing-target" v-html="msg.content"></div>
                                             <!-- Static face: after typing done (F-17) -->
                                             <div v-show="!msg.isAnswerTyping && msg.content" class="markdown-body" v-html="renderSafeMarkdown(msg.content)"></div>
                                             <span v-if="msg.isAnswerTyping" class="typewriter-cursor mt-1"></span>

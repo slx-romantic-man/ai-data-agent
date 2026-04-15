@@ -136,7 +136,10 @@ window.AppModules.createChatFeature = function(deps) {
         const rafId = { value: null };
         assistantMsg.answerTypewriterInterval = rafId;
 
-        const typingEl = document.getElementById(`typing-md-${idx}`);
+        // Find the typing div within this message's chat-bubble using index
+        const chatBubbles = document.querySelectorAll('#chatContainer .chat-bubble');
+        const bubble = chatBubbles[idx];
+        const typingEl = bubble?.querySelector('.typing-target');
 
         const tick = () => {
             if (!assistantMsg.answerBuffer.length) {

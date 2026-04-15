@@ -670,4 +670,18 @@
     - Console errors: none ✅
     - SSE streaming_text events sent correctly: ✅ (weather query returned streaming_text chunks)
 
+  🔧 额外修复 (F-17 联动):
+    - app-template.js: typing div 增加 `typing-target` class，原 `:id="'typing-md-' + idx"` Vue 动态 id 绑定在 Vue 3 + v-html 组合下不生效（渲染为 id=""），改用 `.typing-target` class selector 供 morphdom 定位
+    - chat.js: typingEl 查找从 getElementById 改为 querySelector('.typing-target')
+
+  🧪 完整 E2E 验证 (Playwright headed browser, 30s 等待 SSE 完成):
+    1. typing-target 完成后隐藏: ✅
+    2. markdown-body 有完整内容 (705 chars): ✅
+    3. Markdown bold 正确渲染为 <strong>: ✅
+    4. 天气数据（北京）存在: ✅
+    5. 天气数据（中国）存在: ✅
+    6. 天气数据（温度）存在: ✅
+    7. 无控制台错误: ✅
+    → F-18 Overall: PASS ✅
+
   📊 状态: 18/19 功能完成 | 下一个: F-19 (data_analyzer.py 禁止 Markdown 表格)
