@@ -2,7 +2,7 @@
   "project_name": "AI Data Agent v4.3 — 性能优化",
   "baseline_commit": "PENDING_INITIAL_COMMIT",
   "last_updated": "2026-04-15",
-  "total_features": 21,
+  "total_features": 24,
   "project_features": [
     {
       "id": "F-01",
@@ -422,6 +422,68 @@
       ],
       "acceptance_criteria": "断网后自动重连，内容完整无重复，无 JS 报错，正常情况无副作用",
       "estimated_time_save": "N/A（可靠性加固）",
+      "passes": false
+    },
+    {
+      "id": "F-22",
+      "priority": 1,
+      "category": "ux",
+      "description": "动态智能推荐问题：点击「新对话」、页面从后台恢复、登录成功时实时获取用户当前 API 权限对应的推荐问题，禁止向未授权用户展示推荐内容",
+      "files_to_modify": [
+        "backend/app/api/v1/chat.py",
+        "frontend/js/features/chat.js",
+        "frontend/js/app-template.js"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh，用管理员账号登录",
+        "进入「智能对话」页面，点击「新对话」，确认有推荐问题显示",
+        "用普通员工账号（无 API 权限）登录，进入「智能对话」，确认显示「暂无可用分析能力」而非具体问题",
+        "管理员给某员工授予了一个新 API，用该员工账号登录，点击「新对话」，确认推荐立即包含新 API 对应的问题",
+        "管理员在「权限概览」给自己新增了一个 API，直接点击「新对话」（不刷新页面），确认推荐立即包含新 API",
+        "对比两个不同权限账号的推荐问题，确认内容完全不同（权限隔离）"
+      ],
+      "acceptance_criteria": "推荐问题实时反映用户当前 API 权限，未授权用户看不到任何具体 API 问题，管理员和员工推荐内容不同",
+      "estimated_time_save": "N/A（体验优化）",
+      "passes": false
+    },
+    {
+      "id": "F-23",
+      "priority": 1,
+      "category": "ux",
+      "description": "历史记录增强：1）点历史进入对话后再返回，列表保持滚动位置并高亮选中项；2）所有历史对话详情展示 Agent 思考过程（折叠面板）；3）带数据的消息支持导出 Excel",
+      "files_to_modify": [
+        "frontend/js/features/history.js",
+        "frontend/js/app-template.js",
+        "frontend/css/chat.css"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh，用管理员账号登录",
+        "进入「历史记录」，滚动到中间位置，点击某条记录",
+        "在「智能对话」页面查看该历史对话，确认有「Agent 思考过程」折叠面板",
+        "点击返回「历史记录」，确认列表保持在之前的滚动位置，确认之前选中的那条有高亮",
+        "在历史对话详情页，找到带数据表格的消息，确认旁边有「导出数据」按钮，点击下载 xlsx",
+        "用 curl 调用 /api/v1/chat/sessions/{id} 确认历史数据中包含 thought 类型消息"
+      ],
+      "acceptance_criteria": "历史列表返回后保持位置和选中状态，思考过程以折叠面板展示，可导出带数据的消息为 Excel",
+      "estimated_time_save": "N/A（体验优化）",
+      "passes": false
+    },
+    {
+      "id": "F-24",
+      "priority": 1,
+      "category": "ui-fix",
+      "description": "管理后台 UI 修复：权限概览页面的「员工筛选」输入框和筛选按钮从黑底黑字改为白底黑字，确保可读性",
+      "files_to_modify": [
+        "frontend/css/admin.css"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh，用管理员账号登录",
+        "进入「管理后台」→「权限概览」页面",
+        "目视检查「员工筛选」输入框和筛选按钮，确认背景为白色、字为黑色、可正常阅读",
+        "输入筛选条件点击按钮，确认筛选功能正常工作"
+      ],
+      "acceptance_criteria": "员工筛选输入框和按钮为白底黑字，无黑底黑字看不清的问题",
+      "estimated_time_save": "N/A（UI修复）",
       "passes": false
     }
   ]

@@ -728,3 +728,31 @@
     方案 B (F-21): 前端重连 — SSE 断连后 exponential backoff 自动重发
 
   📊 状态: 19/21 功能完成 | 下一个: F-20 (priority=1, passes=false)
+
+================================================================================
+  十二、新需求文档（2026-04-15）
+================================================================================
+
+  📄 需求文档: docs/REQUESTS_2026-04-15.md
+
+  三个新需求（F-22, F-23, F-24）：
+
+  F-22 (P0): 动态智能推荐问题
+    - 每次点「新对话」实时获取用户当前 API 权限对应的推荐
+    - 管理员/员工权限隔离，未授权员工不能看到推荐
+    - 管理员新增 API 后他自己刷新推荐立即生效
+    - 触发时机: 点新对话 / visibilitychange / 登录成功
+    - 文件: backend/app/api/v1/chat.py, frontend/js/features/chat.js
+
+  F-23 (P0): 历史记录增强
+    - 历史列表返回后保持滚动位置 + 高亮选中项（sessionStorage）
+    - 所有历史对话详情展示 Agent 思考过程（折叠面板）
+    - 带 data.rows 的消息支持导出 xlsx
+    - 文件: frontend/js/features/history.js, frontend/js/app-template.js
+
+  F-24 (P1): 管理后台 UI 修复
+    - 权限概览「员工筛选」输入框/按钮改为白底黑字
+    - 文件: frontend/css/admin.css
+
+  📊 状态: 21/24 功能完成 | 下一个: F-20 (SSE心跳, priority=1)
+
