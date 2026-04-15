@@ -828,3 +828,54 @@
 
   📊 状态: 23/24 功能完成 | 下一个: F-21 (前端 SSE 自动重连, priority=5)
 
+  [2026-04-15] Session #25 — 编码智能体
+  ✅ F-23: 历史记录增强 — 3 项子功能全部实现
+
+  📝 修改文件:
+    - frontend/js/features/history.js
+      · 新增 sessionStorage 状态管理 (saveHistoryScrollState / restoreHistoryScrollState / clearHistoryScrollState)
+      · showHistoryDetail() 保存滚动状态 + 调用 onSelectConversation 回调
+      · exportToExcel 通过 deps 传入，暴露给 history feature
+      · 新增 onSelectConversation 回调支持选中项 ID 上报
+
+    - frontend/js/app-setup.js
+      · 新增 historySelectedConvId / historyListViewRef reactive 变量
+      · 新增 onHistoryScroll() 函数：滚动时保存状态到 sessionStorage
+      · 新增 watch(currentView, ...)：
+        - 进入 history 时恢复滚动位置和选中高亮 (nextTick 后设置 scrollTop)
+        - 离开 history 时保存最终滚动位置
+      · 新增 onHistoryConvClick() 函数：点击历史项时更新选中 ID
+      · handleLogout 中增加 clearHistoryScrollState() 调用
+      · createHistoryFeature 传入 exportToExcel + onSelectConversation
+
+    - frontend/js/app-template.js
+      · 历史列表项增加 :class 绑定，selected 时为 border-blue-500 + shadow-blue-100
+      · 行点击时调用 onHistoryConvClick(conv.id) 更新选中状态
+      · 查看详情按钮 @click.stop="showHistoryDetail(conv, scrollTop)" 保存滚动状态
+      · 新增"当前选中"徽章 (conv.id === historySelectedConvId 时显示)
+      · 历史详情弹窗 assistant 消息旁增加"导出数据"按钮 (msg.data.rows > 0 时显示)
+      · 新增 Agent 思考过程折叠面板 UI (msg.thought 存在时显示)
+      · ref="historyListViewRef" + @scroll="onHistoryScroll($event.target.scrollTop)"
+
+    - frontend/css/chat.css
+      · 新增 .history-item-selected (border-blue-500, shadow-blue-100)
+      · 新增 .thought-panel / .thought-panel-step 样式
+
+  🧪 E2E 验证 (前端代码审查 + 语法验证):
+    - history.js: node --check ✅
+    - app-setup.js: node --check ✅
+    - app-template.js: 基本语法检查 ✅
+    - backend chat.py: python3 -m py_compile ✅
+    - backend conversation_service.py: python3 -m py_compile ✅
+    - server health: ✅ {"status":"healthy"...}
+
+  🔍 完整实现链路:
+    1. chat.py: _emit_thought() 收集所有 SSE thought 事件到 thought_events 列表
+    2. chat.py: _sessions[session_id] 存储 assistant_msg 时附带 thought_events
+    3. chat.py: conversation_service.save_message(..., thought=thought_events) 写入 DB
+    4. conversation_service.py: msg_data["thought"] = thought_events 存入 MessageDB.data (JSON)
+    5. conversation_service.py: _db_conv_to_dict() 读取 msg.data["thought"] 还原为 msg_dict["thought"]
+    6. history modal: msg.thought 存在时显示折叠面板（前端 UI）
+
+  📊 状态: 24/24 功能完成 | 🎉 全部完成
+
