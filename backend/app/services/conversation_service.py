@@ -232,6 +232,9 @@ class ConversationService:
                 }
                 if msg.data:
                     msg_dict["data"] = msg.data
+                    # F-23: Restore thought from persisted data
+                    if msg.data.get("thought"):
+                        msg_dict["thought"] = msg.data["thought"]
                 msg_list.append(msg_dict)
 
         return {
@@ -249,11 +252,12 @@ class ConversationService:
         session_id: str,
         role: str,
         content: str,
-        data: dict = None
+        data: dict = None,
+        thought: list = None
     ) -> Conversation:
         """Save a message to a conversation."""
         return self._run_async(
-            self._save_message_async(user_id, session_id, role, content, data)
+            self._save_message_async(user_id, session_id, role, content, data, thought)
         )
 
     async def _save_message_async(
@@ -262,7 +266,8 @@ class ConversationService:
         session_id: str,
         role: str,
         content: str,
-        data: dict = None
+        data: dict = None,
+        thought: list = None
     ) -> Conversation:
         """Save a message to a conversation in database."""
         db = await self._get_db()
@@ -289,11 +294,15 @@ class ConversationService:
                 await session.flush()
 
             # Add message
+            # F-23: Persist thought events into data["thought"] for history display
+            msg_data = data.copy() if data else {}
+            if thought:
+                msg_data["thought"] = thought
             db_msg = MessageDB(
                 conversation_id=db_conv.id,
                 role=role,
                 content=content,
-                data=_serialize_data(data) if data else None,
+                data=_serialize_data(msg_data) if msg_data else None,
                 created_at=now,
             )
             session.add(db_msg)

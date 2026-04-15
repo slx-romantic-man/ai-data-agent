@@ -1,7 +1,7 @@
 """
 Chat API endpoints.
 """
-from typing import Dict, Any, AsyncIterator
+from typing import Dict, Any, AsyncIterator, List
 import json
 import os
 import asyncio
@@ -648,6 +648,13 @@ async def stream_chat(
             seen_completed_step_ids = set()
             execution_step_numbers: Dict[int, int] = {}
             plan_by_step_id: Dict[int, tuple[int, Dict[str, Any]]] = {}
+            # F-23: Collect all thought events for persistence
+            thought_events: List[Dict[str, Any]] = []
+
+            def _emit_thought(step: int, content: str):
+                """Yield a thought SSE event and also append to thought_events list for persistence."""
+                thought_events.append({"step": step, "content": content})
+                return _sse("thought", {"step": step, "content": content})
 
             def allocate_reasoning_step() -> int:
                 nonlocal next_reasoning_step
@@ -690,16 +697,16 @@ async def stream_chat(
                             f"我先检索当前可用的数据源，已找到 {api_count} 个 API"
                             f" 和 {table_count} 张数据库表，接下来开始规划执行路径。"
                         )
-                        yield _sse("thought", {"step": reasoning_step, "content": thought})
+                        yield _emit_thought(reasoning_step, thought)
                     elif node_name == "intent_planner":
                         plan = node_output.get("plan", []) or []
                         planning_reasoning = node_output.get("planning_reasoning", "") or ""
                         extracted_filters = node_output.get("extracted_filters", {}) or {}
                         reasoning_step = allocate_reasoning_step()
-                        yield _sse("thought", {
-                            "step": reasoning_step,
-                            "content": _build_plan_thought(plan, planning_reasoning, extracted_filters),
-                        })
+                        yield _emit_thought(
+                            reasoning_step,
+                            _build_plan_thought(plan, planning_reasoning, extracted_filters)
+                        )
 
                         plan_by_step_id = {}
                         for index, step in enumerate(plan):
@@ -742,7 +749,7 @@ async def stream_chat(
                             execution_result = data_context.get(context_key)
                             thought = step.get("description") or f"开始执行步骤 {step_id}"
 
-                            yield _sse("thought", {"step": step_number, "content": thought})
+                            yield _emit_thought(step_number, thought)
                             yield _sse("action", {
                                 "step": step_number,
                                 "action": _build_action_payload(step),
@@ -770,10 +777,10 @@ async def stream_chat(
 
                 if has_analysis_data:
                     analyzer_step = allocate_reasoning_step()
-                    yield _sse("thought", {
-                        "step": analyzer_step,
-                        "content": "数据已经准备好了，我正在整理结果并生成最终回复。",
-                    })
+                    yield _emit_thought(
+                        analyzer_step,
+                        "数据已经准备好了，我正在整理结果并生成最终回复。"
+                    )
 
                     # F-10: Build state for run_analyzer_stream
                     stream_state: AgentState = {
@@ -832,10 +839,10 @@ async def stream_chat(
                 else:
                     # No data or error - emit error/empty response via analyzer fallback
                     analyzer_step = allocate_reasoning_step()
-                    yield _sse("thought", {
-                        "step": analyzer_step,
-                        "content": "当前没有拿到可直接分析的数据，我改用解释型回复整理现有结果。",
-                    })
+                    yield _emit_thought(
+                        analyzer_step,
+                        "当前没有拿到可直接分析的数据，我改用解释型回复整理现有结果。"
+                    )
                     async for event in graph.astream(None, config, stream_mode="updates"):
                         for node_name, node_output in event.items():
                             if node_name == "analyzer":
@@ -881,6 +888,9 @@ async def stream_chat(
                     "content": final_answer_text,
                     "timestamp": datetime.now().isoformat(),
                 }
+                # F-23: Store thought events in _sessions for history display
+                if thought_events:
+                    assistant_msg["thought"] = thought_events
                 if is_clarification:
                     assistant_msg["type"] = "clarification"
                 _sessions[session_id]["messages"].append(assistant_msg)
@@ -935,7 +945,8 @@ async def stream_chat(
                 session_id=session_id,
                 role="assistant",
                 content=final_answer_text,
-                data=final_data
+                data=final_data,
+                thought=thought_events  # F-23: Persist thought events for history display
             )
 
         except Exception as e:
