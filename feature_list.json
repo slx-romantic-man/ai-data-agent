@@ -401,7 +401,7 @@
       ],
       "acceptance_criteria": "SSE 流中有规律心跳注释（每 ~15s 一条），长查询不断连，前端内容完整",
       "estimated_time_save": "N/A（可靠性加固）",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-21",

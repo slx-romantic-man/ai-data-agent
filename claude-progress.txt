@@ -756,3 +756,31 @@
 
   📊 状态: 21/24 功能完成 | 下一个: F-20 (SSE心跳, priority=1)
 
+  [2026-04-15] Session #23 — 编码智能体
+  ✅ F-20: SSE 流式响应增加心跳机制
+
+  📝 修改文件:
+    - backend/app/api/v1/chat.py
+      · 新增 `import asyncio` 和 `from typing import AsyncIterator`
+      · 新增 `_heartbeat_gen()`: async generator yields `: heartbeat\n\n` every 15s
+      · 新增 `_merged_generator()`: 使用 asyncio.Queue + asyncio.wait 并发合并
+        event_generator 和 heartbeat_gen，按到达顺序输出
+      · `return StreamingResponse(_merged_generator(), ...)` 替代原来的
+        `event_generator()`
+      · 当主事件流结束时，heartbeat task 被 cancel，merged generator 优雅退出
+
+  🧪 E2E 验证:
+    - curl SSE 长查询 "查询AAPL最新股价" (触发 Analyzer LLM, 100行数据, ~54s):
+      · 心跳 #1 at 30.0s ✅
+      · 心跳 #2 at 45.0s (间隔 15.0s) ✅
+      · 心跳 #3 at ~48s (主stream结束，drain queue 立即输出) ✅
+      · streaming_text: 41 chunks ✅
+      · total time: 54.5s ✅
+    - Python asyncio 单元测试: `_heartbeat_gen` 每 N 秒正确产出 heartbeat
+    - Python asyncio 单元测试: `_merged_generator` 正确交错合并 SSE 事件与 heartbeat
+    - curl SSE weather query (<15s): 无 heartbeat（预期行为）✅
+    - curl SSE IP query: streaming_text 正常 ✅
+    - Server health: ✅ 无崩溃，无语法错误
+
+  📊 状态: 22/24 功能完成 | 下一个: F-21 (前端 SSE 自动重连)
+

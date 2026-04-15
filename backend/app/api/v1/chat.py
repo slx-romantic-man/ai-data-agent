@@ -1,9 +1,10 @@
 """
 Chat API endpoints.
 """
-from typing import Dict, Any
+from typing import Dict, Any, AsyncIterator
 import json
 import os
+import asyncio
 from datetime import datetime, date
 from decimal import Decimal
 
@@ -939,8 +940,72 @@ async def stream_chat(
             logger.error(f"Stream chat error: {str(e)}")
             yield _sse("error", {"message": str(e)})
 
+    # F-20: Heartbeat generator — yields SSE comment every 15s to prevent idle timeout
+    async def _heartbeat_gen() -> AsyncIterator[str]:
+        """SSE heartbeat: ': heartbeat\\n\\n' every 15 seconds to keep connection alive."""
+        while True:
+            await asyncio.sleep(15)
+            yield ": heartbeat\n\n"
+
+    # F-20: Merge event_generator with heartbeat using asyncio.Queue
+    async def _merged_generator() -> AsyncIterator[str]:
+        """Merges event_generator + heartbeat_generator, yielding items in arrival order."""
+        queue: asyncio.Queue[str | None] = asyncio.Queue()
+
+        async def _enqueue_events():
+            """Enqueue all items from event_generator into the shared queue."""
+            try:
+                async for item in event_generator():
+                    await queue.put(item)
+            except Exception as e:
+                logger.error(f"Enqueue events error: {e}")
+            finally:
+                await queue.put(None)  # Signal end of main stream
+
+        async def _enqueue_heartbeats():
+            """Enqueue heartbeat comments into the shared queue."""
+            try:
+                async for item in _heartbeat_gen():
+                    await queue.put(item)
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                logger.error(f"Enqueue heartbeats error: {e}")
+
+        events_task = asyncio.create_task(_enqueue_events())
+        heartbeats_task = asyncio.create_task(_enqueue_heartbeats())
+        pending = {events_task, heartbeats_task}
+
+        while pending:
+            done, pending = await asyncio.wait(
+                pending,
+                timeout=15,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+
+            # Process all available queue items
+            while not queue.empty():
+                item = queue.get_nowait()
+                if item is None:
+                    # Main stream ended; cancel heartbeat and drain remaining
+                    for t in pending:
+                        t.cancel()
+                    pending = set()  # Exit loop
+                    break
+                yield item
+
+        # Drain any remaining items in the queue
+        while True:
+            try:
+                item = queue.get_nowait()
+            except asyncio.QueueEmpty:
+                break
+            if item is None:
+                break
+            yield item
+
     return StreamingResponse(
-        event_generator(),
+        _merged_generator(),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
