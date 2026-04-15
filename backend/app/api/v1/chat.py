@@ -70,9 +70,11 @@ async def get_suggestions(
 ) -> Dict[str, Any]:
     """
     Get smart question suggestions based on user's APIs and chat history.
+    Respects admin/employee permission isolation — non-admin users only see
+    APIs they have been explicitly granted permission for.
     """
     suggestion_service = get_suggestion_service()
-    suggestions = suggestion_service.get_suggestions(user.user_id)
+    suggestions = await suggestion_service.get_suggestions(user.user_id)
     return {
         "suggestions": suggestions,
         "total": len(suggestions)

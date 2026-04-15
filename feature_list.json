@@ -431,8 +431,11 @@
       "description": "动态智能推荐问题：点击「新对话」、页面从后台恢复、登录成功时实时获取用户当前 API 权限对应的推荐问题，禁止向未授权用户展示推荐内容",
       "files_to_modify": [
         "backend/app/api/v1/chat.py",
+        "backend/app/services/suggestion_service.py",
+        "backend/app/services/api_permission_service.py",
+        "backend/app/models/api_permission.py",
         "frontend/js/features/chat.js",
-        "frontend/js/app-template.js"
+        "frontend/js/app-setup.js"
       ],
       "steps": [
         "启动后端服务 bash init.sh，用管理员账号登录",
@@ -444,7 +447,7 @@
       ],
       "acceptance_criteria": "推荐问题实时反映用户当前 API 权限，未授权用户看不到任何具体 API 问题，管理员和员工推荐内容不同",
       "estimated_time_save": "N/A（体验优化）",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-23",

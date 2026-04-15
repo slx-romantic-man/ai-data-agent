@@ -140,6 +140,7 @@ class APIConfigPublic(BaseModel):
     is_active: bool
     endpoints: Dict[str, Any] = Field(default_factory=dict)
     timeout: int = 30
+    recommended_questions: Optional[List[str]] = Field(None, description="推荐问题列表")
 
     class Config:
         from_attributes = True

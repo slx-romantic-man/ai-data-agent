@@ -227,6 +227,13 @@ window.AppSetup = function() {
             }
         };
 
+        // F-22: Reload suggestions when page returns from background (e.g. tab switch)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && isLoggedIn.value) {
+                loadSuggestions();
+            }
+        });
+
         const getRoleName = (role) => {
             const roles = { admin: '管理员', manager: '经理', employee: '员工' };
             return roles[role] || role;
@@ -544,7 +551,8 @@ window.AppSetup = function() {
             showTableModal,
             tableData,
             tableDataLoading,
-            parseMarkdownTables
+            parseMarkdownTables,
+            loadSuggestions
         });
 
         const {
@@ -746,6 +754,7 @@ window.AppSetup = function() {
             selectedApi, apiToDelete, apiForm, newCategoryForm, categorySelectionByApi, availableCategories,
             getRoleName, handleLogin, quickLogin, handleLogout,
             sendMessage, askQuestion, startNewConversation, showTableData, exportToExcel, handleApproval,
+            loadSuggestions,
             renderMarkdown, renderSafeMarkdown, hasExportableData, hasExportableDataRaw,
             loadApis, toggleDeleteMode, viewApiDetail, editApi, closeApiModal, saveApi, confirmDeleteApi, deleteApi,
             createCategoryFromApisView, moveApiToUncategorized, moveApiToCategory,

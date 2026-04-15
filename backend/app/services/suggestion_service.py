@@ -1,11 +1,13 @@
 """
 Suggestion Service - Smart question suggestions based on user's APIs and chat history.
 """
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 import random
 
 from app.config.api_config import get_api_registry, APIConfig
 from app.services.conversation_service import get_conversation_service
+from app.services.api_permission_service import get_api_permission_service
+from app.models.api_permission import APIConfigPublic
 from app.utils.logger import get_logger
 
 logger = get_logger()
@@ -16,7 +18,7 @@ class SuggestionService:
     Service for generating smart question suggestions.
 
     Generates suggestions based on:
-    1. User's configured APIs and their endpoints
+    1. User's configured APIs and their endpoints (permission-aware)
     2. Recent conversation patterns
     3. API-specific question templates
 
@@ -60,10 +62,10 @@ class SuggestionService:
     def __init__(self):
         self.conversation_service = get_conversation_service()
 
-    def _get_api_type(self, api_config: APIConfig) -> str:
+    def _get_api_type(self, api_name: str, api_description: Optional[str]) -> str:
         """Determine API type based on name and description."""
-        name_lower = api_config.name.lower()
-        desc_lower = api_config.description.lower()
+        name_lower = api_name.lower()
+        desc_lower = (api_description or "").lower()
 
         for api_type, keywords in self.API_TYPE_KEYWORDS.items():
             for keyword in keywords:
@@ -71,7 +73,7 @@ class SuggestionService:
                     return api_type
         return "generic"
 
-    def _fill_template(self, template: str, api_config: APIConfig) -> str:
+    def _fill_template(self, template: str, api_name: str) -> str:
         """Fill a template with sample values."""
         if "{city}" in template:
             cities = ["北京", "上海", "广州", "深圳", "杭州"]
@@ -82,41 +84,43 @@ class SuggestionService:
         elif "{ip}" in template:
             return template.format(ip="8.8.8.8")
         elif "{name}" in template:
-            return template.format(name=api_config.name)
+            return template.format(name=api_name)
         else:
             return template
 
     def _generate_questions_for_api(
         self,
-        api_id: str,
-        api_config: APIConfig
+        api_name: str,
+        api_description: Optional[str],
+        recommended_questions: Optional[List[str]],
+        endpoints: Dict[str, Any],
     ) -> List[str]:
         """Generate question suggestions for a specific API.
 
         Format: "具体问题……（API名称）"
-        Priority: pre-configured recommended_questions > template-based fallback
+        Priority: pre-configured recommended_questions > template-based fallback > endpoint description
         """
         questions = []
-        api_name = api_config.name
 
         # Priority 1: Use pre-configured recommended questions
-        if api_config.recommended_questions:
-            for q in api_config.recommended_questions[:3]:
+        if recommended_questions:
+            for q in recommended_questions[:3]:
                 questions.append(f"{q}（{api_name}）")
             return questions
 
         # Priority 2: Template-based fallback
-        api_type = self._get_api_type(api_config)
+        api_type = self._get_api_type(api_name, api_description)
         templates = self.API_TEMPLATES.get(api_type, self.API_TEMPLATES["generic"])
 
         for template in templates[:2]:
-            filled = self._fill_template(template, api_config)
+            filled = self._fill_template(template, api_name)
             questions.append(f"{filled}（{api_name}）")
 
-        # Priority 3: Endpoint description-based
-        for ep_name, endpoint in list(api_config.endpoints.items())[:2]:
-            if endpoint.description:
-                questions.append(f"{api_config.name}: {endpoint.description}（{api_name}）")
+        # Priority 3: Endpoint description-based (handle both dict and Pydantic endpoint)
+        for ep_name, endpoint in list(endpoints.items())[:2]:
+            ep_desc = endpoint.get('description') if isinstance(endpoint, dict) else getattr(endpoint, 'description', None)
+            if ep_desc:
+                questions.append(f"{api_name}: {ep_desc}（{api_name}）")
 
         return questions
 
@@ -145,13 +149,13 @@ class SuggestionService:
 
         return suggestions
 
-    def get_suggestions(
+    async def get_suggestions(
         self,
         user_id: str,
         max_suggestions: int = 4
     ) -> List[str]:
         """
-        Get smart question suggestions for a user.
+        Get smart question suggestions for a user (permission-aware).
 
         Each suggestion is formatted as: "具体问题……（API名称）"
 
@@ -165,13 +169,21 @@ class SuggestionService:
         suggestions = []
 
         try:
-            # Get user's APIs
-            api_registry = get_api_registry()
-            user_apis = api_registry.get_apis_for_user(user_id)
+            # Get permission-aware user APIs via APIPermissionService
+            # This respects admin/employee permission isolation:
+            # - Admin: all active APIs
+            # - Non-admin: only APIs with active permissions
+            perm_service = await get_api_permission_service()
+            user_apis = await perm_service.get_my_apis(user_id)
 
             # Generate suggestions from user's APIs (in order, no shuffle)
-            for api_id, api_config in list(user_apis.items())[:4]:
-                api_questions = self._generate_questions_for_api(api_id, api_config)
+            for api in user_apis[:4]:
+                api_questions = self._generate_questions_for_api(
+                    api_name=api.name,
+                    api_description=api.description,
+                    recommended_questions=api.recommended_questions,
+                    endpoints=api.endpoints,
+                )
                 suggestions.extend(api_questions)
 
             # Get recent conversations for pattern analysis
@@ -197,10 +209,10 @@ class SuggestionService:
     def _get_fallback_suggestions(self, count: int = 4) -> List[str]:
         """Get fallback suggestions when no APIs are configured."""
         fallbacks = [
-            "请配置您的API以获取智能推荐",
-            "在API管理中添加您的数据源",
-            "配置API后可以查询实时数据",
-            "支持天气、股票等多种API类型",
+            "暂无可用分析能力，请联系管理员授权API",
+            "暂无API权限，请管理员授权后重试",
+            "当前无可用数据接口",
+            "请联系管理员开通API权限",
         ]
         return fallbacks[:count]
 

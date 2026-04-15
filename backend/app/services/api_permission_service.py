@@ -648,7 +648,8 @@ class APIPermissionService:
                     category_path=category_path,
                     is_active=api.is_active,
                     endpoints=json.loads(api.endpoints) if isinstance(api.endpoints, str) else (api.endpoints or {}),
-                    timeout=api.timeout
+                    timeout=api.timeout,
+                    recommended_questions=api.recommended_questions
                 ))
             return apis
 

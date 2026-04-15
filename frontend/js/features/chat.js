@@ -16,7 +16,8 @@ window.AppModules.createChatFeature = function(deps) {
         showTableModal,
         tableData,
         tableDataLoading,
-        parseMarkdownTables
+        parseMarkdownTables,
+        loadSuggestions
     } = deps;
 
     const scrollToBottom = () => {
@@ -342,6 +343,10 @@ window.AppModules.createChatFeature = function(deps) {
         }
         messages.value = [];
         currentSessionId.value = 'session-' + Date.now();
+        // F-22: Reload suggestions when starting a new conversation (permission-aware, fresh from server)
+        if (loadSuggestions) {
+            loadSuggestions();
+        }
     };
 
     const saveCurrentConversation = () => {
