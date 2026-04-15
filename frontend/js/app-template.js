@@ -1052,7 +1052,9 @@ window.AppTemplate = `
                     </div>
 
                     <!-- History View -->
-                    <div v-else-if="currentView === 'history'" class="flex-1 overflow-y-auto p-10 bg-slate-50/50">
+                    <div v-else-if="currentView === 'history'" class="flex-1 overflow-y-auto p-10 bg-slate-50/50"
+                        ref="historyListViewRef"
+                        @scroll="onHistoryScroll($event.target.scrollTop)">
                         <div class="mb-10">
                             <h2 class="text-2xl font-bold text-zinc-950 tracking-tight">对话历史</h2>
                             <p class="text-sm text-zinc-500 mt-1">回顾您的历史对话记录</p>
@@ -1070,9 +1072,9 @@ window.AppTemplate = `
 
                         <div v-else class="space-y-3 max-w-4xl mx-auto">
                             <div v-for="(conv, idx) in conversations" :key="conv.id"
-                                class="group bg-white rounded-xl border border-zinc-200 p-5 hover:border-zinc-950 hover:shadow-card transition-all-custom cursor-pointer flex items-center justify-between"
-                                @click="loadConversation(conv)">
-                                <div class="flex items-center space-x-5">
+                                class="group bg-white rounded-xl border p-5 hover:border-zinc-950 hover:shadow-card transition-all-custom cursor-pointer flex items-center justify-between"
+                                :class="conv.id === historySelectedConvId ? 'border-blue-500 shadow-blue-100' : 'border-zinc-200'">
+                                <div class="flex items-center space-x-5 flex-1" @click="onHistoryConvClick(conv.id); loadConversation(conv)">
                                     <div class="w-12 h-12 bg-zinc-50 rounded-xl flex items-center justify-center border border-zinc-100 group-hover:bg-zinc-950 group-hover:text-white transition-all-custom shadow-xs">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
@@ -1087,8 +1089,14 @@ window.AppTemplate = `
                                         </div>
                                     </div>
                                 </div>
-                                <div class="px-4 py-2 bg-zinc-50 text-zinc-400 text-[10px] font-bold uppercase rounded-lg border border-zinc-100 group-hover:bg-zinc-950 group-hover:border-zinc-950 group-hover:text-white transition-all-custom opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0">
-                                    查看详情
+                                <div class="flex items-center space-x-2">
+                                    <div v-if="conv.id === historySelectedConvId" class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-lg border border-blue-200">
+                                        当前选中
+                                    </div>
+                                    <button class="px-4 py-2 bg-zinc-50 text-zinc-400 text-[10px] font-bold uppercase rounded-lg border border-zinc-100 group-hover:bg-zinc-950 group-hover:border-zinc-950 group-hover:text-white transition-all-custom opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0"
+                                        @click.stop="showHistoryDetail(conv, historyListViewRef ? historyListViewRef.scrollTop : 0)">
+                                        查看详情
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1696,9 +1704,35 @@ window.AppTemplate = `
                                                     {{ msg.content }}
                                                 </div>
                                             </div>
-                                            <div v-else class="flex justify-start mb-3">
+                                            <div v-else class="flex flex-col justify-start mb-3">
+                                                <!-- Agent thinking toggle (F-23) -->
+                                                <div v-if="msg.thought && msg.thought.length > 0" class="mb-2">
+                                                    <button class="text-xs text-zinc-400 hover:text-zinc-600 flex items-center gap-1" @click="msg._thoughtExpanded = !msg._thoughtExpanded">
+                                                        <svg class="w-3 h-3 transition-transform" :class="msg._thoughtExpanded ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                        </svg>
+                                                        Agent 思考过程 ({{ msg.thought.length }} 步)
+                                                    </button>
+                                                    <div v-if="msg._thoughtExpanded" class="mt-2 bg-zinc-50 rounded-lg border border-zinc-200 p-3 text-xs text-zinc-600 space-y-2">
+                                                        <div v-for="(step, sIdx) in msg.thought" :key="sIdx" class="border-l-2 border-zinc-300 pl-3">
+                                                            <div class="font-medium text-zinc-700">步骤 {{ (step.step || sIdx + 1) }}</div>
+                                                            <div>{{ step.content || step.thought || step }}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- Assistant message content -->
                                                 <div class="max-w-3xl bg-gray-100 rounded-2xl rounded-tl-sm px-4 py-3">
                                                     <div class="text-gray-800 markdown-content" v-html="renderMarkdown(msg.content)" :data-vkey="msg._v || 0"></div>
+                                                </div>
+                                                <!-- Export button for data messages (F-23) -->
+                                                <div v-if="msg.data && msg.data.rows && msg.data.rows.length > 0" class="mt-2 flex justify-start">
+                                                    <button class="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 border border-blue-200 rounded-lg px-3 py-1.5 bg-blue-50 hover:bg-blue-100 transition-colors"
+                                                        @click="exportToExcel(msg)">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                        </svg>
+                                                        导出数据 ({{ msg.data.rows.length }} 行)
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>

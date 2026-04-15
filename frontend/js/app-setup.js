@@ -32,6 +32,9 @@ window.AppSetup = function() {
         const showHistoryModal = ref(false);
         const selectedHistory = ref(null);
         const historyChatInput = ref('');
+        // F-23: History scroll position & selected conversation tracking
+        const historySelectedConvId = ref(null);
+        const historyListViewRef = ref(null);
 
         // API Management State
         const apiList = ref([]);
@@ -487,6 +490,8 @@ window.AppSetup = function() {
             showHistoryModal.value = false;
             selectedHistory.value = null;
             historyChatInput.value = '';
+            historySelectedConvId.value = null;
+            clearHistoryScrollState();
 
             // Clear admin panel state
             adminTab.value = 'users';
@@ -507,6 +512,38 @@ window.AppSetup = function() {
             loginForm.username = '';
             loginForm.password = '';
             loginError.value = '';
+        };
+
+        // F-23: History scroll position tracking
+        const onHistoryScroll = (scrollTop) => {
+            // Save current scroll state to sessionStorage
+            const selectedId = historySelectedConvId.value;
+            saveHistoryScrollState(scrollTop, selectedId);
+        };
+
+        // Restore history scroll position and highlight when entering history view
+        watch(currentView, (newView, oldView) => {
+            if (newView === 'history') {
+                // Entering history view — restore scroll state
+                const state = restoreHistoryScrollState();
+                historySelectedConvId.value = state.selectedId;
+                nextTick(() => {
+                    if (historyListViewRef.value) {
+                        historyListViewRef.value.scrollTop = state.scrollTop;
+                    }
+                });
+            } else if (oldView === 'history' && historyListViewRef.value) {
+                // Leaving history view — save final scroll state
+                saveHistoryScrollState(
+                    historyListViewRef.value.scrollTop,
+                    historySelectedConvId.value
+                );
+            }
+        });
+
+        // When clicking a conversation in history list, update selected ID
+        const onHistoryConvClick = (convId) => {
+            historySelectedConvId.value = convId;
         };
 
         // Thinking status for loading - ReAct style
@@ -577,13 +614,18 @@ window.AppSetup = function() {
             currentView,
             chatInput,
             nextTick,
-            sendMessage
+            sendMessage,
+            exportToExcel,
+            onSelectConversation: (convId) => { historySelectedConvId.value = convId; }
         });
 
         const {
             getMessagePairs,
             showHistoryDetail,
-            continueHistoryChat
+            continueHistoryChat,
+            saveHistoryScrollState,
+            restoreHistoryScrollState,
+            clearHistoryScrollState
         } = historyFeature;
 
         // Admin Panel Methods
@@ -731,6 +773,8 @@ window.AppSetup = function() {
             // History
             showHistoryModal, selectedHistory, historyChatInput, historySearch,
             getMessagePairs, showHistoryDetail, continueHistoryChat, loadConversation,
+            saveHistoryScrollState, restoreHistoryScrollState, clearHistoryScrollState,
+            historySelectedConvId, historyListViewRef, onHistoryScroll, onHistoryConvClick,
             // Admin Panel
             adminTab, adminUsers, adminUsersLoading, adminConvSearch, adminConvResults, adminConvLoading, adminLogs, adminLogsLoading,
             adminConvUsernameFilter, adminConvStartDate, adminConvEndDate, showUserDropdown,

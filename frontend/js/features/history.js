@@ -10,8 +10,38 @@ window.AppModules.createHistoryFeature = function(deps) {
         currentView,
         chatInput,
         nextTick,
-        sendMessage
+        sendMessage,
+        exportToExcel,
+        onSelectConversation
     } = deps;
+
+    const SESSION_KEY_SELECTED = 'ai_data_agent_selected_conv_id';
+    const SESSION_KEY_SCROLL = 'ai_data_agent_history_scroll_top';
+
+    const saveHistoryScrollState = (scrollTop, selectedId) => {
+        try {
+            if (selectedId) sessionStorage.setItem(SESSION_KEY_SELECTED, selectedId);
+            sessionStorage.setItem(SESSION_KEY_SCROLL, String(scrollTop));
+        } catch (e) { /* sessionStorage unavailable */ }
+    };
+
+    const restoreHistoryScrollState = () => {
+        try {
+            return {
+                selectedId: sessionStorage.getItem(SESSION_KEY_SELECTED) || null,
+                scrollTop: parseInt(sessionStorage.getItem(SESSION_KEY_SCROLL) || '0', 10)
+            };
+        } catch (e) {
+            return { selectedId: null, scrollTop: 0 };
+        }
+    };
+
+    const clearHistoryScrollState = () => {
+        try {
+            sessionStorage.removeItem(SESSION_KEY_SELECTED);
+            sessionStorage.removeItem(SESSION_KEY_SCROLL);
+        } catch (e) { /* ignore */ }
+    };
 
     const getMessagePairs = () => {
         const pairs = [];
@@ -31,7 +61,10 @@ window.AppModules.createHistoryFeature = function(deps) {
         return pairs;
     };
 
-    const showHistoryDetail = (conv) => {
+    const showHistoryDetail = (conv, scrollTop) => {
+        // Save scroll state before opening modal
+        saveHistoryScrollState(scrollTop || 0, conv?.id);
+        if (onSelectConversation) onSelectConversation(conv?.id);
         selectedHistory.value = conv;
         showHistoryModal.value = true;
     };
@@ -58,6 +91,10 @@ window.AppModules.createHistoryFeature = function(deps) {
     return {
         getMessagePairs,
         showHistoryDetail,
-        continueHistoryChat
+        continueHistoryChat,
+        saveHistoryScrollState,
+        restoreHistoryScrollState,
+        clearHistoryScrollState,
+        exportToExcel
     };
 };
