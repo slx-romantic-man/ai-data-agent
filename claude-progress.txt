@@ -713,3 +713,18 @@
       ✅ 触发 API 能力澄清（预期行为）
 
   📊 状态: 19/19 功能完成 | 🎉 全部完成
+
+================================================================================
+  十一、SSE 可靠性加固 PR（F-20 & F-21）
+================================================================================
+
+  背景:
+    用友畅捷通上线客户后，SSE 长连接（analyzer LLM 60s+ TTFT）被浏览器/
+    代理空闲超时主动断开，报错：peer closed connection without sending
+    complete message body (incomplete chunked read)。
+
+  解决方案:
+    方案 A (F-20): 后端心跳 — SSE 每 15s 发 ': heartbeat\n\n' 注释防止断连
+    方案 B (F-21): 前端重连 — SSE 断连后 exponential backoff 自动重发
+
+  📊 状态: 19/21 功能完成 | 下一个: F-20 (priority=1, passes=false)

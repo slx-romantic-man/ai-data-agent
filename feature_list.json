@@ -1,8 +1,8 @@
 {
   "project_name": "AI Data Agent v4.3 — 性能优化",
   "baseline_commit": "PENDING_INITIAL_COMMIT",
-  "last_updated": "2026-04-14",
-  "total_features": 19,
+  "last_updated": "2026-04-15",
+  "total_features": 21,
   "project_features": [
     {
       "id": "F-01",
@@ -382,6 +382,47 @@
       ],
       "acceptance_criteria": "LLM 输出文本中无 Markdown 表格语法，前端只渲染 msg.data 业务表格，无双重表格",
       "passes": true
+    },
+    {
+      "id": "F-20",
+      "priority": 1,
+      "category": "reliability",
+      "description": "SSE 流式响应增加心跳机制：后端每 15 秒向 SSE 流写入一个 ': heartbeat\\n\\n' 注释行，防止代理/浏览器因长连接空闲超时而主动断开（peer closed connection）",
+      "files_to_modify": [
+        "backend/app/api/v1/chat.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "用浏览器打开 frontend/index.html 并完成登录",
+        "发一条复杂股票分析查询（如'分析AAPL近一年的季度营收变化'），确保 analyzer LLM 处理时间 > 30 秒",
+        "在 Network 面板找到 SSE 请求，右键 'Copy all as HAR'，检查响应体中是否每 15 秒出现 ': heartbeat\\n\\n' 注释行",
+        "确认整个查询过程中从未出现 'peer closed connection' 或 'incomplete chunked read' 报错",
+        "验证前端显示的 answer 内容完整，无断截丢失字符"
+      ],
+      "acceptance_criteria": "SSE 流中有规律心跳注释（每 ~15s 一条），长查询不断连，前端内容完整",
+      "estimated_time_save": "N/A（可靠性加固）",
+      "passes": false
+    },
+    {
+      "id": "F-21",
+      "priority": 2,
+      "category": "reliability",
+      "description": "前端 SSE 客户端增加自动重连机制：axios fetch SSE 模式下，断连时自动以 exponential backoff 重试请求，已接收事件防重处理保证不出现重复文字",
+      "files_to_modify": [
+        "frontend/js/features/chat.js"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "用浏览器打开 frontend/index.html 并完成登录",
+        "在 DevTools Network 面板启用 'Offline' 模式（throttling → offline）模拟断网",
+        "发一条股票分析查询，观察前端是否出现重连提示（可选，取决于 UI 设计）",
+        "关闭 Offline 模式，观察 SSE 是否自动恢复，内容是否完整无重复",
+        "检查 DevTools Console 无 JavaScript 报错",
+        "在非离线状态下，确认正常查询不受影响（无多余日志、无异常行为）"
+      ],
+      "acceptance_criteria": "断网后自动重连，内容完整无重复，无 JS 报错，正常情况无副作用",
+      "estimated_time_save": "N/A（可靠性加固）",
+      "passes": false
     }
   ]
 }
