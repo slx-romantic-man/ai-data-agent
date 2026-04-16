@@ -926,3 +926,52 @@
 
   📊 状态: 24/24 | 🎉 全部完成
 
+================================================================================
+  十三、新需求追加（2026-04-16 — 项目结构化需求 v5）
+================================================================================
+
+  📄 需求来源: 《项目结构化需求》— 四大战区优化
+
+  追加功能卡片: F-25 ~ F-30（共 6 个新功能）
+
+  F-25 (P0): 前端 sessionStorage 固化 currentSessionId
+    - 根因: 前端刷新后 currentSessionId 归零，后端开新档
+    - 修复: sessionStorage.getItem('current_session_id') 优先读，loadChatHistory 后同步写
+    - 文件: frontend/js/app-setup.js, frontend/js/features/chat.js
+
+  F-26 (P0): Retrieval 降载
+    - top_k: 10 → 3
+    - 过滤系统表 (users/api_configs/api_call_logs/system_config)
+    - Planner 只看到前 2 张最可能的业务表
+    - 文件: backend/app/agent/nodes/retrieval_node.py
+
+  F-27 (P0): Intent Planner 历史窗口扩大
+    - [-6:] → [-12:]
+    - 只保留 role=user/assistant 且有 content 的消息
+    - 文件: backend/app/agent/nodes/intent_planner_node.py
+
+  F-28 (P0): Intent Planner Prompt 改造
+    - 增加话题切换防御
+    - 新增 chitchat intent_type，快车道直接回复
+    - 文件: backend/app/agent/prompts/intent_planner_prompt.py
+
+  F-29 (P1): Router 闲聊拦截
+    - intent_type=chitchat 时走 fast_reply_end 边
+    - 跳过 executor 和 analyzer
+    - 文件: backend/app/agent/graph.py
+
+  F-30 (P1): Python 数据降维
+    - summarize_data_for_llm() 替代 LLM 算统计特征
+    - 数据 > 5 行时: statistical_summary + 前 5 行样本
+    - 文件: backend/app/api/v1/chat.py
+
+  📊 状态: 24/30 功能完成 | 下一个: F-25 (priority=1, passes=false)
+
+  [2026-04-16] Session #28 — 初始化智能体
+  ✅ feature_list.json: 追加 F-25 ~ F-30 共 6 个新功能卡片
+  ✅ claude-progress.txt: 更新进度状态，新增第十三节（新需求追加）
+  ✅ init.sh: 已存在，质量合格，无需修改 ✅
+  ✅ .gitignore: 已存在 ✅
+  ✅ chmod +x init.sh: 已执行
+  📊 状态: 24/30 功能完成 | 下一个: F-25 (priority=1, passes=false)
+

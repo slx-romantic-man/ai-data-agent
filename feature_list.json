@@ -2,7 +2,7 @@
   "project_name": "AI Data Agent v4.3 — 性能优化",
   "baseline_commit": "PENDING_INITIAL_COMMIT",
   "last_updated": "2026-04-15",
-  "total_features": 24,
+  "total_features": 30,
   "project_features": [
     {
       "id": "F-01",
@@ -488,6 +488,127 @@
       "acceptance_criteria": "员工筛选输入框和按钮为白底黑字，无黑底黑字看不清的问题",
       "estimated_time_save": "N/A（UI修复）",
       "passes": true
+    },
+    {
+      "id": "F-25",
+      "priority": 1,
+      "category": "session-persistence",
+      "description": "前端 sessionStorage 固化 currentSessionId：刷新页面不丢失当前对话 ID，后端不开新档",
+      "files_to_modify": [
+        "frontend/js/app-setup.js",
+        "frontend/js/features/chat.js"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "用浏览器打开前端页面并完成登录",
+        "选择一个历史对话，进入聊天界面",
+        "刷新浏览器页面（F5）",
+        "验证页面刷新后仍在同一对话中（而非回到欢迎页或新会话）",
+        "验证 sessionStorage.getItem('current_session_id') 返回当前对话 ID"
+      ],
+      "acceptance_criteria": "刷新页面后 currentSessionId 不归零，后端不开新档，对话内容保持连贯",
+      "estimated_time_save": "N/A（体验优化）",
+      "passes": false
+    },
+    {
+      "id": "F-26",
+      "priority": 1,
+      "category": "performance",
+      "description": "Retrieval 降载：top_k 从 10 降至 3，过滤系统表，只给 Planner 看前 2 张最可能的业务表",
+      "files_to_modify": [
+        "backend/app/agent/nodes/retrieval_node.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送任意查询请求",
+        "检查 logs/init_server.log 中 retrieval 节点的日志",
+        "验证 retrieved_apis 数量 <= 3（而非 10）",
+        "验证检索结果中不包含系统表（users/api_configs/api_call_logs/system_config 等）",
+        "验证 Planner 收到的 tables 列表长度 <= 2"
+      ],
+      "acceptance_criteria": "retrieval 召回量精简，API top_k=3，系统表被过滤，Planner 只看到 2 张业务表",
+      "estimated_time_save": "减少 Token 消耗",
+      "passes": false
+    },
+    {
+      "id": "F-27",
+      "priority": 1,
+      "category": "performance",
+      "description": "Intent Planner 历史窗口扩大：[-6:] 放宽到 [-12:]，只保留 user/assistant 有用消息",
+      "files_to_modify": [
+        "backend/app/agent/nodes/intent_planner_node.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送一个多轮对话（至少 12 轮）",
+        "检查 intent_planner 的 LLM 请求日志",
+        "验证传入的 messages 历史长度 <= 12",
+        "验证只保留了 role=user/assistant 且有 content 的消息",
+        "验证早期闲聊上下文被正确保留给 Planner"
+      ],
+      "acceptance_criteria": "历史窗口扩大到 12 条，过滤无效消息，澄清上下文不被丢弃",
+      "estimated_time_save": "N/A（准确性提升）",
+      "passes": false
+    },
+    {
+      "id": "F-28",
+      "priority": 1,
+      "category": "performance",
+      "description": "Intent Planner Prompt 改造：增加话题切换防御 + 闲聊快车道（intent_type=chitchat 直接回复）",
+      "files_to_modify": [
+        "backend/app/agent/prompts/intent_planner_prompt.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送闲聊/打招呼消息（如'你好'、'今天天气不错'）",
+        "验证 intent_type 为 'chitchat'，direct_reply 有直接回复内容",
+        "验证没有生成无意义的 steps",
+        "发送与历史无关的新话题",
+        "验证 Planner 忽略历史上下文，重新规划（话题切换防御生效）"
+      ],
+      "acceptance_criteria": "闲聊走快车道（<5s 响应），话题切换时忽略无关历史",
+      "estimated_time_save": "闲聊 ~50s → <5s",
+      "passes": false
+    },
+    {
+      "id": "F-29",
+      "priority": 2,
+      "category": "performance",
+      "description": "Router 闲聊拦截：intent_type=chitchat 时直接走 fast_reply_end 边，跳过 executor 和 analyzer",
+      "files_to_modify": [
+        "backend/app/agent/graph.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送闲聊消息（'你好'）",
+        "检查日志确认未经过 executor 节点",
+        "检查日志确认未经过 analyzer 节点",
+        "验证响应时间 < 5 秒",
+        "验证前端收到的是 direct_reply 内容而非执行步骤"
+      ],
+      "acceptance_criteria": "chitchat 走快车道边，跳过 executor/analyzer，直接返回给前端",
+      "estimated_time_save": "~50s → <5s（闲聊场景）",
+      "passes": false
+    },
+    {
+      "id": "F-30",
+      "priority": 2,
+      "category": "performance",
+      "description": "Python 数据降维：chat.py 中用 summarize_data_for_llm 代替 LLM 算统计特征，防止 Analyzer 算崩",
+      "files_to_modify": [
+        "backend/app/api/v1/chat.py"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "发送返回 100+ 行数据的复杂查询",
+        "检查 logs/init_server.log 确认 data_context 包含 _meta 和 statistical_summary",
+        "验证 statistical_summary 包含 max/min/avg 等统计值",
+        "验证 sample_data_top_5 只保留前 5 行",
+        "验证 analyzer 收到的数据已降维，而非全量原始数据"
+      ],
+      "acceptance_criteria": "数据 > 5 行时自动降维，Analyzer 只收到统计特征 + 前 5 行样本",
+      "estimated_time_save": "防止 Analyzer LLM 因数据量过大而算崩",
+      "passes": false
     }
   ]
 }
