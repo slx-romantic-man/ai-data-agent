@@ -842,3 +842,34 @@
 .hidden {
     display: none !important;
 }
+
+/* ==================== Employee Filter (Staff Filter) Fix ==================== */
+/* The employee filter inputs and button are inside bg-zinc-950 container.
+   Without explicit text-white, input text is invisible (black on dark). */
+
+.admin-conv-filter-input {
+    background-color: #ffffff !important;
+    border-color: #e4e4e7 !important;
+    color: #18181b !important;
+}
+
+.admin-conv-filter-input::placeholder {
+    color: #a1a1aa !important;
+}
+
+.admin-conv-filter-input:focus {
+    ring-color: #d4d4d8 !important;
+    outline: none !important;
+}
+
+/* Admin conversation filter section: employee filter input + search input */
+/* Override dark bg-zinc-950 container's child input styles to be white bg / black text */
+[class*="bg-zinc-950"] input[type="text"] {
+    background-color: #ffffff !important;
+    border-color: #e4e4e7 !important;
+    color: #18181b !important;
+}
+
+[class*="bg-zinc-950"] input[type="text"]::placeholder {
+    color: #a1a1aa !important;
+}

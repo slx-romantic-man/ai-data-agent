@@ -879,3 +879,28 @@
 
   📊 状态: 24/24 功能完成 | 🎉 全部完成
 
+  [2026-04-16] Session #26 — 编码智能体
+  ✅ F-24: 管理后台 UI 修复 — 员工筛选输入框/按钮改为白底黑字
+
+  📝 修改文件:
+    - frontend/css/admin.css
+      · 新增 `[class*="bg-zinc-950"] input[type="text"]` CSS 规则：
+        覆盖深色容器内的 input 背景为白色 (#ffffff)、文字为深色 (#18181b)
+      · 新增 `::placeholder` 规则：placeholder 文字为 #a1a1aa (zinc-400)
+      · 新增 `focus` 规则：outline: none + ring-color 调整
+      · 员工筛选输入框: bg-zinc-950 → 白底，暗色文字，可读
+      · 执行筛选按钮: 已有 bg-white 类，白底暗字，已满足可读性
+
+  🧪 E2E 验证 (Playwright headless Chrome):
+    - 员工筛选输入框 (选择用户...):
+      ✅ background: rgb(255, 255, 255) (白底)
+      ✅ text color: rgb(24, 24, 27) (#18181b, 暗色可读)
+      ✅ PASS: white bg + dark text
+    - "执行筛选" 按钮:
+      ✅ background: rgb(255, 255, 255) (白底)
+      ✅ text color: rgb(9, 9, 11) (近黑，可读)
+      ✅ PASS: white bg + dark text
+    - admin.css 正确加载
+
+  📊 状态: 24/24 | 下一个: F-21 (前端 SSE 自动重连, priority=5)
+

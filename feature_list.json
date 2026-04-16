@@ -487,7 +487,7 @@
       ],
       "acceptance_criteria": "员工筛选输入框和按钮为白底黑字，无黑底黑字看不清的问题",
       "estimated_time_save": "N/A（UI修复）",
-      "passes": false
+      "passes": true
     }
   ]
 }
