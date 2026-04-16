@@ -143,6 +143,9 @@ async def analyzer_node(state: AgentState) -> AgentState:
         # 提取所有数据
         all_data = _extract_all_data(data_context)
 
+        # F-30: Python 数据降维 — 数据 > 5 行时用统计特征 + 前 5 行样本
+        all_data, data_context = summarize_data_for_llm(all_data, data_context)
+
         if not all_data:
             logger.warning("[AnalyzerNode] No data available for analysis")
 
@@ -288,6 +291,79 @@ def _extract_all_data(data_context: Dict[str, Any]) -> List[Dict[str, Any]]:
     return all_data
 
 
+def summarize_data_for_llm(
+    all_data: List[Dict[str, Any]],
+    data_context: Dict[str, Any]
+) -> tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """
+    F-30: Python 数据降维 — 数据 > 5 行时用统计特征 + 前 5 行样本替代全量数据。
+
+    防止 Analyzer LLM 因数据量过大而算崩，同时保留数据趋势信息。
+
+    Args:
+        all_data: 从 data_context 提取的全量数据列表
+        data_context: 原始数据上下文
+
+    Returns:
+        (降维后的 all_data, 添加了 _meta 的 data_context)
+    """
+    if len(all_data) <= 5:
+        logger.info(f"[summarize_data_for_llm] {len(all_data)} rows, no reduction needed")
+        return all_data, data_context
+
+    # 计算统计特征（仅数值列）
+    if not all_data:
+        return all_data, data_context
+
+    # 找出所有可能的数值列
+    numeric_columns = []
+    sample_row = all_data[0]
+    for key, value in sample_row.items():
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            numeric_columns.append(key)
+
+    # 计算每列的统计摘要
+    statistical_summary = {}
+    for col in numeric_columns:
+        values = [row.get(col) for row in all_data if row.get(col) is not None]
+        if not values:
+            continue
+        try:
+            numeric_vals = [float(v) for v in values]
+            statistical_summary[col] = {
+                "count": len(numeric_vals),
+                "min": round(min(numeric_vals), 4),
+                "max": round(max(numeric_vals), 4),
+                "avg": round(sum(numeric_vals) / len(numeric_vals), 4),
+            }
+        except (ValueError, TypeError):
+            pass
+
+    # 保留前 5 行样本
+    sample_data_top_5 = all_data[:5]
+
+    # 降维后的 all_data（只含前5行）
+    reduced_all_data = sample_data_top_5
+
+    # 给 data_context 添加 _meta 元信息
+    enriched_context = dict(data_context)
+    for key in enriched_context:
+        if isinstance(enriched_context[key], dict) and enriched_context[key].get("success"):
+            enriched_context[key]["_meta"] = {
+                "statistical_summary": statistical_summary,
+                "sample_data_top_5": sample_data_top_5,
+                "total_rows": len(all_data),
+                "is_reduced": True,
+            }
+
+    logger.info(
+        f"[summarize_data_for_llm] Reduced {len(all_data)} rows → 5 samples, "
+        f"statistical_summary has {len(statistical_summary)} numeric columns"
+    )
+
+    return reduced_all_data, enriched_context
+
+
 async def run_analyzer_stream(
     state: AgentState,
 ) -> AsyncGenerator[str, None]:
@@ -303,6 +379,9 @@ async def run_analyzer_stream(
 
     # Extract all data
     all_data = _extract_all_data(data_context)
+
+    # F-30: Python 数据降维 — 数据 > 5 行时用统计特征替代全量数据
+    all_data, data_context = summarize_data_for_llm(all_data, data_context)
 
     if not all_data:
         yield "未查询到符合条件的数据。"

@@ -608,7 +608,7 @@
       ],
       "acceptance_criteria": "数据 > 5 行时自动降维，Analyzer 只收到统计特征 + 前 5 行样本",
       "estimated_time_save": "防止 Analyzer LLM 因数据量过大而算崩",
-      "passes": false
+      "passes": true
     }
   ]
 }

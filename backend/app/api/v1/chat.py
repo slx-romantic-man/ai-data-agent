@@ -801,14 +801,26 @@ async def stream_chat(
                     # Check for simple query (F-01) - skip LLM, use template
                     from app.agent.nodes.analyzer_node import is_simple_query as _is_simple_query, _format_simple_response as _format_simple_response
                     from app.agent.nodes.analyzer_node import _extract_all_data as _extract_all_data_func
+                    from app.agent.nodes.analyzer_node import summarize_data_for_llm as _summarize_data_for_llm
                     all_data = _extract_all_data_func(data_context)
 
+                    # F-01 先判断（基于原始数据）
                     if _is_simple_query(plan, all_data):
                         logger.info("[StreamChat] Simple query via F-01, using template (no LLM)")
                         final_answer_text = _format_simple_response(all_data, user_message)
                         async for payload in _stream_text(final_answer_text):
                             yield payload
+                        # F-30: all_data 已是降维结果（≤5行），直接用它构造 normalized_data
+                        if all_data:
+                            columns = list(all_data[0].keys()) if isinstance(all_data[0], dict) else []
+                            normalized_data = {"rows": all_data, "total": len(all_data), "columns": columns}
+                            yield _sse("data", normalized_data)
+                        yield _sse("done", {})
+                        return
                     else:
+                        # F-30: Python 数据降维 — 复杂查询降维后再送 analyzer
+                        all_data, data_context = _summarize_data_for_llm(all_data, data_context)
+                        stream_state["data_context"] = data_context
                         # F-10: Stream analysis output chunk by chunk
                         logger.info("[StreamChat] Streaming analysis output via SSE")
                         streamed_text = ""
