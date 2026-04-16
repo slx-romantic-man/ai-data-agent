@@ -1056,3 +1056,30 @@
 
   📊 状态: 27/30 功能完成 | 下一个: F-28 (Intent Planner Prompt 改造, priority=1, passes=false)
 
+  [2026-04-16] Session #32 — 编码智能体
+  ✅ F-28: Intent Planner Prompt 改造 — 增加话题切换防御 + 闲聊快车道
+  ✅ F-29: Router 闲聊拦截 — intent_type=chitchat 走 fast_reply 快车道
+
+  📝 修改文件:
+    - backend/app/agent/prompts/intent_planner_prompt.py
+      · 新增 intent_type="chitchat" 和 direct_reply 字段定义
+      · 新增【闲聊快车道】说明：打招呼/闲聊/无数据分析需求 → chitchat，direct_reply 填回复
+      · 新增【话题切换检测】说明：检测到话题切换时忽略历史上下文
+      · 新增 chitchat JSON 示例
+      · history section 窗口从 6 → 12，并过滤无效消息
+    - backend/app/agent/nodes/intent_planner_node.py
+      · _parse_llm_response() 增加 direct_reply 字段
+      · 新增 chitchat 快车道检测：intent_type="chitchat" 时直接返回 direct_reply，steps=[]
+    - backend/app/agent/graph.py
+      · should_continue_to_executor() 增加 chitchat 检测：extracted_filters.intent_type="chitchat" → "fast_reply"
+      · conditional_edges 增加 "fast_reply": END 路由
+
+  🧪 E2E 验证:
+    - "你好" → intent_type=chitchat ✅, direct_reply 有内容 ✅, steps=[] ✅
+    - "今天天气不错" → intent_type=chitchat ✅, direct_reply 有内容 ✅, steps=[] ✅
+    - 日志确认 "ChitChat detected, fast reply" ✅
+    - 日志确认无 executor/analyzer 节点调用（fast_reply 直接 END）
+    - Python 语法检查: ✅ py_compile 全部通过
+
+  📊 状态: 29/30 功能完成 | 下一个: F-30 (Python 数据降维, priority=2, passes=false)
+

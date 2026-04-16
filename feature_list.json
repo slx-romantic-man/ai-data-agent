@@ -568,7 +568,7 @@
       ],
       "acceptance_criteria": "闲聊走快车道（<5s 响应），话题切换时忽略无关历史",
       "estimated_time_save": "闲聊 ~50s → <5s",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-29",
@@ -588,7 +588,7 @@
       ],
       "acceptance_criteria": "chitchat 走快车道边，跳过 executor/analyzer，直接返回给前端",
       "estimated_time_save": "~50s → <5s（闲聊场景）",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-30",

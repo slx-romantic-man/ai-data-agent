@@ -119,6 +119,21 @@ async def intent_planner_node(state: AgentState, retrieved_apis: list, retrieved
     clarification_question = result_data.get("clarification_question")
     state["planning_reasoning"] = result_data.get("reasoning", "")
 
+    # 闲聊快车道：intent_type=chitchat 时直接回复，跳过 executor 和 analyzer
+    intent_type = result_data.get("intent_type", "api_query")
+    direct_reply = result_data.get("direct_reply")
+    if intent_type == "chitchat" and direct_reply:
+        logger.info(f"[IntentPlannerNode] ChitChat detected, fast reply: {direct_reply}")
+        state["messages"].append({
+            "role": "assistant",
+            "content": direct_reply,
+            "type": "chitchat"
+        })
+        state["extracted_filters"] = {"intent_type": "chitchat", "direct_reply": direct_reply}
+        state["plan"] = []
+        state["current_step"] = 0
+        return state
+
     if missing_info and clarification_question:
         # 条件不完备，返回反问
         logger.info(f"[IntentPlannerNode] Missing info detected: {missing_info}")
@@ -179,6 +194,7 @@ def _parse_llm_response(response: str) -> Dict[str, Any]:
 
     return {
         "intent_type": "api_query",
+        "direct_reply": None,
         "entities": {},
         "metrics": [],
         "dimensions": [],
