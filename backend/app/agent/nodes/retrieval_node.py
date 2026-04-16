@@ -14,6 +14,9 @@ from app.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+SYSTEM_TABLES = {"users", "api_configs", "api_call_logs", "system_config"}
+
+
 async def _load_tables() -> list:
     """加载数据库表元数据（独立异步任务，可与向量检索并行）"""
     try:
@@ -24,6 +27,10 @@ async def _load_tables() -> list:
 
         retrieved_tables = []
         for table_name, table_meta in db_metadata.tables.items():
+            # F-26: 过滤系统表
+            if table_name.lower() in SYSTEM_TABLES:
+                logger.info(f"[Retrieval Node] Skipping system table: {table_name}")
+                continue
             retrieved_tables.append({
                 "config_id": f"table_{table_name}",
                 "name": table_name,
@@ -32,7 +39,7 @@ async def _load_tables() -> list:
                 "schema": table_meta.to_schema_description()
             })
 
-        logger.info(f"[Retrieval Node] Retrieved {len(retrieved_tables)} database tables")
+        logger.info(f"[Retrieval Node] Retrieved {len(retrieved_tables)} database tables (system tables filtered)")
         return retrieved_tables
     except Exception as e:
         logger.warning(f"[Retrieval Node] Failed to load table metadata: {e}")
@@ -63,18 +70,22 @@ async def retrieval_node(state: AgentState, permission=None) -> Dict[str, Any]:
     retrieval_service = get_api_retrieval_service()
 
     # F-11: 向量检索和数据库表加载并行执行
+    # F-26: top_k=3 (从 10 降至 3)，Planner 只看前 2 张业务表
     retrieved_apis, retrieved_tables = await asyncio.gather(
         retrieval_service.get_apis_for_query_vector_only(
             query=query,
             user_id=user_id,
-            top_k=10
+            top_k=3
         ),
         _load_tables(),
     )
 
-    logger.info(f"[Retrieval Node] Retrieved {len(retrieved_apis)} APIs")
+    # F-26: 只给 Planner 传前 2 张最可能的业务表
+    tables_for_planner = retrieved_tables[:2]
+
+    logger.info(f"[Retrieval Node] Retrieved {len(retrieved_apis)} APIs, {len(retrieved_tables)} tables total, sending {len(tables_for_planner)} to planner")
 
     return {
         "retrieved_apis": retrieved_apis,
-        "retrieved_tables": retrieved_tables
+        "retrieved_tables": tables_for_planner
     }

@@ -998,3 +998,42 @@
   ✅ chmod +x init.sh: 已执行
   📊 状态: 24/30 功能完成 | 下一个: F-25 (priority=1, passes=false)
 
+  [2026-04-16] Session #29 — 编码智能体
+  ✅ F-25: 前端 sessionStorage 固化 currentSessionId
+
+  📝 修改文件:
+    - frontend/js/app-setup.js
+      · currentSessionId 初始化改为: ref(sessionStorage.getItem('current_session_id') || null)
+      · 新增 watch(currentSessionId, ...) 监听器: 值变化时同步写入 sessionStorage
+    - frontend/js/features/chat.js
+      · loadChatHistory() 新增逻辑: 若 currentSessionId 已设置（来自 sessionStorage），
+        优先从 conversations 列表中查找对应会话并加载，而非总默认取最新对话
+
+  🧪 E2E 验证 (Playwright headless Chrome):
+    - 登录后 sessionStorage 已有 current_session_id: ✅ (session-1776317345390)
+    - 发送消息后 sessionStorage ID 不变: ✅
+    - 刷新页面（F5）后 sessionStorage 同一 ID: ✅ (session-1776317345390)
+    - 刷新后仍停留在同一对话（currentSessionId 未归零）: ✅
+    - 无 JS console errors: ✅
+
+  📊 状态: 25/30 功能完成 | 下一个: F-26 (Retrieval 降载, priority=1, passes=false)
+
+  [2026-04-16] Session #30 — 编码智能体
+  ✅ F-26: Retrieval 降载 — top_k 10→3，系统表过滤，Planner 只看前 2 张表
+
+  📝 修改文件:
+    - backend/app/agent/nodes/retrieval_node.py
+      · SYSTEM_TABLES = {"users", "api_configs", "api_call_logs", "system_config"}
+      · _load_tables() 增加系统表过滤: if table_name.lower() in SYSTEM_TABLES: skip
+      · top_k: 10 → 3 (get_apis_for_query_vector_only)
+      · tables_for_planner = retrieved_tables[:2] — 只给 IntentPlanner 传前 2 张业务表
+      · 日志增强: "Retrieved 3 APIs, 8 tables total, sending 2 to planner"
+
+  🧪 E2E 验证:
+    - 天气查询: ✅ Retrieved 3 APIs, 8 tables total, sending 2 to planner
+    - 股票查询: ✅ IntentPlannerNode Available APIs: 3, Tables: 2
+    - 系统表过滤: ✅ "Skipping system table: api_call_logs", "Skipping system table: api_configs"
+    - Python 语法检查: ✅
+
+  📊 状态: 26/30 功能完成 | 下一个: F-27 (Intent Planner 历史窗口扩大, priority=1, passes=false)
+

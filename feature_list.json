@@ -528,7 +528,7 @@
       ],
       "acceptance_criteria": "retrieval 召回量精简，API top_k=3，系统表被过滤，Planner 只看到 2 张业务表",
       "estimated_time_save": "减少 Token 消耗",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-27",
