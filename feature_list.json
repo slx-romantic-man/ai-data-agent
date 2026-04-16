@@ -548,7 +548,7 @@
       ],
       "acceptance_criteria": "历史窗口扩大到 12 条，过滤无效消息，澄清上下文不被丢弃",
       "estimated_time_save": "N/A（准确性提升）",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-28",

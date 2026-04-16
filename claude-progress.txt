@@ -1037,3 +1037,22 @@
 
   📊 状态: 26/30 功能完成 | 下一个: F-27 (Intent Planner 历史窗口扩大, priority=1, passes=false)
 
+  [2026-04-16] Session #31 — 编码智能体
+  ✅ F-27: Intent Planner 历史窗口扩大 — [-6:] → [-12:] + 无效消息过滤
+
+  📝 修改文件:
+    - backend/app/agent/nodes/intent_planner_node.py
+      · Line 91-96: llm_messages.extend(messages[-6:]) → 改为 messages[-12:] + 过滤逻辑
+      · 过滤条件: 只保留 role=user/assistant 且有 content 的消息
+      · 空内容消息、system 角色消息均被过滤
+
+  🧪 E2E 验证:
+    - Python 逻辑验证: ✅ 模拟 25 条历史消息，取 last 12 过滤后得 12 条
+    - 对比旧/新: ✅ 旧逻辑 6 条 → 新逻辑 12 条
+    - 空内容过滤: ✅ role=assistant, content="" 被正确过滤
+    - 角色过滤: ✅ system 角色消息被正确过滤
+    - Python 语法检查: ✅ py_compile 通过
+    - 服务启动正常: ✅ bash init.sh 服务健康
+
+  📊 状态: 27/30 功能完成 | 下一个: F-28 (Intent Planner Prompt 改造, priority=1, passes=false)
+

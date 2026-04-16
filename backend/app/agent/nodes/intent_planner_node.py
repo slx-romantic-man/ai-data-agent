@@ -89,7 +89,13 @@ async def intent_planner_node(state: AgentState, retrieved_apis: list, retrieved
 
     llm_messages = [{"role": "system", "content": "你是一个专业的数据查询规划师，擅长理解用户意图并生成结构化的执行计划。"}]
     if is_clarification_followup and messages:
-        llm_messages.extend(messages[-6:])
+        # 扩大历史窗口到 [-12:]，只保留 role=user/assistant 且有 content 的消息
+        filtered_history = [
+            msg for msg in messages[-12:]
+            if msg.get("role") in ("user", "assistant")
+            and msg.get("content")
+        ]
+        llm_messages.extend(filtered_history)
     llm_messages.append({"role": "user", "content": prompt})
 
     # Check cache first
