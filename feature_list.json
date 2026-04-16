@@ -422,7 +422,7 @@
       ],
       "acceptance_criteria": "断网后自动重连，内容完整无重复，无 JS 报错，正常情况无副作用",
       "estimated_time_save": "N/A（可靠性加固）",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-22",

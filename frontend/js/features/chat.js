@@ -306,6 +306,74 @@ window.AppModules.createChatFeature = function(deps) {
         scrollToBottom();
     };
 
+    // F-21: Streaming chat with exponential backoff retry + deduplication
+    // Tracks charsReceived to skip already-processed content on reconnect
+    const streamChatWithRetry = async (sessionId, question, assistantMsg, onEvent, onReconnecting) => {
+        const MAX_RETRIES = 5;
+        const BASE_DELAY_MS = 1000;
+        const MAX_DELAY_MS = 30000;
+
+        let charsReceived = 0;  // Total chars processed, used for deduplication on reconnect
+
+        // Wrap onEvent to track charsReceived and deduplicate
+        const wrappedOnEvent = (event) => {
+            if (event.type === 'streaming_text' || event.type === 'answer') {
+                const text = event.data?.content || '';
+                if (text.length > 0) {
+                    // Deduplication: skip if the incoming text starts with already-received content
+                    const currentContent = assistantMsg.content || '';
+                    const currentBuffer = assistantMsg.answerBuffer || '';
+                    const alreadyHave = currentContent + currentBuffer;
+
+                    if (alreadyHave.length > 0 && text.startsWith(alreadyHave)) {
+                        // Skip already-processed content
+                        const remaining = text.slice(alreadyHave.length);
+                        if (remaining.length > 0) {
+                            charsReceived += remaining.length;
+                            onEvent({ ...event, data: { ...event.data, content: remaining } });
+                        }
+                        return;
+                    }
+                    // Also check if this exact text was already added (simple dedup)
+                    if (alreadyHave.length > 0 && text === alreadyHave.slice(-text.length)) {
+                        return;
+                    }
+                    charsReceived += text.length;
+                }
+            }
+            onEvent(event);
+        };
+
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                await api.streamChat(sessionId, question, wrappedOnEvent);
+                return; // Success
+            } catch (err) {
+                const isNetworkError = err.name === 'TypeError' ||
+                    err.message?.includes('fetch') ||
+                    err.message?.includes('network') ||
+                    err.message?.includes('Failed to');
+
+                if (attempt < MAX_RETRIES && isNetworkError) {
+                    const delay = Math.min(BASE_DELAY_MS * Math.pow(2, attempt), MAX_DELAY_MS);
+                    console.warn(`SSE connection failed (attempt ${attempt + 1}/${MAX_RETRIES + 1}), retrying in ${delay}ms:`, err.message);
+
+                    // Notify UI about reconnection attempt
+                    if (onReconnecting) {
+                        onReconnecting(attempt + 1, delay);
+                    }
+
+                    // Wait before retry
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    continue;
+                }
+
+                // Final failure or non-network error
+                throw err;
+            }
+        }
+    };
+
     const sendMessage = async () => {
         if (!chatInput.value.trim() || chatLoading.value) return;
 
@@ -322,9 +390,16 @@ window.AppModules.createChatFeature = function(deps) {
         }
 
         try {
-            await api.streamChat(currentSessionId.value, question, (event) => {
-                processStreamEvent(assistantMsg, event);
-            });
+            await streamChatWithRetry(
+                currentSessionId.value,
+                question,
+                assistantMsg,
+                (event) => processStreamEvent(assistantMsg, event),
+                (attempt, delay) => {
+                    // F-21: Optional reconnect notification (informational only)
+                    console.info(`Reconnecting... (attempt ${attempt}, next retry in ${delay}ms)`);
+                }
+            );
         } catch (err) {
             assistantMsg.content = '抱歉，处理您的请求时出现错误：' + (err.message || '未知错误');
             assistantMsg.answerBuffer = '';
