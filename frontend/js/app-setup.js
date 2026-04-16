@@ -20,7 +20,17 @@ window.AppSetup = function() {
         const chatInput = ref('');
         const chatLoading = ref(false);
         const chatContainer = ref(null);
-        const currentSessionId = ref(null);  // Current session ID for context
+        // F-25: sessionStorage persistence — restore currentSessionId on page load
+        const currentSessionId = ref(sessionStorage.getItem('current_session_id') || null);  // Current session ID for context
+
+        // F-25: Sync currentSessionId → sessionStorage on every change
+        watch(currentSessionId, (newVal) => {
+            if (newVal) {
+                sessionStorage.setItem('current_session_id', newVal);
+            } else {
+                sessionStorage.removeItem('current_session_id');
+            }
+        });
         const conversations = ref([]);  // All conversations (session-based grouping)
 
         const showTableModal = ref(false);

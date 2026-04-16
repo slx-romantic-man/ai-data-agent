@@ -454,6 +454,18 @@ window.AppModules.createChatFeature = function(deps) {
             const res = await api.getHistory();
             conversations.value = res.conversations || [];
             if (conversations.value.length > 0) {
+                // F-25: If a currentSessionId is already set (from sessionStorage), try to load
+                // that specific conversation instead of defaulting to the latest
+                const persistedSessionId = currentSessionId.value;
+                if (persistedSessionId) {
+                    const savedConv = conversations.value.find(c => c.id === persistedSessionId);
+                    if (savedConv) {
+                        messages.value = savedConv.messages || [];
+                        currentSessionId.value = savedConv.id;
+                        return;
+                    }
+                }
+                // Fallback: load latest conversation
                 const latest = conversations.value[0];
                 messages.value = latest.messages || [];
                 currentSessionId.value = latest.id;

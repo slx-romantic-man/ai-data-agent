@@ -972,6 +972,29 @@
   ✅ claude-progress.txt: 更新进度状态，新增第十三节（新需求追加）
   ✅ init.sh: 已存在，质量合格，无需修改 ✅
   ✅ .gitignore: 已存在 ✅
+  📊 状态: 24/30 功能完成 | 下一个: F-25 (priority=1, passes=false)
+
+  [2026-04-16] Session #29 — 编码智能体
+  ✅ F-25: 前端 sessionStorage 固化 currentSessionId
+
+  📝 修改文件:
+    - frontend/js/app-setup.js
+      · currentSessionId 初始化改为: ref(sessionStorage.getItem('current_session_id') || null)
+      · 新增 watch(currentSessionId, ...) 监听器: 值变化时同步写入 sessionStorage
+    - frontend/js/features/chat.js
+      · loadChatHistory() 新增逻辑: 若 currentSessionId 已设置（来自 sessionStorage），
+        优先从 conversations 列表中查找对应会话并加载，而非总默认取最新对话
+
+  🧪 E2E 验证 (Playwright headless Chrome):
+    - 登录后 sessionStorage 已有 current_session_id: ✅ (session-1776317345390)
+    - 发送消息后 sessionStorage ID 不变: ✅
+    - 刷新页面（F5）后 sessionStorage 同一 ID: ✅ (session-1776317345390)
+    - 刷新后仍停留在同一对话（currentSessionId 未归零）: ✅
+    - 无 JS console errors: ✅
+
+  📊 状态: 25/30 功能完成 | 下一个: F-26 (Retrieval 降载, priority=1, passes=false)
+
+
   ✅ chmod +x init.sh: 已执行
   📊 状态: 24/30 功能完成 | 下一个: F-25 (priority=1, passes=false)
 

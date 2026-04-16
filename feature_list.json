@@ -508,7 +508,7 @@
       ],
       "acceptance_criteria": "刷新页面后 currentSessionId 不归零，后端不开新档，对话内容保持连贯",
       "estimated_time_save": "N/A（体验优化）",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-26",
