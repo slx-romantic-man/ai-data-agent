@@ -1234,3 +1234,23 @@
 
   📊 状态: 32/37 功能完成 | 下一个: F-34 (方案B, 跳过), F-36 (前端 thought 逐块显示调优)
 
+  [2026-04-17] Session #36 — 编码智能体
+  ✅ F-31: 思考过程逐字流式输出 — 浏览器 E2E 验证通过
+
+  📝 验证方法:
+    - 后端 SSE curl 测试: 确认 thought 事件以 3-4 字符为单位逐个流式发送
+    - Playwright 浏览器 E2E 测试: 模拟登录 + 发送"查询北京的天气"
+    - auth/me 端点拦截返回模拟数据，确保登录成功
+
+  🧪 E2E 验证结果:
+    - SSE thought chunk 数量: 70+ 个事件 (4 steps, 每 step 3-char chunks) ✅
+    - 步骤内容逐字流式出现 ✅
+    - 推理面板显示 4 个步骤 ✅
+    - 步骤内容包含完整思考过程 ✅
+    - "北京" 出现在响应中 ✅
+    - 天气相关数据可见 ✅
+    - Console JS errors: 0 ✅
+    - F-33 Solution A 确认有效: `_stream_thought` sync generator + for-loop 迭代工作正常
+
+  📊 状态: 33/37 功能完成 | 下一个: F-36 (前端 thought 逐块显示调优验证)
+

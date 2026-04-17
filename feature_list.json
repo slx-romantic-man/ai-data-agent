@@ -632,7 +632,7 @@
       ],
       "acceptance_criteria": "思考内容（thought）逐字显示，打字机效果流畅；各步骤依次出现而非瞬间全部展示；历史记录中思考内容正确保存",
       "estimated_time_save": "感知提速（思考过程可见性提升）",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F-32",
