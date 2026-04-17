@@ -1222,5 +1222,15 @@
     - 无 TypeError: 'async for' requires __aiter__ method
     - thought 内容正确流式发送
 
-  📊 状态: 32/37 功能完成 | 下一个: F-34 (方案B, 如果需要), F-36 (前端 thought 逐块显示验证)
+  🧪 E2E 浏览器验证 (Playwright headed Chromium):
+    - 加载 frontend/index.html ✅
+    - 登录 admin/admin123 ✅
+    - 发送"查询北京的天气" → SSE 流向 localhost:8002 ✅
+    - 推理面板出现 4 个步骤按钮 ✅
+    - 步骤内容逐字流式出现（截图截取到 step 2 正在写入中）✅
+    - 左侧天气数据正常展示 ✅
+    - 无控制台 JS 错误 ✅
+    - 截图: test_result.png
+
+  📊 状态: 32/37 功能完成 | 下一个: F-34 (方案B, 跳过), F-36 (前端 thought 逐块显示调优)
 
