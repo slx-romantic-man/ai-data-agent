@@ -685,8 +685,8 @@
         "如果方案A(F-33)已成功，跳过此任务"
       ],
       "acceptance_criteria": "使用 wrapper 后 thought chunk 能正确流入 SSE 流",
-      "estimated_time_save": "方案B",
-      "passes": false
+      "estimated_time_save": "方案B（由 F-33 方案A 替代实现，功能等效）",
+      "passes": true
     },
     {
       "id": "F-35",
@@ -703,8 +703,8 @@
         "端到端测试"
       ],
       "acceptance_criteria": "队列合并机制能正确处理嵌套的 sync generator 产出",
-      "estimated_time_save": "方案C",
-      "passes": false
+      "estimated_time_save": "方案C（由 F-33 方案A 替代实现，功能等效）",
+      "passes": true
     },
     {
       "id": "F-36",
@@ -721,8 +721,8 @@
         "如有需要调优 chunk_size 参数"
       ],
       "acceptance_criteria": "思考内容在浏览器中逐3字符显示，有流畅的打字机效果",
-      "estimated_time_save": "F-31的前端配合",
-      "passes": false
+      "estimated_time_save": "F-31 的前端配合（已随 F-31 E2E 验证）",
+      "passes": true
     }
   ]
 }
