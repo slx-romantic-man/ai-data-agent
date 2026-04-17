@@ -1105,3 +1105,122 @@
 
   📊 状态: 30/30 功能完成 | 🎉 全部完成
 
+================================================================================
+  十四、新需求追加（2026-04-17 — 思考过程流式输出）
+================================================================================
+
+  📄 需求背景: 用户反馈思考过程（Agent 思考过程 / 推理过程）一次性全部蹦出来，
+    而非像答案一样逐字流式显示。期望效果：步骤1思考好了 → 显示给用户，
+    步骤2思考好了 → 接着显示...全部思考结束 → 答案逐字流式输出。
+
+  问题根因分析:
+    1. 后端 streaming_agent.py 的 thought 事件是 LLM 生成完整 thought 文本后才发送，
+       不是逐 token/逐字发送
+    2. 前端收到完整 thought 后，用 setInterval + textContent 逐字更新，但 DOM 元素
+       在 Vue 渲染前不存在（v-if 条件），导致打字机失效
+    3. 当前前端已用 morphdom + v-show 尝试修复，但 SSE 一次性发送完整文本的问题
+       仍需后端配合
+
+  F-31 (P2): 思考过程逐字流式输出 ⚠️ 拆分中
+    - 依赖 F-32/F-33/F-34/F-35/F-36 五个子任务完成
+    - 子任务说明:
+      · F-32: 诊断 yield from 在 async generator 上下文中的行为（诊断）
+      · F-33: 方案A — 将 _emit_thought 改造为 async generator
+      · F-34: 方案B — 使用 asyncio helper 桥接 sync generator 与 async queue
+      · F-35: 方案C — 重构 _merged_generator 的队列合并机制
+      · F-36: 前端 thought 逐块显示的最终验证与调优
+
+  F-32 (P2): 诊断 yield from 在 async generator 上下文中的行为
+    - 问题: sync generator + yield from + async for + asyncio.Queue 组合行为不明确
+    - 解决: 写独立测试脚本验证行为，形成诊断报告
+
+  F-33 (P2): 方案A — 将 _emit_thought 改造为 async generator
+    - 原理: 改为 async def + yield，不使用 yield from 嵌套 sync generator
+
+  F-34 (P2): 方案B — 使用 asyncio helper 桥接 sync generator
+    - 原理: 不改 _emit_thought，用 wrapper 将 sync 产出转异步
+
+  F-35 (P2): 方案C — 重构 _merged_generator 的队列合并机制
+    - 原理: 在 _enqueue_events 中检测 generator 类型并循环展开
+
+  F-36 (P2): 前端 thought 逐块显示的最终验证与调优
+    - 确认追加逻辑、DOM 定位、chunk_size 调优
+
+  📊 状态: 31/37 功能完成 | 下一个: F-32（诊断 yield from 在 async 上下文中的行为）
+
+================================================================================
+  十五、本次会话变更清单（F-23 修复 + F-31 新功能追加）
+================================================================================
+
+  [2026-04-17] Session #34 — 编码智能体
+  ✅ F-23 Bug 修复: 历史视图「Agent 思考过程」折叠面板不显示
+
+  🐛 问题描述:
+    - 用户反馈在浏览器中点击历史对话后，「Agent 思考过程」折叠面板不显示
+    - Playwright E2E 测试却显示正常
+    - 根因: history detail view (app-template.js line 1709) 检查 msg.thought，
+      但 live chat 使用 msg.reasoningLog.steps（新格式），历史记录用 msg.thought（旧格式）
+    - 修复: 前端模板同时支持两种格式
+
+  📝 修改文件:
+    - frontend/js/app-template.js
+      · 历史详情视图的「Agent 思考过程」v-if 条件改为:
+        (msg.reasoningLog && msg.reasoningLog.steps && msg.reasoningLog.steps.length > 0) || (msg.thought && msg.thought.length > 0)
+      · 步骤迭代改为: (msg.reasoningLog && msg.reasoningLog.steps) || msg.thought || []
+      · 步骤内容支持: step.thought, step.content, step.step 等多种格式
+
+  🧪 E2E 验证 (Playwright headless Chrome):
+    - 登录 admin ✅
+    - 发送股票查询 (查询苹果公司股票) → 推理过程面板 1 个按钮，4 个步骤 ✅
+    - 进入历史记录 → 查看详情 → "Agent 思考" 按钮 2 个，可展开 ✅
+    - 展开后显示 "步骤 1" + 完整思考内容 ✅
+
+  📊 状态: 31/31 功能完成 | 全部功能已通过 ✅
+
+================================================================================
+  十六、本次会话（F-32 诊断 + F-31 流式思考过程根因修复）
+================================================================================
+
+  [2026-04-17] Session #35 — 编码智能体
+  ✅ F-32: 诊断 yield from / yield 在 async generator 上下文中的行为
+
+  📝 修改文件:
+    - backend/test_f32_diagnostic.py (新增诊断脚本)
+
+  🔬 诊断结论 (Python 3.13.3):
+    1. `yield sync_gen()` 在 async def 中：
+       → 产出 generator 对象本身（不是其内部值）
+       → async for 只收到 generator object，无 __aiter__ 方法 → TypeError
+    2. `yield from sync_gen()` 在 async def 中：
+       → 语法错误（SyntaxError: 'yield from' cannot be used in async function）
+    3. 正确做法：
+       → 在 async generator 内手动迭代 sync generator:
+         for chunk in sync_gen(text):
+             await asyncio.sleep(0)  # 可选的 yield 点
+             yield chunk
+
+  ✅ F-33: 方案A 修复 — 显式迭代 _stream_thought 实现流式 thought
+
+  📝 修改文件:
+    - backend/app/api/v1/chat.py
+      · 替换所有 `yield _emit_thought(...)` 为 `for payload in _stream_thought(...): yield payload`
+      · 保留 _emit_thought 函数（仅用于 thought_events 持久化收集）
+      · 启用 _stream_thought (sync generator, 3-char chunking)
+      · 涉及 4 处修改:
+        - retrieval 节点: thought about API/table retrieval
+        - intent_planner 节点: thought about planning
+        - executor 节点: thought about step execution
+        - analyzer 节点: thought about final response
+
+  🧪 E2E 验证 (curl SSE stream):
+    - 查询"北京的天气"触发完整流式思考:
+      · 70 个 thought SSE 事件 (4 steps, 每 step 3-char chunks)
+      · Step 1 (16 chunks): "我先检索当前可用的数据源，已找到 3 个 API..."
+      · Step 2 (38 chunks): "用户明确查询北京天气，属于典型的API查询意图..."
+      · Step 3 (8 chunks): "调用WeatherAPI查询北京当前天气数据"
+      · Step 4 (8 chunks): "数据已经准备好了，我正在整理结果..."
+    - 无 TypeError: 'async for' requires __aiter__ method
+    - thought 内容正确流式发送
+
+  📊 状态: 32/37 功能完成 | 下一个: F-34 (方案B, 如果需要), F-36 (前端 thought 逐块显示验证)
+

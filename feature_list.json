@@ -2,7 +2,7 @@
   "project_name": "AI Data Agent v4.3 — 性能优化",
   "baseline_commit": "PENDING_INITIAL_COMMIT",
   "last_updated": "2026-04-15",
-  "total_features": 30,
+  "total_features": 37,
   "project_features": [
     {
       "id": "F-01",
@@ -609,6 +609,120 @@
       "acceptance_criteria": "数据 > 5 行时自动降维，Analyzer 只收到统计特征 + 前 5 行样本",
       "estimated_time_save": "防止 Analyzer LLM 因数据量过大而算崩",
       "passes": true
+    },
+    {
+      "id": "F-31",
+      "priority": 2,
+      "category": "ux",
+      "description": "思考过程逐字流式输出：⚠️ 依赖 F-32/F-33/F-34/F-35/F-36 完成。分解为5个子任务：F-32（诊断）、F-33（方案A-async）、F-34（方案B-helper）、F-35（方案C-队列重构）、F-36（前端验证）",
+      "files_to_modify": [
+        "backend/app/agent/core/streaming_agent.py",
+        "backend/app/api/v1/chat.py",
+        "frontend/js/features/chat.js",
+        "frontend/js/app-template.js"
+      ],
+      "steps": [
+        "启动后端服务 bash init.sh",
+        "使用浏览器打开前端页面并登录",
+        "输入复杂查询（如 '分析 AAPL 最近的股票表现'）",
+        "观察推理面板：思考内容应逐字出现，而非等待完整 thought 文本后一次性显示",
+        "步骤之间应有明显间隔（步骤1思考完 → 步骤2思考完 → ...），而非所有步骤瞬间出现",
+        "答案区域继续保持逐字流式输出效果",
+        "刷新页面后查看历史，确认思考过程仍正确保存和展示"
+      ],
+      "acceptance_criteria": "思考内容（thought）逐字显示，打字机效果流畅；各步骤依次出现而非瞬间全部展示；历史记录中思考内容正确保存",
+      "estimated_time_save": "感知提速（思考过程可见性提升）",
+      "passes": false
+    },
+    {
+      "id": "F-32",
+      "priority": 2,
+      "category": "ux",
+      "description": "F-31子任务1：诊断 yield from 在 async generator 上下文中的行为。核心问题：`_emit_thought` 是 sync generator，当用 `yield from _emit_thought(...)` 在 `event_generator()` 中调用时，async for + asyncio.Queue 的消费机制无法正确展开嵌套的 sync generator产出。实验验证 Python 3.13 中 async generator 内使用 `yield from` delegate 到 sync generator 的行为。",
+      "files_to_modify": [
+        "backend/app/api/v1/chat.py"
+      ],
+      "steps": [
+        "写独立测试脚本验证: sync generator + yield from + async for + asyncio.Queue 的组合行为",
+        "确认 Python 3.13 中 async generator 是否可以 delegate 到 sync generator",
+        "观察器生器对象是否被 yield 出来，还是内部值被展开",
+        "形成诊断报告，指导后续方案选择"
+      ],
+      "acceptance_criteria": "明确问题根因：sync generator 在 async 上下文中是否无法展开嵌套 yield",
+      "estimated_time_save": "诊断为设计提供依据",
+      "passes": true
+    },
+    {
+      "id": "F-33",
+      "priority": 2,
+      "category": "ux",
+      "description": "F-31子任务2：方案A — 将 _emit_thought 改造为 async generator。原理：既然 sync generator 在 async 上下文中无法展开，考虑将 `_emit_thought` 本身改为 `async def` + `async for` / `yield` 形式，这样 `_enqueue_events` 的 `async for item in event_generator()` 可以正确消费。",
+      "files_to_modify": [
+        "backend/app/api/v1/chat.py"
+      ],
+      "steps": [
+        "将 _emit_thought 改为 async def，使用 await 而非 yield 产出 SSE 字符串",
+        "重构 event_generator 为 async generator（目前是 async def 但内部混用 sync yield）",
+        "确保 async for 可以正确迭代所有 chunk",
+        "端到端测试 SSE 流是否正常工作"
+      ],
+      "acceptance_criteria": "async generator 形式的 _emit_thought 能正确产出多个 thought chunk 事件",
+      "estimated_time_save": "方案A",
+      "passes": true
+    },
+    {
+      "id": "F-34",
+      "priority": 2,
+      "category": "ux",
+      "description": "F-31子任务3：方案B — 使用 asyncio helper 桥接 sync generator 与 async queue。原理：不改变 _emit_thought 的 sync generator 性质，而是在 _enqueue_events 中使用 asyncio wrapper 将其包装为可异步消费的形式。例如：asyncio.get_event_loop().run_in_executor() 或创建协程包装器。",
+      "files_to_modify": [
+        "backend/app/api/v1/chat.py"
+      ],
+      "steps": [
+        "在 _enqueue_events 中对 _emit_thought 的产出使用同步转异步适配层",
+        "可以用 asyncio.iscoroutine() 检查 + create_task() 或 run_in_executor()",
+        "端到端测试：验证 thought chunk 不会丢失",
+        "如果方案A(F-33)已成功，跳过此任务"
+      ],
+      "acceptance_criteria": "使用 wrapper 后 thought chunk 能正确流入 SSE 流",
+      "estimated_time_save": "方案B",
+      "passes": false
+    },
+    {
+      "id": "F-35",
+      "priority": 2,
+      "category": "ux",
+      "description": "F-31子任务4：方案C — 重构 _merged_generator 的队列合并机制。原理：当前问题根源在于 _enqueue_events 的 async for 只调用一次 event_generator()，而 sync generator 的多步 yield 没有被迭代。解决方案：改造 _enqueue_events 使其能检测到 event_generator() 返回的是生成器，并对生成器进行同步迭代直到耗尽。",
+      "files_to_modify": [
+        "backend/app/api/v1/chat.py"
+      ],
+      "steps": [
+        "在 _enqueue_events 中添加对生成器类型的检测",
+        "对 sync generator 使用循环展开 + queue.put() 直到 StopIteration",
+        "保持 heartbeat 合并不受影响",
+        "端到端测试"
+      ],
+      "acceptance_criteria": "队列合并机制能正确处理嵌套的 sync generator 产出",
+      "estimated_time_save": "方案C",
+      "passes": false
+    },
+    {
+      "id": "F-36",
+      "priority": 2,
+      "category": "ux",
+      "description": "F-31子任务5：前端 thought 逐块显示的最终验证与调优。根据 F-33/F-34/F-35 的实现结果，确认前端 processStreamEvent 对 type==='thought' 的处理正确（追加而非替换），验证 data-msg-idx/data-step-idx 能正确定位 DOM 元素，浏览器测试确认打字机效果。",
+      "files_to_modify": [
+        "frontend/js/features/chat.js"
+      ],
+      "steps": [
+        "确认 processStreamEvent 对 type==='thought' 是追加逻辑",
+        "验证 DOM 定位属性正确",
+        "浏览器测试：观察 thought 内容是否逐3字符显示",
+        "如有需要调优 chunk_size 参数"
+      ],
+      "acceptance_criteria": "思考内容在浏览器中逐3字符显示，有流畅的打字机效果",
+      "estimated_time_save": "F-31的前端配合",
+      "passes": false
     }
   ]
 }

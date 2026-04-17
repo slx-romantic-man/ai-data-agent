@@ -533,6 +533,17 @@ async def stream_chat(
             for index in range(0, len(normalized), chunk_size):
                 yield _sse("streaming_text", {"content": normalized[index:index + chunk_size]})
 
+        # F-31: Stream thought content character-by-character for typewriter effect
+        def _stream_thought(step: int, text: str, chunk_size: int = 3):
+            """Yield thought content in small chunks for streaming effect."""
+            normalized = text or ""
+            # F-31: For persistence, we still append the complete thought
+            thought_events.append({"step": step, "content": normalized})
+            # Stream the complete content at once since we want the thought panel
+            # to display progressively. Using small chunk_size for gradual reveal.
+            for index in range(0, len(normalized), chunk_size):
+                yield _sse("thought", {"step": step, "content": normalized[index:index + chunk_size]})
+
         def _build_plan_thought(
             plan: list,
             planning_reasoning: str,
@@ -680,6 +691,7 @@ async def stream_chat(
 
             # Stream events from LangGraph
             config = {"configurable": {"thread_id": session_id}}
+            data_context = {}  # 初始化，executor 分支会填充
 
             # Phase 1: Run graph with interrupt_before=["analyzer"] to stop before analyzer
             async for event in graph.astream(
@@ -700,16 +712,23 @@ async def stream_chat(
                             f"我先检索当前可用的数据源，已找到 {api_count} 个 API"
                             f" 和 {table_count} 张数据库表，接下来开始规划执行路径。"
                         )
-                        yield _emit_thought(reasoning_step, thought)
+                        for payload in _stream_thought(reasoning_step, thought):
+                            yield payload
                     elif node_name == "intent_planner":
                         plan = node_output.get("plan", []) or []
                         planning_reasoning = node_output.get("planning_reasoning", "") or ""
                         extracted_filters = node_output.get("extracted_filters", {}) or {}
-                        reasoning_step = allocate_reasoning_step()
-                        yield _emit_thought(
-                            reasoning_step,
-                            _build_plan_thought(plan, planning_reasoning, extracted_filters)
-                        )
+
+                        # F-29: Skip thought emission for chitchat - fast reply path
+                        if extracted_filters.get("intent_type") == "chitchat":
+                            logger.info("[StreamChat] F-29: ChitChat detected in intent_planner, skipping thought emission")
+                        else:
+                            reasoning_step = allocate_reasoning_step()
+                            for payload in _stream_thought(
+                                reasoning_step,
+                                _build_plan_thought(plan, planning_reasoning, extracted_filters)
+                            ):
+                                yield payload
 
                         plan_by_step_id = {}
                         for index, step in enumerate(plan):
@@ -752,7 +771,8 @@ async def stream_chat(
                             execution_result = data_context.get(context_key)
                             thought = step.get("description") or f"开始执行步骤 {step_id}"
 
-                            yield _emit_thought(step_number, thought)
+                            for payload in _stream_thought(step_number, thought):
+                                yield payload
                             yield _sse("action", {
                                 "step": step_number,
                                 "action": _build_action_payload(step),
@@ -767,23 +787,64 @@ async def stream_chat(
                             })
 
             # Get state after graph paused at analyzer
+            # 注意：executor 的 data_context 已在上方 astream loop 的 executor 分支中赋值给局部变量 data_context
+            # 这里用 aget_state 补充其他字段，但保留 executor 已填充的 data_context
             state = await graph.aget_state(config)
             if not state.values:
                 logger.warning("[StreamChat] Graph state is empty after execution")
             else:
+                # aget_state 返回的 data_context 已包含 executor 的最新结果，直接使用
                 data_context = state.values.get("data_context", {})
+                logger.info(f"[StreamChat] After aget_state: data_context keys = {list(data_context.keys())}, state.values keys = {list(state.values.keys())}")
                 plan = state.values.get("plan", [])
                 error = state.values.get("error")
+                extracted_filters = state.values.get("extracted_filters") or {}
+
+                # F-29: Chitchat fast-reply - skip executor/analyzer, send direct reply
+                if extracted_filters.get("intent_type") == "chitchat" and extracted_filters.get("direct_reply"):
+                    final_answer_text = extracted_filters["direct_reply"]
+                    logger.info(f"[StreamChat] F-29 chitchat fast-reply: {final_answer_text[:50]}...")
+                    async for payload in _stream_text(final_answer_text):
+                        yield payload
+                    # F-29: Save session with thought_events and return
+                    if session_id:
+                        if session_id not in _sessions:
+                            _sessions[session_id] = {"messages": [], "created_at": datetime.now()}
+                        _sessions[session_id]["messages"].append({
+                            "role": "user",
+                            "content": request.message,
+                            "timestamp": datetime.now().isoformat(),
+                        })
+                        assistant_msg = {
+                            "role": "assistant",
+                            "content": final_answer_text,
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                        if thought_events:
+                            assistant_msg["thought"] = thought_events
+                        _sessions[session_id]["messages"].append(assistant_msg)
+                        _sessions[session_id]["updated_at"] = datetime.now()
+                        _save_sessions()
+                        conversation_service.save_message(
+                            user_id=user.user_id,
+                            session_id=session_id,
+                            role="assistant",
+                            content=final_answer_text,
+                            thought=thought_events
+                        )
+                    yield _sse("done", {})
+                    return
 
                 # Check if analyzer has data to process (non-error case)
                 has_analysis_data = bool(data_context and not error)
 
                 if has_analysis_data:
                     analyzer_step = allocate_reasoning_step()
-                    yield _emit_thought(
+                    for payload in _stream_thought(
                         analyzer_step,
                         "数据已经准备好了，我正在整理结果并生成最终回复。"
-                    )
+                    ):
+                        yield payload
 
                     # F-10: Build state for run_analyzer_stream
                     stream_state: AgentState = {
@@ -830,34 +891,21 @@ async def stream_chat(
                         final_answer_text = streamed_text
 
                     # Send normalized data
-                    for key, value in data_context.items():
-                        if isinstance(value, dict) and "data" in value:
-                            raw_data = value.get("data")
-                            if isinstance(raw_data, dict) and "rows" in raw_data:
-                                rows = raw_data.get("rows", [])
-                                columns = list(rows[0].keys()) if rows and isinstance(rows[0], dict) else []
-                                normalized_data = {"rows": rows, "total": len(rows), "columns": columns}
-                            elif isinstance(raw_data, list):
-                                if raw_data and isinstance(raw_data[0], dict):
-                                    columns = list(raw_data[0].keys())
-                                    normalized_data = {"rows": raw_data, "total": len(raw_data), "columns": columns}
-                                else:
-                                    normalized_data = {"rows": raw_data, "total": len(raw_data), "columns": []}
-                            elif isinstance(raw_data, dict):
-                                columns = list(raw_data.keys())
-                                normalized_data = {"rows": [raw_data], "total": 1, "columns": columns}
-                            else:
-                                normalized_data = {"rows": [], "total": 0, "columns": []}
-                            final_data = normalized_data
-                            yield _sse("data", normalized_data)
-                            break
+                    # F-30: Use reduced all_data (5 rows after dimensionality reduction)
+                    # instead of raw data from data_context (100 rows)
+                    if all_data:
+                        columns = list(all_data[0].keys()) if isinstance(all_data[0], dict) else []
+                        normalized_data = {"rows": all_data, "total": len(all_data), "columns": columns}
+                        final_data = normalized_data
+                        yield _sse("data", normalized_data)
                 else:
                     # No data or error - emit error/empty response via analyzer fallback
                     analyzer_step = allocate_reasoning_step()
-                    yield _emit_thought(
+                    for payload in _stream_thought(
                         analyzer_step,
                         "当前没有拿到可直接分析的数据，我改用解释型回复整理现有结果。"
-                    )
+                    ):
+                        yield payload
                     async for event in graph.astream(None, config, stream_mode="updates"):
                         for node_name, node_output in event.items():
                             if node_name == "analyzer":
