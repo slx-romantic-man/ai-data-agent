@@ -196,7 +196,7 @@ echo ""
 echo "🔥 Starting backend server on port ${SERVER_PORT}..."
 
 cd "${BACKEND_DIR}"
-uvicorn app.main:app --host 0.0.0.0 --port "${SERVER_PORT}" --reload \
+"${PYTHON_CMD}" -m uvicorn app.main:app --host 0.0.0.0 --port "${SERVER_PORT}" --reload \
   > "${SERVER_LOG}" 2>&1 &
 SERVER_PID=$!
 echo "${SERVER_PID}" > "${PID_FILE}"

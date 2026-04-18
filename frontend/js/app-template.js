@@ -258,14 +258,14 @@ window.AppTemplate = `
                                                     <div v-for="(step, stepIdx) in msg.reasoningLog.steps" :key="stepIdx" class="border-l-2 border-purple-300 pl-3">
                                                         <div class="text-xs font-medium text-purple-700 mb-1">步骤 {{ step.step_number || stepIdx + 1 }}</div>
                                                         <!-- Thought -->
-                                                        <div v-if="step.thought" class="mb-2">
+                                                        <div v-show="step.thought" class="mb-2">
                                                             <div class="flex items-center space-x-1 text-xs font-medium text-blue-600">
                                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                                                                 </svg>
                                                                 <span>思考：</span>
                                                             </div>
-                                                            <div class="text-xs text-gray-600 bg-blue-50 p-2 rounded mt-1">{{ step.thought }}<span v-if="msg.isThinking && step === msg.reasoningLog.steps[msg.reasoningLog.steps.length - 1] && !step.action && !step.observation" class="typewriter-cursor"></span></div>
+                                                            <div class="text-xs text-gray-600 bg-blue-50 p-2 rounded mt-1 thought-typing-target whitespace-pre-wrap">{{ step.thought }}<span v-if="msg.isThinking && step === msg.reasoningLog.steps[msg.reasoningLog.steps.length - 1] && !step.action && !step.observation" class="typewriter-cursor"></span></div>
                                                         </div>
                                                         <!-- Action -->
                                                         <div v-if="step.action" class="mb-2">
@@ -323,10 +323,7 @@ window.AppTemplate = `
                                         </div>
 
                                         <div class="text-gray-800 markdown-content">
-                                            <!-- Typing face: morphdom target (F-17) -->
-                                            <div v-show="msg.isAnswerTyping" class="typing-active typing-target" v-html="msg.content"></div>
-                                            <!-- Static face: after typing done (F-17) -->
-                                            <div v-show="!msg.isAnswerTyping && msg.content" class="markdown-body" v-html="renderSafeMarkdown(msg.content)"></div>
+                                            <div v-show="msg.content" class="markdown-body" v-html="renderSafeMarkdown(msg.content)"></div>
                                             <span v-if="msg.isAnswerTyping" class="typewriter-cursor mt-1"></span>
                                         </div>
 
@@ -1706,17 +1703,21 @@ window.AppTemplate = `
                                             </div>
                                             <div v-else class="flex flex-col justify-start mb-3">
                                                 <!-- Agent thinking toggle (F-23) -->
-                                                <div v-if="msg.thought && msg.thought.length > 0" class="mb-2">
+                                                <!-- Support both msg.reasoningLog.steps (live) and msg.thought (from history) -->
+                                                <div v-if="(msg.reasoningLog && msg.reasoningLog.steps && msg.reasoningLog.steps.length > 0) || (msg.thought && msg.thought.length > 0)" class="mb-2">
                                                     <button class="text-xs text-zinc-400 hover:text-zinc-600 flex items-center gap-1" @click="msg._thoughtExpanded = !msg._thoughtExpanded">
                                                         <svg class="w-3 h-3 transition-transform" :class="msg._thoughtExpanded ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                                         </svg>
-                                                        Agent 思考过程 ({{ msg.thought.length }} 步)
+                                                        Agent 思考过程 ({{ (msg.reasoningLog && msg.reasoningLog.steps) ? msg.reasoningLog.steps.length : (msg.thought ? msg.thought.length : 0) }} 步)
                                                     </button>
                                                     <div v-if="msg._thoughtExpanded" class="mt-2 bg-zinc-50 rounded-lg border border-zinc-200 p-3 text-xs text-zinc-600 space-y-2">
-                                                        <div v-for="(step, sIdx) in msg.thought" :key="sIdx" class="border-l-2 border-zinc-300 pl-3">
-                                                            <div class="font-medium text-zinc-700">步骤 {{ (step.step || sIdx + 1) }}</div>
-                                                            <div>{{ step.content || step.thought || step }}</div>
+                                                        <div v-for="(step, sIdx) in (msg.reasoningLog && msg.reasoningLog.steps) || msg.thought || []" :key="sIdx" class="border-l-2 border-zinc-300 pl-3">
+                                                            <div class="font-medium text-zinc-700">步骤 {{ step.step_number || step.step || sIdx + 1 }}</div>
+                                                            <div v-if="step.thought">{{ step.thought }}</div>
+                                                            <div v-else-if="step.content">{{ step.content }}</div>
+                                                            <div v-if="step.action" class="text-purple-600">动作: {{ step.action }}</div>
+                                                            <div v-if="step.observation" class="text-green-600">观察: {{ step.observation }}</div>
                                                         </div>
                                                     </div>
                                                 </div>

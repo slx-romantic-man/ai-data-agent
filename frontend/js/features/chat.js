@@ -39,7 +39,7 @@ window.AppModules.createChatFeature = function(deps) {
         streamEnded: false,
         answerBuffer: '',
         answerTypewriterInterval: null,
-        thoughtTypewriterInterval: null
+        thoughtRafId: null
     });
 
     const ensureReasoningStep = (assistantMsg, stepNum) => {
@@ -47,7 +47,8 @@ window.AppModules.createChatFeature = function(deps) {
             assistantMsg.reasoningLog.steps.push({
                 step_number: assistantMsg.reasoningLog.steps.length + 1,
                 thought: '',
-                targetThought: '',
+                thoughtBuffer: '',
+                thoughtContent: '',
                 action: null,
                 observation: null
             });
@@ -57,24 +58,25 @@ window.AppModules.createChatFeature = function(deps) {
     };
 
     const flushThoughtTyping = (assistantMsg) => {
-        if (assistantMsg.thoughtTypewriterInterval) {
-            clearInterval(assistantMsg.thoughtTypewriterInterval);
-            assistantMsg.thoughtTypewriterInterval = null;
-        }
-
+        // 把剩余的 buffer 一次性全部渲染到 thought
         for (const step of assistantMsg.reasoningLog.steps) {
-            if (typeof step.targetThought === 'string' && step.targetThought.length > 0) {
-                step.thought = step.targetThought;
+            if (step.thoughtBuffer) {
+                step.thought = step.thoughtBuffer;
             }
         }
     };
 
     const tryFinalizeAssistantMessage = (assistantMsg) => {
-        const thoughtActive = Boolean(assistantMsg.thoughtTypewriterInterval);
-        const answerActive = Boolean(assistantMsg.answerTypewriterInterval) || Boolean(assistantMsg.answerBuffer);
+        const thoughtDraining = assistantMsg.reasoningLog.steps.some(s => (s.thoughtBuffer || '').length > (s.thought || '').length);
+        const answerDraining = (assistantMsg.answerBuffer || '').length > 0;
 
-        if (!assistantMsg.streamEnded || thoughtActive || answerActive) {
+        if (!assistantMsg.streamEnded || thoughtDraining || answerDraining) {
             return;
+        }
+
+        if (assistantMsg.typingInterval) {
+            clearInterval(assistantMsg.typingInterval);
+            assistantMsg.typingInterval = null;
         }
 
         assistantMsg.isTyping = false;
@@ -85,92 +87,49 @@ window.AppModules.createChatFeature = function(deps) {
         saveChatHistory();
     };
 
-    const startThoughtTypewriter = (assistantMsg, step, targetText) => {
-        step.targetThought = targetText || '';
-        if (!step.targetThought) {
-            return;
-        }
+    const runTypingEngine = (assistantMsg) => {
+        if (assistantMsg.typingInterval) return;
 
-        if (!step.targetThought.startsWith(step.thought)) {
-            step.thought = '';
-        }
+        assistantMsg.typingInterval = setInterval(() => {
+            let isTypingActivity = false;
 
-        if (assistantMsg.thoughtTypewriterInterval) {
-            clearInterval(assistantMsg.thoughtTypewriterInterval);
-        }
-
-        assistantMsg.isTyping = true;
-        assistantMsg.isThinking = true;
-
-        assistantMsg.thoughtTypewriterInterval = setInterval(() => {
-            if (step.thought.length < step.targetThought.length) {
-                step.thought += step.targetThought[step.thought.length];
-                scrollToBottom();
-                return;
+            // 1. Process Thoughts
+            for (let step of assistantMsg.reasoningLog.steps) {
+                const buffer = step.thoughtBuffer || '';
+                const displayed = step.thought || '';
+                if (buffer.length > displayed.length) {
+                    isTypingActivity = true;
+                    // Strictly limit to 1-2 characters per 30ms to guarantee visible typewriter
+                    const charsToTake = Math.min(2, buffer.length - displayed.length);
+                    step.thought += buffer.slice(displayed.length, displayed.length + charsToTake);
+                    scrollToBottom();
+                    break; // Process one step at a time
+                }
             }
 
-            clearInterval(assistantMsg.thoughtTypewriterInterval);
-            assistantMsg.thoughtTypewriterInterval = null;
-            if (assistantMsg.streamEnded) {
+            // 2. Process Answer
+            if (!isTypingActivity && assistantMsg.isAnswerTyping) {
+                const buffer = assistantMsg.answerBuffer || '';
+                if (buffer.length > 0) {
+                    isTypingActivity = true;
+                    // Capped characters to maintain smooth typing. 
+                    // Dynamic limit handles massive tables without instant-pop
+                    let maxTake = 3;
+                    if (buffer.length > 300) maxTake = 8;
+                    if (buffer.length > 1500) maxTake = 20;
+                    
+                    const charsToTake = Math.min(maxTake, buffer.length);
+                    assistantMsg.content += buffer.slice(0, charsToTake);
+                    assistantMsg.answerBuffer = buffer.slice(charsToTake);
+                    scrollToBottom();
+                }
+            }
+
+            // 3. Finalize
+            if (!isTypingActivity && assistantMsg.streamEnded) {
                 tryFinalizeAssistantMessage(assistantMsg);
             }
-        }, 20);
-    };
-
-    // Throttled DOM update using morphdom for local diff — max once per 100ms
-    let _lastDomUpdate = 0;
-    const throttledUpdateDOM = (typingEl, assistantMsg) => {
-        const now = Date.now();
-        if (now - _lastDomUpdate < 100) return;
-        _lastDomUpdate = now;
-        if (!typingEl) return;
-        const fullContent = (assistantMsg.content || '') + (assistantMsg.answerBuffer || '');
-        // morphdom does a local diff update — only the typing div innerHTML changes,
-        // no Vue v-for re-render, no full component patch
-        morphdom(typingEl, `<div class="typing-active">${fullContent}</div>`, {});
-    };
-
-    // rAF loop + morphdom typewriter: accumulate buffer, update DOM at ≤10fps
-    // (throttled to 100ms via throttledUpdateDOM), avoids Vue batch-delay issue
-    const runAnswerTypewriter = async (assistantMsg, idx) => {
-        if (assistantMsg.answerTypewriterInterval) return;
-        const rafId = { value: null };
-        assistantMsg.answerTypewriterInterval = rafId;
-
-        // Find the typing div within this message's chat-bubble using index
-        const chatBubbles = document.querySelectorAll('#chatContainer .chat-bubble');
-        const bubble = chatBubbles[idx];
-        const typingEl = bubble?.querySelector('.typing-target');
-
-        const tick = () => {
-            if (!assistantMsg.answerBuffer.length) {
-                rafId.value = null;
-                assistantMsg.answerTypewriterInterval = null;
-                if (assistantMsg.streamEnded) {
-                    tryFinalizeAssistantMessage(assistantMsg);
-                    if (idx >= 0 && idx < messages.value.length) {
-                        tryFinalizeAssistantMessage(messages.value[idx]);
-                    }
-                }
-                return;
-            }
-
-            assistantMsg.content += assistantMsg.answerBuffer[0];
-            assistantMsg.answerBuffer = assistantMsg.answerBuffer.slice(1);
-
-            throttledUpdateDOM(typingEl, assistantMsg);
-            scrollToBottom();
-
-            rafId.value = requestAnimationFrame(tick);
-            // ~18ms delay between characters ≈ ~55chars/s typewriter pace
-            setTimeout(() => {
-                if (rafId.value !== null) {
-                    rafId.value = requestAnimationFrame(tick);
-                }
-            }, 18);
-        };
-
-        rafId.value = requestAnimationFrame(tick);
+        }, 30);
     };
 
     const startAnswerPhase = (assistantMsg) => {
@@ -183,16 +142,11 @@ window.AppModules.createChatFeature = function(deps) {
 
     const enqueueAnswerText = (assistantMsg, text) => {
         if (!text) return;
-
-        startAnswerPhase(assistantMsg);
-
-        assistantMsg.answerBuffer += text;
-
-        // Start rAF-based typewriter if not already running
-        const idx = messages.value.indexOf(assistantMsg);
-        if (!assistantMsg.answerTypewriterInterval && idx >= 0) {
-            runAnswerTypewriter(assistantMsg, idx);
+        if (!assistantMsg.isAnswerTyping) {
+            startAnswerPhase(assistantMsg);
         }
+        assistantMsg.answerBuffer += text;
+        runTypingEngine(assistantMsg);
     };
 
     const mergeReasoningLog = (assistantMsg, reasoningLog) => {
@@ -201,9 +155,10 @@ window.AppModules.createChatFeature = function(deps) {
         reasoningLog.steps.forEach((newStep, index) => {
             const step = ensureReasoningStep(assistantMsg, index);
             step.step_number = newStep.step_number || index + 1;
-            step.targetThought = newStep.thought || step.targetThought || '';
+            step.thoughtBuffer = newStep.thought || step.thoughtBuffer || '';
             if (!assistantMsg.isThinking) {
-                step.thought = step.targetThought;
+                step.thoughtContent = step.thoughtBuffer;
+                step.thought = step.thoughtBuffer;
             }
             step.action = newStep.action;
             step.observation = newStep.observation;
@@ -222,7 +177,9 @@ window.AppModules.createChatFeature = function(deps) {
         if (type === 'thought') {
             const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length;
             const currentStep = ensureReasoningStep(assistantMsg, stepNum);
-            startThoughtTypewriter(assistantMsg, currentStep, data.content || '');
+            const chunk = data.content || '';
+            currentStep.thoughtBuffer = (currentStep.thoughtBuffer || '') + chunk;
+            runTypingEngine(assistantMsg);
         }
         else if (type === 'action') {
             const stepNum = (data.step !== undefined) ? data.step - 1 : assistantMsg.reasoningLog.steps.length - 1;
@@ -278,13 +235,9 @@ window.AppModules.createChatFeature = function(deps) {
             }
         }
         else if (type === 'error') {
-            if (assistantMsg.thoughtTypewriterInterval) {
-                clearInterval(assistantMsg.thoughtTypewriterInterval);
-                assistantMsg.thoughtTypewriterInterval = null;
-            }
-            if (assistantMsg.answerTypewriterInterval) {
-                clearInterval(assistantMsg.answerTypewriterInterval);
-                assistantMsg.answerTypewriterInterval = null;
+            if (assistantMsg.typingInterval) {
+                clearInterval(assistantMsg.typingInterval);
+                assistantMsg.typingInterval = null;
             }
 
             assistantMsg.answerBuffer = '';
@@ -315,32 +268,12 @@ window.AppModules.createChatFeature = function(deps) {
 
         let charsReceived = 0;  // Total chars processed, used for deduplication on reconnect
 
-        // Wrap onEvent to track charsReceived and deduplicate
         const wrappedOnEvent = (event) => {
-            if (event.type === 'streaming_text' || event.type === 'answer') {
-                const text = event.data?.content || '';
-                if (text.length > 0) {
-                    // Deduplication: skip if the incoming text starts with already-received content
-                    const currentContent = assistantMsg.content || '';
-                    const currentBuffer = assistantMsg.answerBuffer || '';
-                    const alreadyHave = currentContent + currentBuffer;
-
-                    if (alreadyHave.length > 0 && text.startsWith(alreadyHave)) {
-                        // Skip already-processed content
-                        const remaining = text.slice(alreadyHave.length);
-                        if (remaining.length > 0) {
-                            charsReceived += remaining.length;
-                            onEvent({ ...event, data: { ...event.data, content: remaining } });
-                        }
-                        return;
-                    }
-                    // Also check if this exact text was already added (simple dedup)
-                    if (alreadyHave.length > 0 && text === alreadyHave.slice(-text.length)) {
-                        return;
-                    }
-                    charsReceived += text.length;
-                }
-            }
+            // Deduplication isn't strictly needed for chunks because streaming_text events 
+            // from the backend are strictly non-overlapping chunks. If there was a retry,
+            // we'd need it, but streamChat natively doesn't resume from exact byte index gracefully without 
+            // protocol support. Assuming standard behavior here.
+            charsReceived += (event.data?.content || '').length;
             onEvent(event);
         };
 
@@ -382,8 +315,9 @@ window.AppModules.createChatFeature = function(deps) {
         messages.value.push({ role: 'user', content: question });
         chatLoading.value = true;
 
-        const assistantMsg = createAssistantMessage();
-        messages.value.push(assistantMsg);
+        const rawAssistantMsg = createAssistantMessage();
+        messages.value.push(rawAssistantMsg);
+        const assistantMsg = messages.value[messages.value.length - 1];
 
         if (!currentSessionId.value) {
             currentSessionId.value = 'session-' + Date.now();
@@ -452,7 +386,16 @@ window.AppModules.createChatFeature = function(deps) {
     const loadChatHistory = async () => {
         try {
             const res = await api.getHistory();
-            conversations.value = res.conversations || [];
+            // Backend returns {sessions: [...]} but frontend uses conversations
+            // Normalize the response to frontend's expected format
+            const rawConvs = res.sessions || res.conversations || [];
+            conversations.value = rawConvs.map(s => ({
+                id: s.session_id || s.id,
+                title: s.title || s.messages?.[0]?.content?.slice(0, 50) || '新对话',
+                messages: s.messages || [],
+                createdAt: s.created_at || s.createdAt,
+                updatedAt: s.updated_at || s.updatedAt,
+            }));
             if (conversations.value.length > 0) {
                 // F-25: If a currentSessionId is already set (from sessionStorage), try to load
                 // that specific conversation instead of defaulting to the latest

@@ -1274,3 +1274,37 @@
 
   📊 状态: 37/37 功能完成 | 🎉 全部完成
 
+
+================================================================================
+  十七、本次会话（前端流式输出 Vue 响应式修复与时间轴重构）
+================================================================================
+
+  [2026-04-18] Session #38 — 编码智能体
+  ✅ F-31&F-36: 前端打字机流式渲染深度重写（终极修复“一股脑蹦出”）
+
+  🐛 问题描述:
+    - 尽管后端的 SSE 事件在极短时间内（无 `asyncio.sleep` 的 generator 中）全部发出，但浏览器测试发现流式渲染并没有如期工作。
+    - 所有推理过程和文本回复都会在一开始的真空期后“瞬间蹦出”，失去了流式打字机效果。
+    - 以往的代码试图通过组合 `requestAnimationFrame` 和 `morphdom` 绕过 Vue 更新 DOM，这导致了重大的逻辑竞争。
+    - 由于 Vue 3 的 Reactivity 机制，未引用的原对象 (`raw object`) 不会触发 Vue 的响应式追踪，导致界面迟冻结并在外部状态更迭时强刷界面。
+
+  📝 修改文件:
+    - frontend/js/features/chat.js
+      · 清除了老代码中的 `morphdom` 和 `requestAnimationFrame` 等复杂且冲突的原生 DOM 修改逻辑。
+      · 重构了核心 `runTypingEngine` 用健壮稳定的 `setInterval(..., 30)` 取代，每帧固定提取极少量的字符 (推理: 1-2个; 文本: 动态最大兜底 20个)，确保即刻收满缓冲区也会慢速打印呈现完美的视觉时间轴。
+      · 修复 Vue Reactivity 绑定错误: 将 `assistantMsg` 从原始新对象获取改为 `messages.value[messages.value.length - 1]` 以提取经过包裹的 Proxy 实例，令 `assistantMsg.content` 的逐字赋值实时触发 Vue 渲染。
+      · 简化了 `processStreamEvent` 和去重包过滤机制，纯粹响应后端无定常交叠块。
+    - frontend/js/app-template.js
+      · 去除了专用的打字面纱容器 `:id="'typing-md-' + idx"` 简化了双重 `v-show` 面板呈现。
+      · 直接启用 `v-html="renderSafeMarkdown(msg.content)"`。Vue 会优雅地在字符迭代下渐进重排 Markdown 无渲染阻断点。
+      · 推理面板重置样式修复 `id` 冲突，增加了 `whitespace-pre-wrap` 保留换行体贴。
+    - init.sh
+      · 将后台 Python 的执行命令从原生的 `uvicorn` 调用改为了 `"${PYTHON_CMD}" -m uvicorn` 以阻止某些环境或者 `nohup` 无法找寻相对 `$PATH` 而启动失败的毛病。
+
+  🧪 E2E 浏览器纯视觉侧验证:
+    - 借由后台 `8002` 的本地服务器和通过原生 Agent Chrome 浏览器调出。
+    - 用户发送 “评估大客户流式率”复杂请求：
+      · "推理过程" 左侧光标快速且自然地跑动跟进。
+      · 推理完成落点清算时，“解析回复” 开始行云流水般按字生成并实时排版，未发生突变掉帧或者隐藏空包。
+
+  📊 状态: 37/37 功能彻底圆满解决 ｜ 稳定流式 UI 已验收完成 🎉 
