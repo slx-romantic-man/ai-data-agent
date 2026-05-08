@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
+import bcrypt
 
 from app.config.settings import settings
 from app.models.user import UserContext, UserRegister
@@ -20,6 +21,26 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 logger = get_logger()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a plain password against a bcrypt hash.
+
+    Returns False for non-bcrypt hashes (e.g. plaintext) so the caller
+    can fall back to legacy comparison.
+    """
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"),
+            hashed_password.encode("utf-8")
+        )
+    except Exception:
+        return False
+
+
+def get_password_hash(password: str) -> str:
+    """Hash a password for storing."""
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -68,12 +89,36 @@ async def login(
     # Get user by login ID
     user = user_service.get_user(form_data.username)
 
-    if not user or user.password != form_data.password:
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="用户名或密码错误",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    # Check if user is active/disabled
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="账号已被禁用，请联系管理员",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Verify password: try bcrypt first, then fallback to plaintext for migration
+    if not verify_password(form_data.password, user.password):
+        # Fallback: check if password is still stored as plaintext (migration path)
+        if user.password == form_data.password:
+            # Auto-migrate to bcrypt hash
+            user_service.update_user(
+                form_data.username,
+                {"password": get_password_hash(form_data.password)}
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="用户名或密码错误",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
     # Check and reset quota if new day
     user_service.check_and_reset_if_needed(form_data.username)
@@ -190,7 +235,7 @@ async def register(
             user_data={
                 "user_id": user_id,
                 "username": user_data.username,
-                "password": user_data.password,
+                "password": get_password_hash(user_data.password),
                 "role": "employee",  # New users default to employee
             }
         )

@@ -129,6 +129,51 @@ window.AppModules.createAdminUsersFeature = function(deps) {
         }
     };
 
+    // User status & delete operations
+    const toggleUserStatus = async (userId, isActive) => {
+        try {
+            await api.updateUserStatus(userId, isActive);
+            await loadAdminUsers();
+        } catch (err) {
+            console.error('Failed to update user status:', err);
+            alert('操作失败: ' + (err.response?.data?.detail || err.message));
+        }
+    };
+
+    const deleteUser = async (userId) => {
+        try {
+            await api.deleteUser(userId);
+            await loadAdminUsers();
+        } catch (err) {
+            console.error('Failed to delete user:', err);
+            alert('删除失败: ' + (err.response?.data?.detail || err.message));
+        }
+    };
+
+    const batchDisableUsers = async (userIds) => {
+        try {
+            const res = await api.batchDisableUsers(userIds);
+            await loadAdminUsers();
+            return res;
+        } catch (err) {
+            console.error('Failed to batch disable users:', err);
+            alert('批量禁用失败: ' + (err.response?.data?.detail || err.message));
+            return null;
+        }
+    };
+
+    const batchDeleteUsers = async (userIds) => {
+        try {
+            const res = await api.batchDeleteUsers(userIds);
+            await loadAdminUsers();
+            return res;
+        } catch (err) {
+            console.error('Failed to batch delete users:', err);
+            alert('批量删除失败: ' + (err.response?.data?.detail || err.message));
+            return null;
+        }
+    };
+
     return {
         loadAdminUsers,
         adjustUserQuota,
@@ -138,6 +183,10 @@ window.AppModules.createAdminUsersFeature = function(deps) {
         applyConvFilters,
         clearConvFilters,
         loadAdminConversationDetail,
-        loadCreditLogs
+        loadCreditLogs,
+        toggleUserStatus,
+        deleteUser,
+        batchDisableUsers,
+        batchDeleteUsers
     };
 };

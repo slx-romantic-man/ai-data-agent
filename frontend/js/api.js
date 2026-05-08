@@ -1,7 +1,7 @@
 /**
  * API Service Module for AI Data Agent
  */
-const API_BASE = 'http://localhost:8002/api/v1';
+const API_BASE = '/api/v1';
 
 const api = {
     token: localStorage.getItem('token'),
@@ -71,6 +71,11 @@ const api = {
 
     async getMe() {
         const res = await axios.get(`${API_BASE}/auth/me`, { headers: this.getHeaders() });
+        return res.data;
+    },
+
+    async getQuota() {
+        const res = await axios.get(`${API_BASE}/auth/quota`, { headers: this.getHeaders() });
         return res.data;
     },
 
@@ -218,6 +223,26 @@ const api = {
 
     async adjustUserQuota(userId, amount) {
         const res = await axios.put(`${API_BASE}/admin/users/${userId}/quota`, { amount }, { headers: this.getHeaders() });
+        return res.data;
+    },
+
+    async updateUserStatus(userId, isActive) {
+        const res = await axios.put(`${API_BASE}/admin/users/${userId}/status`, { is_active: isActive }, { headers: this.getHeaders() });
+        return res.data;
+    },
+
+    async deleteUser(userId) {
+        const res = await axios.delete(`${API_BASE}/admin/users/${userId}`, { headers: this.getHeaders() });
+        return res.data;
+    },
+
+    async batchDisableUsers(userIds) {
+        const res = await axios.post(`${API_BASE}/admin/users/batch-disable`, { user_ids: userIds }, { headers: this.getHeaders() });
+        return res.data;
+    },
+
+    async batchDeleteUsers(userIds) {
+        const res = await axios.post(`${API_BASE}/admin/users/batch-delete`, { user_ids: userIds }, { headers: this.getHeaders() });
         return res.data;
     },
 

@@ -91,11 +91,17 @@ class CreditTransaction(BaseModel):
 class UserAccount(BaseModel):
     """User account with quota and settings."""
     user_id: str
+    login_id: str = ""
     username: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
     password: str  # In production, use hashed password
     role: str = "employee"
     department: Optional[str] = None
     business_line: Optional[str] = None
+    auth_type: str = "local"  # local / cia
+    is_active: bool = True
     quota: UserQuota = Field(default_factory=UserQuota)
     # User's accessible API IDs (empty list means all system APIs)
     user_apis: List[str] = Field(default_factory=list)

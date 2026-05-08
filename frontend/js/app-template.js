@@ -4,12 +4,12 @@ window.AppTemplate = `
             <div v-if="!isLoggedIn" class="min-h-screen flex items-center justify-center p-4 bg-slate-50">
                 <div class="bg-white rounded-xl shadow-card p-10 w-full max-w-md border border-zinc-200">
                     <div class="text-center mb-10">
-                        <div class="w-14 h-14 bg-zinc-950 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-zinc-200">
+                        <div class="w-14 h-14 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-200">
                             <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                             </svg>
                         </div>
-                        <h1 class="text-2xl font-semibold tracking-tight text-zinc-950">AI Data Agent</h1>
+                        <h1 class="text-2xl font-semibold tracking-tight text-zinc-950">AI智能体</h1>
                         <p class="text-zinc-500 mt-2 text-sm">智能数据分析平台</p>
                     </div>
 
@@ -28,7 +28,7 @@ window.AppTemplate = `
                         </div>
                         <div v-if="loginError" class="text-red-500 text-xs py-1 px-3 bg-red-50 rounded border border-red-100">{{ loginError }}</div>
                         <button type="submit" :disabled="loginLoading"
-                            class="w-full py-2.5 bg-zinc-950 text-white rounded-md text-sm font-medium hover:bg-zinc-800 transition-all-custom disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                            class="w-full py-2.5 bg-green-500 text-white rounded-md text-sm font-medium hover:bg-green-600 transition-all-custom disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
                             <span v-if="loginLoading" class="flex items-center justify-center space-x-2">
                                 <div class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                 <span>登录中...</span>
@@ -36,6 +36,32 @@ window.AppTemplate = `
                             <span v-else>登 录</span>
                         </button>
                     </form>
+
+                    <!-- CIA 统一认证登录 -->
+                    <div v-if="ciaEnabled && ciaAuthMode !== 'local_only'" class="mt-6">
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-zinc-200"></div>
+                            </div>
+                            <div class="relative flex justify-center text-xs">
+                                <span class="px-3 bg-white text-zinc-400">或使用</span>
+                            </div>
+                        </div>
+                        <button @click="handleCiaLogin" :disabled="ciaLoading"
+                            class="mt-4 w-full py-2.5 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-all-custom disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center justify-center space-x-2">
+                            <span v-if="ciaLoading" class="flex items-center justify-center space-x-2">
+                                <div class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                <span>CIA 登录中...</span>
+                            </span>
+                            <span v-else class="flex items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                <span>CIA 统一认证登录</span>
+                            </span>
+                        </button>
+                        <div v-if="ciaError" class="mt-2 text-red-500 text-xs py-1 px-3 bg-red-50 rounded border border-red-100 text-center">{{ ciaError }}</div>
+                    </div>
 
                     <div class="mt-8 pt-8 border-t border-zinc-100">
                         <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-widest text-center mb-5">快速体验账号</p>
@@ -78,7 +104,7 @@ window.AppTemplate = `
                                 <div v-if="registerError" class="text-red-500 text-[10px]">{{ registerError }}</div>
                                 <div class="flex space-x-3 pt-2">
                                     <button @click="handleRegister" :disabled="registerLoading"
-                                        class="flex-1 py-1.5 bg-zinc-900 text-white rounded-md text-xs font-medium hover:bg-zinc-800 disabled:opacity-50 transition-all-custom">
+                                        class="flex-1 py-1.5 bg-green-500 text-white rounded-md text-xs font-medium hover:bg-green-600 disabled:opacity-50 transition-all-custom">
                                         注册
                                     </button>
                                     <button @click="cancelRegister" class="flex-1 py-1.5 border border-zinc-200 text-zinc-600 rounded-md text-xs font-medium hover:bg-zinc-100 transition-all-custom">
@@ -98,47 +124,47 @@ window.AppTemplate = `
             <!-- Main App -->
             <div v-else class="flex h-screen">
                 <!-- Sidebar -->
-                <div class="w-68 bg-white border-r border-zinc-200 flex flex-col shadow-[1px_0_0_0_rgba(0,0,0,0.02)]">
-                    <div class="p-4">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 bg-zinc-950 rounded-lg flex items-center justify-center shadow-sm">
+                <div class="w-60 bg-white border-r border-zinc-200 flex flex-col h-screen overflow-hidden shadow-[1px_0_0_0_rgba(0,0,0,0.02)]">
+                    <div class="p-3">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-7 h-7 bg-green-500 rounded-lg flex items-center justify-center shadow-sm">
                                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                 </svg>
                             </div>
                             <div class="overflow-hidden flex-1">
-                                <h1 class="font-bold text-zinc-950 text-sm tracking-tight">智能数据分析平台</h1>
+                                <h1 class="font-bold text-zinc-950 text-[13px] tracking-tight">AI智能体</h1>
                             </div>
                         </div>
                     </div>
 
                     <!-- Navigation -->
-                    <nav class="flex-1 px-3 space-y-1">
+                    <nav class="flex-1 px-2 space-y-0.5 overflow-y-auto">
                         <button @click="currentView = 'chat'"
-                            :class="['w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-md text-sm font-medium transition-all-custom', currentView === 'chat' ? 'bg-zinc-100 text-zinc-950 shadow-sm' : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950']">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            :class="['w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all-custom', currentView === 'chat' ? 'bg-green-50 text-green-600' : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700']">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                             </svg>
                             <span>智能对话</span>
                         </button>
                         <button @click="currentView = 'apis'"
-                            :class="['w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-md text-sm font-medium transition-all-custom', currentView === 'apis' ? 'bg-zinc-100 text-zinc-950 shadow-sm' : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950']">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            :class="['w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all-custom', currentView === 'apis' ? 'bg-green-50 text-green-600' : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700']">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
                             </svg>
                             <span>查看API</span>
                         </button>
                         <button @click="currentView = 'history'"
-                            :class="['w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-md text-sm font-medium transition-all-custom', currentView === 'history' ? 'bg-zinc-100 text-zinc-950 shadow-sm' : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950']">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            :class="['w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all-custom', currentView === 'history' ? 'bg-green-50 text-green-600' : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700']">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <span>历史记录</span>
                         </button>
                         <!-- Admin Panel -->
                         <button v-if="user && user.role === 'admin'" @click="currentView = 'admin'"
-                            :class="['w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-md text-sm font-medium transition-all-custom', currentView === 'admin' ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950']">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            :class="['w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all-custom', currentView === 'admin' ? 'bg-green-50 text-green-600' : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700']">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
@@ -147,19 +173,19 @@ window.AppTemplate = `
                     </nav>
 
                     <!-- User Info -->
-                    <div class="p-4 border-t border-zinc-100 bg-zinc-50/50">
+                    <div class="p-3 border-t border-zinc-100 bg-zinc-50/50">
                         <div class="flex items-center justify-between group">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-9 h-9 bg-white border border-zinc-200 rounded-lg flex items-center justify-center shadow-sm">
-                                    <span class="text-zinc-900 font-bold text-xs">{{ user?.username?.charAt(0) }}</span>
+                            <div class="flex items-center space-x-2 min-w-0">
+                                <div class="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="text-white font-bold text-[10px]">{{ user?.username?.charAt(0) }}</span>
                                 </div>
-                                <div class="overflow-hidden">
-                                    <div class="text-xs font-bold text-zinc-900 truncate">{{ user?.username }}</div>
+                                <div class="overflow-hidden min-w-0">
+                                    <div class="text-[11px] font-bold text-zinc-900 truncate" :title="user?.username">{{ user?.username }}</div>
                                     <div class="text-[10px] text-zinc-400 font-medium">{{ getRoleName(user?.role) }}</div>
                                 </div>
                             </div>
-                            <button @click="handleLogout" class="p-1.5 text-zinc-400 hover:text-zinc-950 transition-all-custom rounded-md hover:bg-zinc-200/50">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button @click="handleLogout" class="p-1 text-zinc-400 hover:text-zinc-950 transition-all-custom rounded-md hover:bg-zinc-200/50 flex-shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                                 </svg>
                             </button>
@@ -171,10 +197,10 @@ window.AppTemplate = `
                                 <span class="text-zinc-900">{{ userQuota.current_balance }} / {{ userQuota.daily_limit }}</span>
                             </div>
                             <div class="h-1 bg-zinc-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-zinc-950 rounded-full transition-all duration-500" :style="{ width: (userQuota.current_balance / userQuota.daily_limit * 100) + '%' }"></div>
+                                <div class="h-full bg-green-500 rounded-full transition-all duration-500" :style="{ width: (userQuota.current_balance / userQuota.daily_limit * 100) + '%' }"></div>
                             </div>
                         </div>
-                        <div v-else-if="userQuota && userQuota.is_unlimited" class="mt-4 p-2 bg-zinc-900 rounded-lg text-[10px] font-bold text-white text-center uppercase tracking-widest">
+                        <div v-else-if="userQuota && userQuota.is_unlimited" class="mt-4 p-2 bg-green-500 rounded-lg text-[10px] font-bold text-white text-center uppercase tracking-widest">
                             无限权限
                         </div>
                     </div>
@@ -194,7 +220,7 @@ window.AppTemplate = `
                                 </div>
                             </div>
                             <button v-if="messages.length > 0" @click="startNewConversation"
-                                class="px-4 py-1.5 bg-zinc-950 text-white rounded-md hover:bg-zinc-800 transition-all-custom flex items-center space-x-2 text-xs font-bold shadow-sm">
+                                class="px-4 py-1.5 bg-green-500 text-white rounded-md hover:bg-green-600 transition-all-custom flex items-center space-x-2 text-xs font-bold shadow-sm">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
@@ -206,17 +232,19 @@ window.AppTemplate = `
                         <div id="chatContainer" ref="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin bg-gray-50" style="min-height: 0;">
                             <!-- Welcome Message -->
                             <div v-if="messages.length === 0" class="max-w-2xl mx-auto py-24 text-center">
-                                <div class="inline-flex items-center justify-center p-4 bg-zinc-100 rounded-2xl mb-8 shadow-inner">
-                                    <svg class="w-10 h-10 text-zinc-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="inline-flex items-center justify-center p-4 bg-green-50 rounded-2xl mb-8 shadow-inner">
+                                    <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                     </svg>
                                 </div>
                                 <h3 class="text-2xl font-bold text-zinc-950 mb-3 tracking-tight">你好，{{ user?.username }}</h3>
                                 <p class="text-zinc-500 mb-10 text-sm max-w-sm mx-auto">你可以通过自然语言直接向我提问，我会自动整理并分析系统内的数据。</p>
                                 <div class="flex flex-wrap justify-center gap-3">
-                                    <button v-for="q in sampleQuestions" :key="q" @click="askQuestion(q)"
-                                        class="px-4 py-2 bg-white border border-zinc-200 rounded-full text-xs font-semibold text-zinc-600 hover:border-zinc-950 hover:text-zinc-950 transition-all-custom shadow-sm">
-                                        {{ q }}
+                                    <button v-for="(q, qi) in sampleQuestions" :key="q" @click="askQuestion(q)"
+                                        class="px-4 py-2 bg-white border border-zinc-200 rounded-full text-xs font-semibold text-zinc-600 hover:border-green-400 hover:text-green-600 transition-all-custom shadow-sm flex items-center space-x-2">
+                                        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                            :class="['bg-green-500','bg-blue-500','bg-purple-500','bg-orange-500','bg-pink-500','bg-cyan-500'][qi % 6]"></span>
+                                        <span>{{ q }}</span>
                                     </button>
                                 </div>
                             </div>
@@ -225,7 +253,7 @@ window.AppTemplate = `
                             <div v-for="(msg, idx) in messages" :key="idx" class="chat-bubble">
                                 <!-- User Message -->
                                 <div v-if="msg.role === 'user'" class="flex justify-end mb-4">
-                                    <div class="max-w-[70%] bg-zinc-950 text-white rounded-2xl px-5 py-3.5 text-sm font-medium shadow-md">
+                                    <div class="max-w-[70%] bg-green-500 text-white rounded-2xl px-5 py-3.5 text-sm font-medium shadow-md">
                                         {{ msg.content }}
                                     </div>
                                 </div>
@@ -349,7 +377,7 @@ window.AppTemplate = `
                                                 </table>
                                             </div>
                                             <div v-if="msg.data.rows.length > 10" class="text-xs text-gray-500 mt-2">
-                                                显示前10条，共 {{ msg.data.rows.length }} 条数据
+                                                共 {{ msg.data.rows.length }} 条数据，展示前 10 条，导出可获取完整数据
                                             </div>
                                         </div>
 
@@ -423,7 +451,7 @@ window.AppTemplate = `
                                     </div>
                                 </div>
                                 <button @click="sendMessage" :disabled="chatLoading || !chatInput.trim()"
-                                    class="px-8 py-3.5 bg-zinc-950 text-white rounded-xl font-bold text-sm hover:bg-zinc-800 transition-all-custom disabled:opacity-30 disabled:grayscale shadow-sm flex items-center space-x-2">
+                                    class="px-8 py-3.5 bg-green-500 text-white rounded-xl font-bold text-sm hover:bg-green-600 transition-all-custom disabled:opacity-30 disabled:grayscale shadow-sm flex items-center space-x-2">
                                     <svg v-if="!chatLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                     </svg>
@@ -451,7 +479,7 @@ window.AppTemplate = `
                                     <span>添加新类</span>
                                 </button>
                                 <button @click="showAddApiModal = true"
-                                    class="px-5 py-2.5 bg-zinc-950 text-white rounded-md text-sm font-bold hover:bg-zinc-800 transition-all-custom shadow-sm flex items-center space-x-2">
+                                    class="px-5 py-2.5 bg-green-500 text-white rounded-md text-sm font-bold hover:bg-green-600 transition-all-custom shadow-sm flex items-center space-x-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                     </svg>
@@ -479,7 +507,7 @@ window.AppTemplate = `
                                 </svg>
                             </div>
                             <h4 class="text-zinc-900 font-bold">暂无 API</h4>
-                            <p class="text-zinc-500 text-sm mt-1">点击右上角按钮添加您的第一个数据源</p>
+                            <p class="text-zinc-500 text-sm mt-1">{{ user && user.role === 'admin' ? '点击右上角按钮添加您的第一个数据源' : '请联系管理员授予您权限' }}</p>
                         </div>
 
                         <div v-else class="space-y-6">
@@ -517,7 +545,7 @@ window.AppTemplate = `
                                                 </svg>
                                             </button>
 
-                                            <div class="w-10 h-10 bg-zinc-50 rounded-lg flex items-center justify-center border border-zinc-100 group-hover:bg-zinc-950 group-hover:text-white transition-all-custom mb-4">
+                                            <div class="w-10 h-10 bg-zinc-50 rounded-lg flex items-center justify-center border border-zinc-100 group-hover:bg-green-500 group-hover:text-white transition-all-custom mb-4">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
                                                 </svg>
@@ -578,7 +606,7 @@ window.AppTemplate = `
                                                 </svg>
                                             </button>
 
-                                            <div class="w-10 h-10 bg-zinc-50 rounded-lg flex items-center justify-center border border-zinc-100 group-hover:bg-zinc-950 group-hover:text-white transition-all-custom mb-4">
+                                            <div class="w-10 h-10 bg-zinc-50 rounded-lg flex items-center justify-center border border-zinc-100 group-hover:bg-green-500 group-hover:text-white transition-all-custom mb-4">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
                                                 </svg>
@@ -642,7 +670,7 @@ window.AppTemplate = `
                                         <button @click="showAddCategoryModal = false" class="px-4 py-2 border border-zinc-200 text-zinc-600 rounded-md text-sm font-medium hover:bg-zinc-50 transition-all-custom">
                                             取消
                                         </button>
-                                        <button @click="createCategoryFromApisView" class="px-4 py-2 bg-zinc-950 text-white rounded-md text-sm font-medium hover:bg-zinc-800 transition-all-custom">
+                                        <button @click="createCategoryFromApisView" class="px-4 py-2 bg-green-500 text-white rounded-md text-sm font-medium hover:bg-green-600 transition-all-custom">
                                             创建
                                         </button>
                                     </div>
@@ -1072,7 +1100,7 @@ window.AppTemplate = `
                                 class="group bg-white rounded-xl border p-5 hover:border-zinc-950 hover:shadow-card transition-all-custom cursor-pointer flex items-center justify-between"
                                 :class="conv.id === historySelectedConvId ? 'border-blue-500 shadow-blue-100' : 'border-zinc-200'">
                                 <div class="flex items-center space-x-5 flex-1" @click="onHistoryConvClick(conv.id); loadConversation(conv)">
-                                    <div class="w-12 h-12 bg-zinc-50 rounded-xl flex items-center justify-center border border-zinc-100 group-hover:bg-zinc-950 group-hover:text-white transition-all-custom shadow-xs">
+                                    <div class="w-12 h-12 bg-zinc-50 rounded-xl flex items-center justify-center border border-zinc-100 group-hover:bg-green-500 group-hover:text-white transition-all-custom shadow-xs">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                         </svg>
@@ -1090,7 +1118,7 @@ window.AppTemplate = `
                                     <div v-if="conv.id === historySelectedConvId" class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-lg border border-blue-200">
                                         当前选中
                                     </div>
-                                    <button class="px-4 py-2 bg-zinc-50 text-zinc-400 text-[10px] font-bold uppercase rounded-lg border border-zinc-100 group-hover:bg-zinc-950 group-hover:border-zinc-950 group-hover:text-white transition-all-custom opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0"
+                                    <button class="px-4 py-2 bg-zinc-50 text-zinc-400 text-[10px] font-bold uppercase rounded-lg border border-zinc-100 group-hover:bg-green-500 group-hover:border-green-500 group-hover:text-white transition-all-custom opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0"
                                         @click.stop="showHistoryDetail(conv, historyListViewRef ? historyListViewRef.scrollTop : 0)">
                                         查看详情
                                     </button>
@@ -1136,58 +1164,86 @@ window.AppTemplate = `
                             <!-- Users Tab -->
                             <div v-if="adminTab === 'users'">
                                 <div v-if="adminUsersLoading" class="text-center py-20">
-                                    <div class="animate-spin w-10 h-10 border-4 border-zinc-950 border-t-transparent rounded-full mx-auto"></div>
+                                    <div class="animate-spin w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full mx-auto"></div>
                                 </div>
-                                <div v-else class="bg-white rounded-xl border border-zinc-200 shadow-card overflow-hidden">
-                                    <table class="min-w-full divide-y divide-zinc-200">
-                                        <thead class="bg-zinc-50">
-                                            <tr>
-                                                <th class="px-6 py-4 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-widest">用户名</th>
-                                                <th class="px-6 py-4 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-widest">角色</th>
-                                                <th class="px-6 py-4 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-widest">部门</th>
-                                                <th class="px-6 py-4 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-widest">积分余额</th>
-                                                <th class="px-6 py-4 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-widest">操作</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-zinc-100">
-                                            <tr v-for="u in adminUsers" :key="u.user_id" class="hover:bg-zinc-50 transition-colors">
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="flex items-center space-x-3">
-                                                        <div class="w-8 h-8 bg-zinc-950 text-white rounded-lg flex items-center justify-center text-xs font-bold ring-2 ring-white shadow-sm">
-                                                            {{ u.username?.charAt(0).toUpperCase() }}
+                                <div v-else>
+                                    <!-- Batch Actions Bar -->
+                                    <div v-if="selectedUserIds.length > 0" class="mb-4 flex items-center space-x-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+                                        <span class="text-xs font-bold text-green-700">已选择 {{ selectedUserIds.length }} 个用户</span>
+                                        <button @click="batchDisableUsers(selectedUserIds); selectedUserIds = []" class="px-3 py-1.5 bg-amber-500 text-white rounded-md text-xs font-bold hover:bg-amber-600 transition-all-custom">批量禁用</button>
+                                        <button @click="batchDeleteUsers(selectedUserIds); selectedUserIds = []" class="px-3 py-1.5 bg-red-500 text-white rounded-md text-xs font-bold hover:bg-red-600 transition-all-custom">批量删除</button>
+                                        <button @click="selectedUserIds = []" class="px-3 py-1.5 text-zinc-500 hover:text-zinc-900 text-xs font-bold transition-all-custom">取消</button>
+                                    </div>
+                                    <div class="bg-white rounded-xl border border-zinc-200 shadow-card overflow-hidden">
+                                        <table class="min-w-full divide-y divide-zinc-200">
+                                            <thead class="bg-zinc-50">
+                                                <tr>
+                                                    <th class="px-4 py-4 text-left">
+                                                        <input type="checkbox" @change="$event.target.checked ? selectedUserIds = adminUsers.filter(u => u.role !== 'admin').map(u => u.user_id) : selectedUserIds = []" class="form-checkbox h-4 w-4 text-green-500 border-zinc-300 rounded focus:ring-green-500">
+                                                    </th>
+                                                    <th class="px-6 py-4 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-widest">用户名</th>
+                                                    <th class="px-6 py-4 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-widest">角色</th>
+                                                    <th class="px-6 py-4 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-widest">状态</th>
+                                                    <th class="px-6 py-4 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-widest">部门</th>
+                                                    <th class="px-6 py-4 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-widest">积分余额</th>
+                                                    <th class="px-6 py-4 text-left text-[10px] font-bold text-zinc-400 uppercase tracking-widest">操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-zinc-100">
+                                                <tr v-for="u in adminUsers" :key="u.user_id" :class="['transition-colors', u.is_active === false ? 'bg-zinc-50/60' : 'hover:bg-zinc-50']">
+                                                    <td class="px-4 py-4 whitespace-nowrap">
+                                                        <input v-if="u.role !== 'admin'" type="checkbox" :value="u.user_id" v-model="selectedUserIds" class="form-checkbox h-4 w-4 text-green-500 border-zinc-300 rounded focus:ring-green-500">
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <div class="flex items-center space-x-3">
+                                                            <div :class="['w-8 h-8 text-white rounded-lg flex items-center justify-center text-xs font-bold ring-2 ring-white shadow-sm', u.is_active === false ? 'bg-zinc-300' : 'bg-green-500']">
+                                                                {{ u.username?.charAt(0).toUpperCase() }}
+                                                            </div>
+                                                            <span :class="['font-bold', u.is_active === false ? 'text-zinc-400 line-through' : 'text-zinc-900']">{{ u.username }}</span>
                                                         </div>
-                                                        <span class="font-bold text-zinc-900">{{ u.username }}</span>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <span class="px-2 py-0.5 bg-zinc-100 text-zinc-600 border border-zinc-200 rounded text-[10px] font-bold uppercase tracking-wider">
-                                                        {{ getRoleName(u.role) }}
-                                                    </span>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-500">{{ u.department || '-' }}</td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div v-if="u.quota.is_unlimited" class="flex items-center space-x-1.5 text-indigo-600">
-                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-11c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1s-1-.45-1-1v-4z"></path></svg>
-                                                        <span class="font-bold text-xs uppercase tracking-widest">无限权限</span>
-                                                    </div>
-                                                    <div v-else class="flex items-center space-x-2">
-                                                        <div class="w-24 h-1.5 bg-zinc-100 rounded-full overflow-hidden">
-                                                            <div :class="['h-full rounded-full transition-all duration-500', u.quota.current_balance > 20 ? 'bg-zinc-950' : 'bg-red-500']" :style="{ width: Math.min((u.quota.current_balance / u.quota.daily_limit) * 100, 100) + '%' }"></div>
-                                                        </div>
-                                                        <span :class="['text-xs font-bold leading-none', u.quota.current_balance > 20 ? 'text-zinc-950' : 'text-red-600']">
-                                                            {{ u.quota.current_balance }}
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <span class="px-2 py-0.5 bg-zinc-100 text-zinc-600 border border-zinc-200 rounded text-[10px] font-bold uppercase tracking-wider">
+                                                            {{ getRoleName(u.role) }}
                                                         </span>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <button @click="adjustUserQuotaPrompt(u.user_id)" class="text-xs font-bold text-zinc-400 hover:text-zinc-950 transition-all-custom flex items-center space-x-1">
-                                                        <span>调整积分</span>
-                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <span v-if="u.is_active !== false" class="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded">启用</span>
+                                                        <span v-else class="px-1.5 py-0.5 bg-zinc-100 text-zinc-500 text-[10px] font-bold rounded">已禁用</span>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-500">{{ u.department || '-' }}</td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <div v-if="u.quota.is_unlimited" class="flex items-center space-x-1.5 text-indigo-600">
+                                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-11c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1s-1-.45-1-1v-4z"></path></svg>
+                                                            <span class="font-bold text-xs uppercase tracking-widest">无限权限</span>
+                                                        </div>
+                                                        <div v-else class="flex items-center space-x-2">
+                                                            <div class="w-24 h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+                                                                <div :class="['h-full rounded-full transition-all duration-500', u.quota.current_balance > 20 ? 'bg-green-500' : 'bg-red-500']" :style="{ width: Math.min((u.quota.current_balance / u.quota.daily_limit) * 100, 100) + '%' }"></div>
+                                                            </div>
+                                                            <span :class="['text-xs font-bold leading-none', u.quota.current_balance > 20 ? 'text-zinc-950' : 'text-red-600']">
+                                                                {{ u.quota.current_balance }}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <div class="flex items-center space-x-2">
+                                                            <button @click="adjustUserQuotaPrompt(u.user_id)" class="text-xs font-bold text-zinc-400 hover:text-zinc-950 transition-all-custom flex items-center space-x-1">
+                                                                <span>调整积分</span>
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                                            </button>
+                                                            <button v-if="u.role !== 'admin'" @click="userToDisable = u; showDisableUserModal = true" :class="['text-xs font-bold rounded px-2 py-1 transition', u.is_active === false ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200']">
+                                                                {{ u.is_active === false ? '启用' : '禁用' }}
+                                                            </button>
+                                                            <button v-if="u.role !== 'admin'" @click="userToDelete = u; showDeleteUserModal = true" class="text-xs font-bold text-red-500 hover:text-red-600 transition px-2 py-1 rounded hover:bg-red-50">
+                                                                删除
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1203,7 +1259,7 @@ window.AppTemplate = `
                                             <div class="divide-y divide-zinc-100">
                                                 <div v-for="cat in apiCategories" :key="cat.id"
                                                     @click="selectedApiCategory = cat.id"
-                                                    :class="['px-4 py-3 cursor-pointer transition-all-custom flex justify-between items-center', selectedApiCategory === cat.id ? 'bg-zinc-950 text-white' : 'hover:bg-zinc-50']">
+                                                    :class="['px-4 py-3 cursor-pointer transition-all-custom flex justify-between items-center', selectedApiCategory === cat.id ? 'bg-green-500 text-white' : 'hover:bg-zinc-50']">
                                                     <span class="text-sm font-medium">{{ cat.name }}</span>
                                                     <span :class="['text-xs', selectedApiCategory === cat.id ? 'text-zinc-400' : 'text-zinc-400']">{{ cat.api_count || 0 }}</span>
                                                 </div>
@@ -1322,22 +1378,22 @@ window.AppTemplate = `
                                                     @focus="showPermUserDropdown = true"
                                                     @blur="setTimeout(() => showPermUserDropdown = false, 200)"
                                                     type="text" placeholder="选择用户..."
-                                                    class="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm text-white focus:ring-2 focus:ring-zinc-700 focus:outline-none transition-all-custom placeholder:text-zinc-600">
+                                                    class="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none transition-all-custom placeholder:text-zinc-400">
                                                 <div v-if="showPermUserDropdown"
-                                                     class="absolute z-30 mt-2 w-full bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+                                                     class="absolute z-30 mt-2 w-full bg-white border border-zinc-200 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
                                                     <div v-for="u in filteredAdminUsers" :key="u.user_id"
                                                          @click="selectPermUser(u.user_id)"
-                                                         class="px-4 py-3 hover:bg-zinc-800 cursor-pointer text-sm border-b border-zinc-800/50 last:border-b-0 transition-colors">
+                                                         class="px-4 py-3 hover:bg-green-50 cursor-pointer text-sm text-zinc-700 border-b border-zinc-100 last:border-b-0 transition-colors">
                                                         {{ u.username }}
                                                     </div>
-                                                    <div v-if="filteredAdminUsers.length === 0" class="px-4 py-3 text-sm text-zinc-500 text-center">无匹配用户</div>
+                                                    <div v-if="filteredAdminUsers.length === 0" class="px-4 py-3 text-sm text-zinc-400 text-center">无匹配用户</div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div v-if="selectedPermUser && userPermissionsOverview" class="p-6">
                                         <div class="mb-6 flex items-center space-x-4 border-b border-zinc-100 pb-4">
-                                            <div class="w-12 h-12 bg-zinc-950 text-white rounded-xl flex items-center justify-center shadow-lg ring-4 ring-zinc-50 font-bold text-lg">
+                                            <div class="w-12 h-12 bg-green-500 text-white rounded-xl flex items-center justify-center shadow-lg ring-4 ring-green-50 font-bold text-lg">
                                                 {{ userPermissionsOverview.username?.charAt(0).toUpperCase() }}
                                             </div>
                                             <div>
@@ -1378,7 +1434,7 @@ window.AppTemplate = `
                                                     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                                         <div v-for="api in category.apis" :key="api.api_id"
                                                             class="group bg-white rounded-xl border border-zinc-200 p-5 hover:shadow-card-hover hover:border-zinc-300 transition-all-custom relative flex flex-col">
-                                                            <div class="w-10 h-10 bg-zinc-50 rounded-lg flex items-center justify-center border border-zinc-100 group-hover:bg-zinc-950 group-hover:text-white transition-all-custom mb-4">
+                                                            <div class="w-10 h-10 bg-zinc-50 rounded-lg flex items-center justify-center border border-zinc-100 group-hover:bg-green-500 group-hover:text-white transition-all-custom mb-4">
                                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
                                                                 </svg>
@@ -1417,7 +1473,7 @@ window.AppTemplate = `
                                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                                         <div v-for="api in userPermissionsOverview.uncategorized" :key="api.api_id"
                                                             class="group bg-white rounded-xl border border-zinc-200 p-5 hover:shadow-card-hover hover:border-zinc-300 transition-all-custom relative flex flex-col">
-                                                            <div class="w-10 h-10 bg-zinc-50 rounded-lg flex items-center justify-center border border-zinc-100 group-hover:bg-zinc-950 group-hover:text-white transition-all-custom mb-4">
+                                                            <div class="w-10 h-10 bg-zinc-50 rounded-lg flex items-center justify-center border border-zinc-100 group-hover:bg-green-500 group-hover:text-white transition-all-custom mb-4">
                                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
                                                                 </svg>
@@ -1480,7 +1536,7 @@ window.AppTemplate = `
                                                     <div v-for="user in filteredBatchUsers" :key="user.user_id"
                                                          @click="toggleBatchUser(user)"
                                                          class="px-4 py-3 hover:bg-zinc-50 cursor-pointer flex items-center space-x-3 border-b border-zinc-100 last:border-0 transition-colors">
-                                                        <div class="w-4 h-4 border rounded flex items-center justify-center" :class="isUserSelected(user.user_id) ? 'bg-zinc-900 border-zinc-900 text-white' : 'border-zinc-300'">
+                                                        <div class="w-4 h-4 border rounded flex items-center justify-center" :class="isUserSelected(user.user_id) ? 'bg-green-500 border-green-500 text-white' : 'border-zinc-300'">
                                                             <svg v-if="isUserSelected(user.user_id)" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                         </div>
                                                         <div class="flex flex-col">
@@ -1510,9 +1566,43 @@ window.AppTemplate = `
                                     <div class="px-6 py-4 border-t border-zinc-100 bg-zinc-50 flex justify-end space-x-3">
                                         <button @click="closeBatchGrantModal" class="px-4 py-2 text-sm font-bold text-zinc-600 hover:text-zinc-900 transition-colors">取消</button>
                                         <button @click="executeBatchGrant" :disabled="selectedBatchUsers.length === 0"
-                                            class="px-4 py-2 bg-zinc-950 text-white text-sm font-bold rounded-lg hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                            class="px-4 py-2 bg-green-500 text-white text-sm font-bold rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                             确认授权
                                         </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delete User Confirm Modal -->
+                            <div v-if="showDeleteUserModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/40 backdrop-blur-sm">
+                                <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up">
+                                    <div class="px-6 py-4 border-b border-zinc-100">
+                                        <h3 class="text-lg font-bold text-zinc-900">确认删除用户</h3>
+                                    </div>
+                                    <div class="p-6">
+                                        <p class="text-sm text-zinc-600 mb-2">确定要删除用户 <span class="font-bold text-zinc-900">"{{ userToDelete?.username }}"</span> 吗？</p>
+                                        <p class="text-xs text-zinc-400">该用户的对话记录、积分日志等数据将保留，但账号将被永久删除。下次 CIA 登录会自动重新注册。</p>
+                                    </div>
+                                    <div class="px-6 py-4 border-t border-zinc-100 bg-zinc-50 flex justify-end space-x-3">
+                                        <button @click="showDeleteUserModal = false; userToDelete = null" class="px-4 py-2 text-sm font-bold text-zinc-600 hover:text-zinc-900 transition-colors">取消</button>
+                                        <button @click="deleteUser(userToDelete.user_id); showDeleteUserModal = false; userToDelete = null" class="px-4 py-2 bg-red-500 text-white text-sm font-bold rounded-lg hover:bg-red-600 transition-colors">确认删除</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Disable/Enable User Confirm Modal -->
+                            <div v-if="showDisableUserModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/40 backdrop-blur-sm">
+                                <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up">
+                                    <div class="px-6 py-4 border-b border-zinc-100">
+                                        <h3 class="text-lg font-bold text-zinc-900">确认{{ userToDisable?.is_active === false ? '启用' : '禁用' }}用户</h3>
+                                    </div>
+                                    <div class="p-6">
+                                        <p class="text-sm text-zinc-600">确定要{{ userToDisable?.is_active === false ? '启用' : '禁用' }}用户 <span class="font-bold text-zinc-900">"{{ userToDisable?.username }}"</span> 吗？</p>
+                                        <p v-if="userToDisable?.is_active !== false" class="text-xs text-zinc-400 mt-2">禁用后该用户将无法登录，已有 token 也会被拒绝。</p>
+                                    </div>
+                                    <div class="px-6 py-4 border-t border-zinc-100 bg-zinc-50 flex justify-end space-x-3">
+                                        <button @click="showDisableUserModal = false; userToDisable = null" class="px-4 py-2 text-sm font-bold text-zinc-600 hover:text-zinc-900 transition-colors">取消</button>
+                                        <button @click="toggleUserStatus(userToDisable.user_id, userToDisable.is_active === false); showDisableUserModal = false; userToDisable = null" :class="['px-4 py-2 text-white text-sm font-bold rounded-lg transition-colors', userToDisable?.is_active === false ? 'bg-green-500 hover:bg-green-600' : 'bg-amber-500 hover:bg-amber-600']">确认{{ userToDisable?.is_active === false ? '启用' : '禁用' }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -1520,7 +1610,7 @@ window.AppTemplate = `
                             <!-- Conversations Tab -->
                             <div v-if="adminTab === 'conversations'">
                                 <!-- 筛选区域 -->
-                                <div class="mb-8 p-8 bg-zinc-950 rounded-2xl shadow-xl text-white">
+                                <div class="mb-8 p-8 bg-white rounded-2xl shadow-card border border-zinc-200">
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <!-- 员工筛选 -->
                                         <div class="space-y-2">
@@ -1530,13 +1620,13 @@ window.AppTemplate = `
                                                        @focus="showUserDropdown = true"
                                                        @blur="setTimeout(() => showUserDropdown = false, 200)"
                                                        type="text" placeholder="选择用户..."
-                                                       class="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm focus:ring-2 focus:ring-zinc-700 focus:outline-none transition-all-custom placeholder:text-zinc-600">
+                                                       class="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none transition-all-custom placeholder:text-zinc-400">
                                                 <!-- 下拉列表 -->
                                                 <div v-if="showUserDropdown && adminUsers.length > 0"
-                                                     class="absolute z-30 mt-2 w-full bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+                                                     class="absolute z-30 mt-2 w-full bg-white border border-zinc-200 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
                                                     <div v-for="user in adminUsers" :key="user.user_id"
                                                          @click="selectUserFilter(user.username)"
-                                                         class="px-4 py-3 hover:bg-zinc-800 cursor-pointer text-sm border-b border-zinc-800/50 last:border-b-0 transition-colors">
+                                                         class="px-4 py-3 hover:bg-green-50 cursor-pointer text-sm text-zinc-700 border-b border-zinc-100 last:border-b-0 transition-colors">
                                                         {{ user.username }}
                                                     </div>
                                                 </div>
@@ -1546,12 +1636,12 @@ window.AppTemplate = `
                                         <!-- 日期筛选 -->
                                         <div class="space-y-2">
                                             <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1">日期范围</label>
-                                            <div class="flex items-center bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+                                            <div class="flex items-center bg-white border border-zinc-200 rounded-xl overflow-hidden">
                                                 <input v-model="adminConvStartDate" type="date"
-                                                       class="flex-1 px-3 py-3 bg-zinc-900 text-sm focus:outline-none [color-scheme:dark]">
-                                                <span class="text-zinc-700 px-1">—</span>
+                                                       class="flex-1 px-3 py-3 bg-white text-sm text-zinc-900 focus:outline-none [color-scheme:light]">
+                                                <span class="text-zinc-300 px-1">—</span>
                                                 <input v-model="adminConvEndDate" type="date"
-                                                       class="flex-1 px-3 py-3 bg-zinc-900 text-sm focus:outline-none [color-scheme:dark]">
+                                                       class="flex-1 px-3 py-3 bg-white text-sm text-zinc-900 focus:outline-none [color-scheme:light]">
                                             </div>
                                         </div>
 
@@ -1559,18 +1649,18 @@ window.AppTemplate = `
                                         <div class="space-y-2">
                                             <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest pl-1">内容搜索</label>
                                             <input v-model="adminConvSearch" type="text" placeholder="输入搜索关键词..."
-                                                   class="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-sm focus:ring-2 focus:ring-zinc-700 focus:outline-none transition-all-custom placeholder:text-zinc-600">
+                                                   class="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-sm text-zinc-900 focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none transition-all-custom placeholder:text-zinc-400">
                                         </div>
                                     </div>
 
                                     <!-- 操作按钮 -->
                                     <div class="flex space-x-3 mt-8">
                                         <button @click="applyConvFilters"
-                                                class="flex-1 py-3 bg-white text-zinc-950 font-bold rounded-xl text-sm hover:bg-zinc-200 transition-all-custom shadow-lg active:scale-[0.98]">
+                                                class="flex-1 py-3 bg-green-500 text-white font-bold rounded-xl text-sm hover:bg-green-600 transition-all-custom shadow-sm active:scale-[0.98]">
                                             执行筛选
                                         </button>
                                         <button @click="clearConvFilters"
-                                                class="px-6 py-3 bg-zinc-900 border border-zinc-800 text-zinc-400 font-bold rounded-xl text-sm hover:text-white hover:border-zinc-700 transition-all-custom">
+                                                class="px-6 py-3 bg-white border border-zinc-200 text-zinc-500 font-bold rounded-xl text-sm hover:text-zinc-900 hover:border-zinc-300 transition-all-custom">
                                             重置
                                         </button>
                                     </div>
@@ -1594,7 +1684,7 @@ window.AppTemplate = `
                                         @click="loadAdminConversationDetail(conv.user_id, conv.session_id || conv.conversation_id)">
                                         <div class="flex items-center justify-between mb-4">
                                             <div class="flex items-center space-x-3">
-                                                <div class="px-2 py-1 bg-zinc-950 text-white text-[10px] font-bold uppercase tracking-widest rounded shadow-sm">
+                                                <div class="px-2 py-1 bg-green-500 text-white text-[10px] font-bold uppercase tracking-widest rounded shadow-sm">
                                                     {{ conv.username }}
                                                 </div>
                                                 <h4 class="font-bold text-zinc-900 group-hover:text-zinc-950">{{ conv.title || '对话详情' }}</h4>
@@ -1632,7 +1722,7 @@ window.AppTemplate = `
                                         <div class="p-6 cursor-pointer hover:bg-zinc-50 transition flex items-center justify-between"
                                             @click="toggleUserLogs(userData.user_id)">
                                             <div class="flex items-center space-x-5">
-                                                <div class="w-12 h-12 bg-zinc-950 text-white rounded-xl flex items-center justify-center shadow-lg ring-4 ring-zinc-50">
+                                                <div class="w-12 h-12 bg-green-500 text-white rounded-xl flex items-center justify-center shadow-lg ring-4 ring-green-50">
                                                     <span class="font-bold">{{ userData.username?.charAt(0).toUpperCase() }}</span>
                                                 </div>
                                                 <div>
@@ -1645,7 +1735,7 @@ window.AppTemplate = `
                                                     <div class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-0.5">消耗</div>
                                                     <div class="text-zinc-950 font-bold leading-none">-{{ userData.totalCredits }} 积分</div>
                                                 </div>
-                                                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 text-zinc-400 group-hover:bg-zinc-950 group-hover:text-white transition-all-custom" :class="{ 'bg-zinc-950 text-white': userLogsExpanded[userData.user_id] }">
+                                                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 text-zinc-400 group-hover:bg-green-500 group-hover:text-white transition-all-custom" :class="{ 'bg-green-500 text-white': userLogsExpanded[userData.user_id] }">
                                                     <svg class="w-5 h-5 transition-transform"
                                                         :class="{ 'rotate-180': userLogsExpanded[userData.user_id] }"
                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1670,7 +1760,7 @@ window.AppTemplate = `
                                                         </div>
                                                     </div>
                                                     <div class="text-right shrink-0">
-                                                        <div class="px-3 py-1 bg-zinc-950 text-white text-xs font-bold rounded-lg shadow-sm group-hover:bg-red-600 transition-colors">
+                                                        <div class="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-lg shadow-sm group-hover:bg-red-600 transition-colors">
                                                             -{{ log.credits_deducted }}
                                                         </div>
                                                     </div>

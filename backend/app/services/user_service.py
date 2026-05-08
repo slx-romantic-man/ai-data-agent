@@ -16,10 +16,21 @@ from app.models.user import (
     UserContext
 )
 from app.access.database.connection import get_db, reset_db
+import bcrypt
 from app.access.database.models import (
     UserAccount as UserAccountDB,
     UserQuota as UserQuotaDB
 )
+
+
+def _hash_if_plain(password: str) -> str:
+    """Hash password if it appears to be plaintext (not already bcrypt)."""
+    if not password:
+        return password
+    # bcrypt hashes start with $2b$, $2a$, or $2y$
+    if password.startswith(("$2b$", "$2a$", "$2y$")):
+        return password
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 class UserService:
@@ -53,11 +64,17 @@ class UserService:
 
         return UserAccountPydantic(
             user_id=db_user.user_id,
+            login_id=db_user.login_id,
             username=db_user.username,
+            email=getattr(db_user, 'email', None),
+            phone=getattr(db_user, 'phone', None),
+            avatar_url=getattr(db_user, 'avatar_url', None),
             password=db_user.password,
             role=db_user.role,
             department=db_user.department,
             business_line=db_user.business_line,
+            auth_type=getattr(db_user, 'auth_type', 'local'),
+            is_active=getattr(db_user, 'is_active', True),
             quota=UserQuotaPydantic(
                 daily_limit=db_quota.daily_limit if db_quota else 100,
                 current_balance=db_quota.current_balance if db_quota else 100,
@@ -117,10 +134,31 @@ class UserService:
                 return None
             return self._db_to_pydantic(db_user)
 
+    def get_user_by_email(self, email: str) -> Optional[UserAccountPydantic]:
+        """Get user by email (for CIA login lookup)."""
+        return self._run_async(self._get_user_by_email_async(email))
+
+    async def _get_user_by_email_async(self, email: str) -> Optional[UserAccountPydantic]:
+        """Get user by email."""
+        db = await self._get_db()
+        async with db.get_session() as session:
+            result = await session.execute(
+                select(UserAccountDB)
+                .options(joinedload(UserAccountDB.quota))
+                .where(UserAccountDB.email == email)
+            )
+            db_user = result.scalar_one_or_none()
+            if not db_user:
+                return None
+            return self._db_to_pydantic(db_user)
+
     def get_user_context(self, user_id: str) -> Optional[UserContext]:
         """Get UserContext for a user (for request processing)."""
         user = self.get_user_by_user_id(user_id)
         if not user:
+            return None
+        # Reject disabled/inactive users
+        if not user.is_active:
             return None
 
         return UserContext(
@@ -185,10 +223,14 @@ class UserService:
                 user_id=user_data.get("user_id", login_id),
                 login_id=login_id,  # Store login_id
                 username=user_data.get("username", login_id),
-                password=user_data.get("password", ""),
+                email=user_data.get("email"),
+                phone=user_data.get("phone"),
+                avatar_url=user_data.get("avatar_url"),
+                password=_hash_if_plain(user_data.get("password", "")),
                 role=user_data.get("role", "employee"),
                 department=user_data.get("department"),
                 business_line=user_data.get("business_line"),
+                auth_type=user_data.get("auth_type", "local"),
                 is_active=True,
                 created_at=now,
                 updated_at=now,
@@ -229,8 +271,37 @@ class UserService:
                 db_user.department = data["department"]
             if "business_line" in data:
                 db_user.business_line = data["business_line"]
+            if "email" in data:
+                db_user.email = data["email"]
+            if "phone" in data:
+                db_user.phone = data["phone"]
+            if "avatar_url" in data:
+                db_user.avatar_url = data["avatar_url"]
+            if "auth_type" in data:
+                db_user.auth_type = data["auth_type"]
+            if "is_active" in data:
+                db_user.is_active = data["is_active"]
 
             db_user.updated_at = datetime.now()
+            return True
+
+    def set_user_active(self, login_id: str, is_active: bool) -> bool:
+        """Enable or disable a user. Cannot disable admin users."""
+        return self._run_async(self._set_user_active_async(login_id, is_active))
+
+    async def _set_user_active_async(self, login_id: str, is_active: bool) -> bool:
+        """Enable or disable a user in database."""
+        db = await self._get_db()
+        async with db.get_session() as session:
+            db_user = await self._get_user_by_login_id_db(session, login_id)
+            if not db_user:
+                return False
+            # Guard: cannot disable/enable admin users
+            if db_user.role == "admin":
+                return False
+            db_user.is_active = is_active
+            db_user.updated_at = datetime.now()
+            await session.commit()
             return True
 
     def delete_user(self, login_id: str) -> bool:
@@ -238,17 +309,22 @@ class UserService:
         return self._run_async(self._delete_user_async(login_id))
 
     async def _delete_user_async(self, login_id: str) -> bool:
-        """Delete a user from database."""
-        if login_id == "admin":
-            return False
-
+        """Delete a user from database. Cannot delete admin users."""
         db = await self._get_db()
         async with db.get_session() as session:
             db_user = await self._get_user_by_login_id_db(session, login_id)
             if not db_user:
                 return False
+            # Guard: cannot delete admin users
+            if db_user.role == "admin":
+                return False
+
+            # Delete associated quota first to avoid orphan records
+            if db_user.quota:
+                await session.delete(db_user.quota)
 
             await session.delete(db_user)
+            await session.commit()
             return True
 
     def check_quota(self, login_id: str) -> bool:

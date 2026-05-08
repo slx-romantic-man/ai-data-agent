@@ -51,10 +51,13 @@ async def list_users(
 
         user_list.append({
             "user_id": user.user_id,
+            "login_id": getattr(user, "login_id", user.user_id),
             "username": user.username,
             "role": user.role,
             "department": user.department,
             "business_line": user.business_line,
+            "is_active": user.is_active,
+            "auth_type": getattr(user, 'auth_type', 'local'),
             "quota": {
                 "daily_limit": user.quota.daily_limit,
                 "current_balance": user.quota.current_balance,
@@ -97,10 +100,13 @@ async def get_user_detail(
 
     return {
         "user_id": user.user_id,
+            "login_id": getattr(user, "login_id", user.user_id),
         "username": user.username,
         "role": user.role,
         "department": user.department,
         "business_line": user.business_line,
+        "is_active": user.is_active,
+        "auth_type": getattr(user, 'auth_type', 'local'),
         "quota": {
             "daily_limit": user.quota.daily_limit,
             "current_balance": user.quota.current_balance,
@@ -288,4 +294,133 @@ async def reset_all_quotas(
     return {
         "status": "success",
         "message": "All user quotas have been reset"
+    }
+
+# ==================== User Status & Delete Operations ====================
+
+class UserStatusRequest(BaseModel):
+    """Request model for enabling/disabling a user."""
+    is_active: bool
+
+
+class BatchUserOperationRequest(BaseModel):
+    """Request model for batch user operations."""
+    user_ids: List[str]
+
+
+@router.put("/users/{user_id}/status")
+async def set_user_status(
+    user_id: str,
+    request: UserStatusRequest,
+    admin: UserContext = Depends(require_admin),
+) -> Dict[str, Any]:
+    """Enable or disable a user. Admin users cannot be disabled."""
+    user_service = get_user_service()
+
+    user = user_service.get_user_by_user_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Guard: cannot disable/enable admin users
+    if user.role == "admin":
+        raise HTTPException(status_code=403, detail="Cannot modify admin user status")
+
+    success = user_service.set_user_active(user.login_id, request.is_active)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to update user status")
+
+    return {
+        "status": "success",
+        "user_id": user_id,
+        "is_active": request.is_active,
+        "message": "User " + ("enabled" if request.is_active else "disabled")
+    }
+
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    admin: UserContext = Depends(require_admin),
+) -> Dict[str, Any]:
+    """Delete a user (hard delete). Admin users cannot be deleted."""
+    user_service = get_user_service()
+
+    user = user_service.get_user_by_user_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Guard: cannot delete admin users
+    if user.role == "admin":
+        raise HTTPException(status_code=403, detail="Cannot delete admin user")
+
+    success = user_service.delete_user(user.login_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to delete user")
+
+    return {
+        "status": "success",
+        "user_id": user_id,
+        "message": "User deleted successfully"
+    }
+
+
+@router.post("/users/batch-disable")
+async def batch_disable_users(
+    request: BatchUserOperationRequest,
+    admin: UserContext = Depends(require_admin),
+) -> Dict[str, Any]:
+    """Batch disable multiple users. Admin users are skipped."""
+    user_service = get_user_service()
+
+    results = {"success": [], "skipped": [], "failed": []}
+    for user_id in request.user_ids:
+        user = user_service.get_user_by_user_id(user_id)
+        if not user:
+            results["failed"].append({"user_id": user_id, "reason": "User not found"})
+            continue
+        if user.role == "admin":
+            results["skipped"].append({"user_id": user_id, "reason": "Admin user cannot be disabled"})
+            continue
+        success = user_service.set_user_active(user.login_id, False)
+        if success:
+            results["success"].append(user_id)
+        else:
+            results["failed"].append({"user_id": user_id, "reason": "Update failed"})
+
+    return {
+        "status": "success",
+        "results": results,
+        "total": len(request.user_ids),
+        "processed": len(results["success"]) + len(results["skipped"]) + len(results["failed"])
+    }
+
+
+@router.post("/users/batch-delete")
+async def batch_delete_users(
+    request: BatchUserOperationRequest,
+    admin: UserContext = Depends(require_admin),
+) -> Dict[str, Any]:
+    """Batch delete multiple users. Admin users are skipped."""
+    user_service = get_user_service()
+
+    results = {"success": [], "skipped": [], "failed": []}
+    for user_id in request.user_ids:
+        user = user_service.get_user_by_user_id(user_id)
+        if not user:
+            results["failed"].append({"user_id": user_id, "reason": "User not found"})
+            continue
+        if user.role == "admin":
+            results["skipped"].append({"user_id": user_id, "reason": "Admin user cannot be deleted"})
+            continue
+        success = user_service.delete_user(user.login_id)
+        if success:
+            results["success"].append(user_id)
+        else:
+            results["failed"].append({"user_id": user_id, "reason": "Delete failed"})
+
+    return {
+        "status": "success",
+        "results": results,
+        "total": len(request.user_ids),
+        "processed": len(results["success"]) + len(results["skipped"]) + len(results["failed"])
     }

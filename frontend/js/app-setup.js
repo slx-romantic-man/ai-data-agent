@@ -16,21 +16,17 @@ window.AppSetup = function() {
         const registerLoading = ref(false);
         const registerError = ref('');
 
+        // CIA Login State
+        const ciaEnabled = ref(false);
+        const ciaAuthMode = ref('local_only');
+        const ciaLoading = ref(false);
+        const ciaError = ref('');
+
         const messages = ref([]);
         const chatInput = ref('');
         const chatLoading = ref(false);
         const chatContainer = ref(null);
-        // F-25: sessionStorage persistence — restore currentSessionId on page load
-        const currentSessionId = ref(sessionStorage.getItem('current_session_id') || null);  // Current session ID for context
-
-        // F-25: Sync currentSessionId → sessionStorage on every change
-        watch(currentSessionId, (newVal) => {
-            if (newVal) {
-                sessionStorage.setItem('current_session_id', newVal);
-            } else {
-                sessionStorage.removeItem('current_session_id');
-            }
-        });
+        const currentSessionId = ref(null);  // Current session ID for context
         const conversations = ref([]);  // All conversations (session-based grouping)
 
         const showTableModal = ref(false);
@@ -133,6 +129,13 @@ window.AppSetup = function() {
         const selectedBatchUsers = ref([]);
         const batchUserSearchQuery = ref('');
         const showBatchUserDropdown = ref(false);
+
+        // User Management Batch/Delete State
+        const selectedUserIds = ref([]);
+        const showDeleteUserModal = ref(false);
+        const showDisableUserModal = ref(false);
+        const userToDelete = ref(null);
+        const userToDisable = ref(null);
 
         // User Permission Overview State
         const userPermissionsOverview = ref(null);
@@ -431,6 +434,9 @@ window.AppSetup = function() {
                 user.value = res.user;
                 userQuota.value = res.quota || null;  // Store quota info
                 isLoggedIn.value = true;
+                // Reset to fresh homepage on every login
+                currentSessionId.value = null;
+                messages.value = [];
                 // Load chat history after login
                 loadChatHistory();
                 // Load smart suggestions based on user's APIs
@@ -480,6 +486,98 @@ window.AppSetup = function() {
             registerForm.password = '';
             registerError.value = '';
         };
+
+        // CIA Login Handler
+        const handleCiaLogin = async () => {
+            ciaLoading.value = true;
+            ciaError.value = "";
+            try {
+                const ciaConfig = await CIAModule.init();
+                if (!ciaConfig.enabled) {
+                    ciaError.value = "CIA 登录未启用";
+                    return;
+                }
+                // Always show CIA login box and let SDK handle the full flow
+                CIAModule.showLoginBox();
+                CIAModule.startPolling((code) => {
+                    console.log("CIA poll: code detected, waiting for ReceivedUserInfo...");
+                });
+            } catch (err) {
+                console.error("CIA login error:", err);
+                ciaError.value = err.message || "CIA 登录异常";
+            } finally {
+                ciaLoading.value = false;
+            }
+        };
+        // CIA Login Success Listener - just stop polling, wait for ReceivedUserInfo
+        window.addEventListener("cia-login-success", async () => {
+            console.log("CIA login success event received");
+            CIAModule.stopPolling();
+            // The actual login will be handled by cia-received-user-info event
+            // which fires after CIA SDK calls codeLogin internally
+        });
+
+        // CIA Received User Info Listener (triggered when needUserInfo=true)
+        // This is the PRIMARY login path - CIA SDK calls codeLogin internally
+        // and passes the result (including access_token) to this event
+        window.addEventListener("cia-received-user-info", async (event) => {
+            console.log("CIA received user info event:", JSON.stringify(event.detail));
+            CIAModule.stopPolling();
+            try {
+                const userInfo = event.detail;
+                if (userInfo && (userInfo.email || userInfo.userId || userInfo.result)) {
+                    // Primary path: use userinfo exchange API (bypasses findUserWithToken 403)
+                    const res = await fetch("/api/v1/auth/cia/userinfo", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ userInfo: userInfo })
+                    });
+                    const data = await res.json();
+                    console.log("CIA userinfo exchange response:", data);
+                    if (data.code === 200 && data.data) {
+                        CIAModule.closeLoginBox();
+                        api.setToken(data.data.access_token);
+                        user.value = data.data.user;
+                        userQuota.value = data.data.quota || null;
+                        isLoggedIn.value = true;
+                        // Reset to fresh homepage on every login
+                        currentSessionId.value = null;
+                        messages.value = [];
+                        loadChatHistory();
+                        loadSuggestions();
+                        return;
+                    }
+                    // Fallback: try exchangeToken with access_token
+                    if (userInfo.access_token) {
+                        const result = await CIAModule.exchangeToken(userInfo.access_token);
+                        if (result.success) {
+                            CIAModule.closeLoginBox();
+                            api.setToken(result.data.access_token);
+                            user.value = result.data.user;
+                            userQuota.value = result.data.quota || null;
+                            isLoggedIn.value = true;
+                            // Reset to fresh homepage on every login
+                            currentSessionId.value = null;
+                            messages.value = [];
+                            loadChatHistory();
+                            loadSuggestions();
+                            return;
+                        }
+                    }
+                    ciaError.value = data.message || "CIA 登录失败";
+                } else {
+                    ciaError.value = "CIA 未返回有效用户信息";
+                }
+            } catch (e) {
+                console.error("CIA received-user-info handler error:", e);
+                ciaError.value = "CIA 登录处理异常";
+            }
+        });
+
+        CIAModule.init().then(config => {
+            ciaEnabled.value = config.enabled;
+            ciaAuthMode.value = config.auth_mode;
+        });
 
         const handleLogout = () => {
             // Clear auth state
@@ -714,7 +812,11 @@ window.AppSetup = function() {
             applyConvFilters,
             clearConvFilters,
             loadAdminConversationDetail,
-            loadCreditLogs
+            loadCreditLogs,
+            toggleUserStatus,
+            deleteUser,
+            batchDisableUsers,
+            batchDeleteUsers
         } = adminUsersFeature;
 
         const apiManagementFeature = window.AppModules.createApiManagementFeature({
@@ -759,6 +861,7 @@ window.AppSetup = function() {
             currentView,
             adminTab,
             user,
+            userQuota,
             loadAdminUsers,
             loadCreditLogs,
             loadApiCategories,
@@ -767,12 +870,17 @@ window.AppSetup = function() {
             loadApis,
             api,
             isLoggedIn,
-            loadChatHistory
+            loadChatHistory,
+            loadSuggestions,
+            currentSessionId,
+            messages
         });
 
         return {
             isLoggedIn, user, currentView, userQuota,
             loginForm, loginLoading, loginError,
+            // CIA Login
+            ciaEnabled, ciaAuthMode, ciaLoading, ciaError, handleCiaLogin,
             // Registration
             showRegisterForm, registerForm, registerLoading, registerError,
             handleRegister, cancelRegister,
@@ -790,6 +898,8 @@ window.AppSetup = function() {
             adminConvUsernameFilter, adminConvStartDate, adminConvEndDate, showUserDropdown,
             loadAdminUsers, adjustUserQuota, adjustUserQuotaPrompt, searchAllConversations, loadAdminConversationDetail, loadCreditLogs,
             selectUserFilter, applyConvFilters, clearConvFilters,
+            toggleUserStatus, deleteUser, batchDisableUsers, batchDeleteUsers,
+            selectedUserIds, showDeleteUserModal, showDisableUserModal, userToDelete, userToDisable,
             userLogsExpanded, userLogsData, toggleUserLogs,
             // Admin API Management
             apiCategories, selectedApiCategory, systemApis, uncategorizedSystemApis, adminApisLoading,
