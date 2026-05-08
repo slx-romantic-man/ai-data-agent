@@ -386,6 +386,8 @@ window.AppModules.createChatFeature = function(deps) {
     const loadChatHistory = async () => {
         try {
             const res = await api.getHistory();
+            console.log('[loadChatHistory] API response keys:', Object.keys(res));
+            console.log('[loadChatHistory] sessions count:', res.sessions?.length, 'conversations count:', res.conversations?.length);
             // Backend returns {sessions: [...]} but frontend uses conversations
             // Normalize the response to frontend's expected format
             const rawConvs = res.sessions || res.conversations || [];
@@ -396,25 +398,25 @@ window.AppModules.createChatFeature = function(deps) {
                 createdAt: s.created_at || s.createdAt,
                 updatedAt: s.updated_at || s.updatedAt,
             }));
-            if (conversations.value.length > 0) {
-                // F-25: If a currentSessionId is already set (from sessionStorage), try to load
-                // that specific conversation instead of defaulting to the latest
-                const persistedSessionId = currentSessionId.value;
-                if (persistedSessionId) {
-                    const savedConv = conversations.value.find(c => c.id === persistedSessionId);
-                    if (savedConv) {
-                        messages.value = savedConv.messages || [];
-                        currentSessionId.value = savedConv.id;
-                        return;
-                    }
+            console.log('[loadChatHistory] mapped conversations count:', conversations.value.length);
+            // Keep messages empty to show welcome page with suggestions.
+            // User can click a conversation from the sidebar to load it.
+            // If a currentSessionId is already set (from sessionStorage), try to load
+            // that specific conversation instead of defaulting to the latest
+            const persistedSessionId = currentSessionId.value;
+            if (persistedSessionId && conversations.value.length > 0) {
+                const savedConv = conversations.value.find(c => c.id === persistedSessionId);
+                if (savedConv) {
+                    messages.value = savedConv.messages || [];
+                    currentSessionId.value = savedConv.id;
+                    return;
                 }
-                // Fallback: load latest conversation
-                const latest = conversations.value[0];
-                messages.value = latest.messages || [];
-                currentSessionId.value = latest.id;
             }
+            // Otherwise keep messages empty so welcome page (with suggestions) is shown
+            messages.value = [];
+            currentSessionId.value = null;
         } catch (e) {
-            console.error('Failed to load chat history:', e);
+            console.error('[loadChatHistory] Failed to load chat history:', e);
             conversations.value = [];
             messages.value = [];
         }

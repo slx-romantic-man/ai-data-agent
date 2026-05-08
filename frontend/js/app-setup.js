@@ -438,7 +438,7 @@ window.AppSetup = function() {
                 currentSessionId.value = null;
                 messages.value = [];
                 // Load chat history after login
-                loadChatHistory();
+                await loadChatHistory();
                 // Load smart suggestions based on user's APIs
                 loadSuggestions();
             } catch (err) {
@@ -543,7 +543,7 @@ window.AppSetup = function() {
                         // Reset to fresh homepage on every login
                         currentSessionId.value = null;
                         messages.value = [];
-                        loadChatHistory();
+                        await loadChatHistory();
                         loadSuggestions();
                         return;
                     }
@@ -559,7 +559,7 @@ window.AppSetup = function() {
                             // Reset to fresh homepage on every login
                             currentSessionId.value = null;
                             messages.value = [];
-                            loadChatHistory();
+                            await loadChatHistory();
                             loadSuggestions();
                             return;
                         }
