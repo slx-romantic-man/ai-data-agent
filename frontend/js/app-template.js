@@ -352,8 +352,8 @@ window.AppTemplate = `
 
                                         <div class="text-gray-800 markdown-content">
                                             <div v-show="msg.content" class="markdown-body" v-html="renderSafeMarkdown(msg.content)"></div>
-                                            <div v-if="!msg.content && msg.isThinking && msg.waitingText" class="text-sm text-zinc-400 italic animate-pulse py-2 flex items-center space-x-2">
-                                                <span>🤔</span>
+                                            <div v-if="!msg.content && msg.isThinking && msg.waitingText" class="text-sm text-zinc-400 animate-pulse py-2 flex items-center space-x-2">
+                                                <span>{{ msg.waitingEmoji }}</span>
                                                 <span>{{ msg.waitingText }}</span>
                                             </div>
                                             <span v-if="msg.isAnswerTyping" class="typewriter-cursor mt-1"></span>

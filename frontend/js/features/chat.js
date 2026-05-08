@@ -28,7 +28,7 @@ window.AppModules.createChatFeature = function(deps) {
         });
     };
 
-    // 等待文案素材 — 每句展示1秒后随机切换
+    // 等待文案素材 — 每句展示2秒后随机切换
     const WAITING_QUOTES = [
         '喝咖啡中…','摸鱼中…','假装在工作中…','努力不胡说中…','甩锅给训练数据中…',
         '正在给答案孵蛋中…','脑子转太快冒烟了，正在扇风中…','偷偷在百度和谷歌之间横跳中…',
@@ -67,12 +67,18 @@ window.AppModules.createChatFeature = function(deps) {
         '给文字做个全身按摩中…'
     ];
 
+    const WAITING_EMOJIS = ['🤔','🧐','😶‍🌫️','🫠','🙃','😴','🤯','🫡','🥸','🤖','👾','🦄','🐣','🌪️','🔮','🧪','⚡','🍵','🍜','🧋','🍿','🎲','🎯','🎪','🎨','🧩','🚀','🛸','🪐','🌈'];
+
+    const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
     const startWaitingText = (assistantMsg) => {
         if (WAITING_QUOTES.length === 0) return;
-        assistantMsg.waitingText = WAITING_QUOTES[Math.floor(Math.random() * WAITING_QUOTES.length)];
+        assistantMsg.waitingText = pickRandom(WAITING_QUOTES);
+        assistantMsg.waitingEmoji = pickRandom(WAITING_EMOJIS);
         assistantMsg.waitingTimer = setInterval(() => {
-            assistantMsg.waitingText = WAITING_QUOTES[Math.floor(Math.random() * WAITING_QUOTES.length)];
-        }, 1000);
+            assistantMsg.waitingText = pickRandom(WAITING_QUOTES);
+            assistantMsg.waitingEmoji = pickRandom(WAITING_EMOJIS);
+        }, 2000);
     };
 
     const stopWaitingText = (assistantMsg) => {
@@ -95,6 +101,7 @@ window.AppModules.createChatFeature = function(deps) {
         answerTypewriterInterval: null,
         thoughtRafId: null,
         waitingText: '',
+        waitingEmoji: '',
         waitingTimer: null
     });
 
