@@ -456,6 +456,46 @@
     border-top: 1px solid #f4f4f5;
 }
 
+.api-header-tags {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.auth-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.auth-none {
+    background: #f4f4f5;
+    color: #71717a;
+}
+
+.auth-apikey {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.auth-bearer {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.auth-basic {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.auth-custom {
+    background: #f3e8ff;
+    color: #9333ea;
+}
+
 /* My API Card (User View) */
 .my-api-card {
     background: white;
@@ -500,10 +540,16 @@
     line-height: 1.5;
 }
 
+.my-api-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
 .my-api-category {
     font-size: 0.75rem;
     color: #a1a1aa;
-    margin-bottom: 12px;
 }
 
 .my-api-endpoints {

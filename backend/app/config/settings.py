@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     model_config = SettingsConfigDict(
-        env_file=os.path.join(os.path.dirname(__file__), "../../../.env"),
+        env_file="/app/.env",  # Container path; use "../../../.env" for local dev
         env_file_encoding="utf-8",
         case_sensitive=True
     )
@@ -19,16 +19,16 @@ class Settings(BaseSettings):
     # Application
     APP_NAME: str = "AI Data Agent"
     APP_ENV: str = "development"
-    DEBUG: bool = True
-    SECRET_KEY: str = "your-secret-key-change-in-production"
+    DEBUG: bool = False
+    SECRET_KEY: str = ""
 
     # Database
-    DATABASE_URL: str = "mysql+aiomysql://user:password@localhost:3306/data_agent"
+    DATABASE_URL: str = ""  # Must be set via environment variable
     DATABASE_POOL_SIZE: int = 10
     DATABASE_MAX_OVERFLOW: int = 20
 
     # PostgreSQL for LangGraph Checkpointer
-    POSTGRES_URL: str = "postgresql://user:password@localhost:5432/langgraph_checkpoints"
+    POSTGRES_URL: str = ""  # Must be set via environment variable
 
     # LLM Configuration
     LLM_PROVIDER: str = "openai"
@@ -39,17 +39,29 @@ class Settings(BaseSettings):
     LLM_MAX_TOKENS: int = 4096
 
     # Authentication
-    JWT_SECRET_KEY: str = "your-jwt-secret-key"
+    JWT_SECRET_KEY: str = ""
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 1440
+
+    # CIA Login Configuration
+    CIA_ENABLED: bool = False
+    CIA_URL: str = "https://sso.example.com"
+    CIA_ACCESS_CLIENT_ID: str = ""
+    CIA_CLIENT_SECRET: str = ""
+    CIA_APP_KEY: str = ""      # findUserWithToken 所需
+    CIA_APP_SECRET: str = ""   # findUserWithToken 所需
+    AUTH_MODE: str = "local_only"  # dual, cia_only, local_only
 
     # API Auth Encryption (for encrypting auth_config in database)
     API_AUTH_ENCRYPTION_KEY: str = ""  # Set via environment variable
 
     # Embedding Configuration (for API retrieval)
-    EMBEDDING_PROVIDER: str = "local"
-    EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
-    EMBEDDING_DIMENSIONS: int = 384
+    # Provider: "local" (sentence-transformers) or "openai" (OpenAI-compatible API)
+    EMBEDDING_PROVIDER: str = "openai"
+    EMBEDDING_MODEL: str = "text-embedding-v3"
+    EMBEDDING_API_KEY: str = ""  # API key for remote embedding service
+    EMBEDDING_API_BASE: str = "https://api.openai.com/v1"  # Base URL for remote embedding service
+    EMBEDDING_DIMENSIONS: int = 1024
 
     # Vector Store Configuration (Qdrant)
     # Use file:// for persistent storage, or :memory: for in-memory mode
@@ -66,7 +78,7 @@ class Settings(BaseSettings):
     DEFAULT_DATA_SCOPE: str = "department"
 
     # Logging
-    LOG_LEVEL: str = "DEBUG"
+    LOG_LEVEL: str = "INFO"
     LOG_FILE: str = "logs/app.log"
 
     # ReAct Loop Circuit Breaker

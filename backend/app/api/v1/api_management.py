@@ -25,6 +25,7 @@ class EndpointConfigModel(BaseModel):
     params_mapping: Dict[str, str] = Field(default_factory=dict)
     required_params: List[str] = Field(default_factory=list)
     default_params: Dict[str, Any] = Field(default_factory=dict)
+    params_descriptions: Dict[str, str] = Field(default_factory=dict)
     response_data_path: Optional[str] = None
     response_field_mapping: Dict[str, str] = Field(default_factory=dict)
 
@@ -248,6 +249,7 @@ async def create_api(
             params_mapping=ep_config.params_mapping,
             required_params=ep_config.required_params,
             default_params=ep_config.default_params,
+            params_descriptions=ep_config.params_descriptions,
             response_data_path=ep_config.response_data_path,
             response_field_mapping=ep_config.response_field_mapping
         )
@@ -357,6 +359,7 @@ async def update_api(
                 params_mapping=ep_config.params_mapping,
                 required_params=ep_config.required_params,
                 default_params=ep_config.default_params,
+                params_descriptions=ep_config.params_descriptions,
                 response_data_path=ep_config.response_data_path,
                 response_field_mapping=ep_config.response_field_mapping
             )

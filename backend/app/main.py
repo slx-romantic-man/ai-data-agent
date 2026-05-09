@@ -9,6 +9,7 @@ Enterprise-level AI data analysis agent system supporting:
 - Excel export
 """
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import Dict, Any
 
 from fastapi import FastAPI, Request
@@ -24,6 +25,8 @@ from app.access.database import get_db, close_db
 from app.agent.router import get_tool_router
 from app.utils.logger import get_logger, setup_logger
 from app.utils.exceptions import AIAgentException
+
+__version__ = "1.0.0"
 
 
 # Setup logger
@@ -109,21 +112,61 @@ Include the token in the `Authorization` header as `Bearer <token>`.
 - Manager: manager1 / manager123
 - Employee: user1 / user123
     """,
-    version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    version=__version__,
+    docs_url="/docs" if settings.DEBUG else None,
+    redoc_url="/redoc" if settings.DEBUG else None,
+    openapi_url="/openapi.json" if settings.DEBUG else None,
     lifespan=lifespan,
 )
 
 
 # Configure CORS
+# In production, restrict to actual deployment domains
+_cors_origins = ["http://localhost:8080"]  # 替换为你自己的前端域名
+if settings.DEBUG:
+    _cors_origins.append("http://localhost")
+
+
+class CORSSecurityMiddleware:
+    """Server-side CORS enforcement: reject requests from disallowed origins."""
+
+    def __init__(self, app, allowed_origins):
+        self.app = app
+        self.allowed_origins = set(allowed_origins)
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        headers = dict(scope.get("headers", []))
+        origin = headers.get(b"origin", b"").decode("utf-8")
+
+        # Skip check for requests without Origin (e.g. curl, server-to-server)
+        if origin and origin not in self.allowed_origins:
+            logger.warning(f"Blocked request from disallowed origin: {origin}")
+            await send({
+                "type": "http.response.start",
+                "status": 403,
+                "headers": [(b"content-type", b"application/json")],
+            })
+            await send({
+                "type": "http.response.body",
+                "body": b'{"error":"Forbidden","detail":"Origin not allowed"}',
+            })
+            return
+
+        await self.app(scope, receive, send)
+
+
+app.add_middleware(CORSSecurityMiddleware, allowed_origins=_cors_origins)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
 )
 
 
@@ -173,18 +216,41 @@ else:
 
 
 # Health check endpoint
-@app.get("/health", tags=["health"])
+@app.get("/health", tags=["health"], response_model=Dict[str, Any])
 async def health_check() -> Dict[str, Any]:
     """
     Health check endpoint.
-    Returns the current status of the application.
+    Returns the current status of the application and its dependencies.
     """
-    return {
+    health_status = {
         "status": "healthy",
         "app_name": settings.APP_NAME,
-        "version": "1.0.0",
+        "version": __version__,
         "environment": settings.APP_ENV,
+        "timestamp": datetime.utcnow().isoformat(),
+        "checks": {},
     }
+
+    # Check database connectivity
+    try:
+        db = await get_db()
+        async with db.get_session() as session:
+            await session.execute(text("SELECT 1"))
+        health_status["checks"]["database"] = {"status": "healthy"}
+    except Exception as e:
+        health_status["checks"]["database"] = {"status": "unhealthy", "error": str(e)}
+        health_status["status"] = "degraded"
+
+    # Check LLM connectivity (lightweight)
+    try:
+        llm = get_llm()
+        # Just verify the client is initialized, don't make an actual API call
+        health_status["checks"]["llm"] = {"status": "healthy", "provider": settings.LLM_PROVIDER}
+    except Exception as e:
+        health_status["checks"]["llm"] = {"status": "unhealthy", "error": str(e)}
+        health_status["status"] = "degraded"
+
+    return health_status
 
 
 @app.get("/", tags=["root"])
@@ -195,7 +261,7 @@ async def root() -> Dict[str, str]:
     """
     return {
         "name": settings.APP_NAME,
-        "version": "1.0.0",
+        "version": __version__,
         "docs": "/docs",
         "health": "/health",
     }

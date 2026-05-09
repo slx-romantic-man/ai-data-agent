@@ -1,0 +1,33 @@
+name: 💡 Feature Request
+description: 提交新功能建议
+title: "[Feature] "
+labels: ["enhancement", "triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 问题/痛点
+      description: 描述你遇到什么问题，或者缺少什么功能
+      placeholder: 我在使用...时，发现...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 期望的解决方案
+      description: 描述你希望如何解决这个问题
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 替代方案
+      description: 描述你考虑过的其他替代方案
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 附加信息
+      description: 任何其他上下文信息、截图或示例

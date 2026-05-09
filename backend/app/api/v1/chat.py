@@ -1,9 +1,8 @@
 """
 Chat API endpoints.
 """
-from typing import Dict, Any, AsyncIterator, List
+from typing import Dict, Any, AsyncIterator, List, Optional
 import json
-import os
 import asyncio
 from datetime import datetime, date
 from decimal import Decimal
@@ -59,9 +58,19 @@ def _json_dumps(obj, **kwargs) -> str:
 router = APIRouter(prefix="/chat", tags=["chat"])
 logger = get_logger()
 
-# Persistent session storage
-SESSION_FILE = "sessions.json"
+# In-memory session cache (no file persistence; data lives in MySQL)
 _sessions: Dict[str, Any] = {}
+
+
+def _conv_from_db(db_conv: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """Convert MySQL conversation format to _sessions format."""
+    if not db_conv:
+        return {"messages": [], "created_at": datetime.now()}
+    return {
+        "messages": db_conv.get("messages", []),
+        "created_at": db_conv.get("created_at") or datetime.now(),
+        "updated_at": db_conv.get("updated_at") or datetime.now(),
+    }
 
 
 @router.get("/suggestions")
@@ -74,57 +83,11 @@ async def get_suggestions(
     APIs they have been explicitly granted permission for.
     """
     suggestion_service = get_suggestion_service()
-    suggestions = await suggestion_service.get_suggestions(user.user_id)
+    suggestions = suggestion_service.get_suggestions(user.user_id, user.role)
     return {
         "suggestions": suggestions,
         "total": len(suggestions)
     }
-
-
-class DateTimeEncoder(json.JSONEncoder):
-    """Custom JSON encoder for datetime objects."""
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        return super().default(obj)
-
-
-def _load_sessions():
-    """Load sessions from file."""
-    global _sessions
-    if os.path.exists(SESSION_FILE):
-        try:
-            with open(SESSION_FILE, "r", encoding="utf-8") as f:
-                _sessions = json.load(f)
-        except Exception as e:
-            logger.error(f"Failed to load sessions: {e}")
-            # If load fails (e.g. corrupted JSON), start with empty sessions
-            _sessions = {}
-            # Move corrupted file to backup
-            try:
-                os.rename(SESSION_FILE, f"{SESSION_FILE}.bak")
-                logger.info(f"Corrupted {SESSION_FILE} moved to backup.")
-            except Exception:
-                pass
-
-
-def _save_sessions():
-    """Save sessions to file."""
-    try:
-        with open(SESSION_FILE, "w", encoding="utf-8") as f:
-            json.dump(
-                _sessions,
-                f,
-                ensure_ascii=False,
-                indent=2,
-                cls=DateTimeEncoder
-            )
-    except Exception as e:
-        logger.error(f"Failed to save sessions: {e}")
-
-
-# Initialize sessions on startup
-_load_sessions()
 
 
 @router.post("", response_model=ChatResponse)
@@ -141,8 +104,9 @@ async def chat(
 3. **逻辑连贯性**：结论不得与之前已确认的事实相矛盾。
     """
     try:
-        # Override user context if user_id provided in request
-        if request.user_id:
+        # Override user context if admin provides user_id in request
+        # SECURITY: Only admin role can impersonate other users
+        if request.user_id and user.role == "admin":
             user_service = get_user_service()
             override_user = user_service.get_user_context(request.user_id)
             if override_user:
@@ -159,11 +123,12 @@ async def chat(
         # Get or create session
         session_id = request.session_id or generate_session_id()
 
-        # Get session history
-        session = _sessions.get(session_id, {
-            "messages": [],
-            "created_at": datetime.now(),
-        })
+        # Get session history (from memory cache, fallback to MySQL)
+        conversation_service = get_conversation_service()
+        if session_id not in _sessions:
+            conv = conversation_service.get_conversation(user.user_id, session_id)
+            _sessions[session_id] = _conv_from_db(conv)
+        session = _sessions[session_id]
 
         # Format conversation history for LangGraph (preserve type metadata for clarification detection)
         conversation_history = session.get("messages", [])
@@ -264,15 +229,48 @@ async def chat(
 
         session["updated_at"] = datetime.now()
         _sessions[session_id] = session
-        _save_sessions()
+
+        # Persist to MySQL
+        conversation_service.save_message(
+            user_id=user.user_id,
+            session_id=session_id,
+            role="user",
+            content=request.message,
+        )
+        if final_answer_text and final_answer_text != "处理完成":
+            conversation_service.save_message(
+                user_id=user.user_id,
+                session_id=session_id,
+                role="assistant",
+                content=final_answer_text,
+            )
 
         data_result = None
         if final_data:
-            data_result = DataResult(
-                columns=final_data.get("columns", []),
-                rows=final_data.get("rows", []),
-                total=final_data.get("total"),
-            )
+            if isinstance(final_data, list):
+                # API 返回的原始列表数据，自动构造 columns/rows/total
+                columns = list(final_data[0].keys()) if final_data else []
+                data_result = DataResult(
+                    columns=columns,
+                    rows=final_data,
+                    total=len(final_data),
+                )
+            elif isinstance(final_data, dict):
+                # 检查嵌套结构：{"data": [...]}
+                nested_data = final_data.get("data")
+                if isinstance(nested_data, list) and nested_data:
+                    columns = list(nested_data[0].keys()) if nested_data else []
+                    data_result = DataResult(
+                        columns=columns,
+                        rows=nested_data,
+                        total=len(nested_data),
+                    )
+                else:
+                    data_result = DataResult(
+                        columns=final_data.get("columns", []),
+                        rows=final_data.get("rows", []),
+                        total=final_data.get("total"),
+                    )
 
         reasoning_log_obj = None
         if isinstance(final_reasoning_log, dict):
@@ -302,9 +300,15 @@ async def chat(
 
     except Exception as e:
         logger.error(f"Chat error: {str(e)}")
+        # SECURITY: Do not expose internal error details to users in production
+        error_detail = (
+            f"Error processing message: {str(e)}"
+            if settings.DEBUG
+            else "An internal error occurred while processing your message. Please try again."
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error processing message: {str(e)}",
+            detail=error_detail,
         )
 
 
@@ -314,13 +318,14 @@ async def get_session(
     user: UserContext = Depends(get_user_context),
 ) -> Dict[str, Any]:
     """Get session history."""
-    if session_id not in _sessions:
+    conversation_service = get_conversation_service()
+    conv = conversation_service.get_conversation(user.user_id, session_id)
+    if not conv:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Session not found",
         )
-
-    return _sessions[session_id]
+    return conv
 
 
 @router.delete("/sessions/{session_id}")
@@ -329,6 +334,8 @@ async def delete_session(
     user: UserContext = Depends(get_user_context),
 ) -> Dict[str, str]:
     """Delete a session."""
+    conversation_service = get_conversation_service()
+    conversation_service.delete_conversation(user.user_id, session_id)
     if session_id in _sessions:
         del _sessions[session_id]
 
@@ -341,19 +348,17 @@ async def get_history(
     user: UserContext = Depends(get_user_context),
 ) -> Dict[str, Any]:
     """Get user's chat history."""
-    user_sessions = [
-        {"session_id": sid, **s}
-        for sid, s in _sessions.items()
-    ]
+    conversation_service = get_conversation_service()
+    conversations = conversation_service.get_conversations(user.user_id)
 
-    # Sort by updated_at (handle mixed datetime objects and ISO strings)
-    def _sort_key(x):
-        val = x.get("updated_at") or x.get("created_at")
-        if isinstance(val, str):
-            return datetime.fromisoformat(val.replace("Z", "+00:00"))
-        return val or datetime.min
-
-    user_sessions.sort(key=_sort_key, reverse=True)
+    user_sessions = []
+    for conv in conversations:
+        user_sessions.append({
+            "session_id": conv.get("id", ""),
+            "messages": conv.get("messages", []),
+            "created_at": conv.get("created_at"),
+            "updated_at": conv.get("updated_at"),
+        })
 
     return {
         "sessions": user_sessions[:limit],
@@ -498,7 +503,10 @@ async def simple_chat(
         logger.error(f"Simple chat error: {str(e)}")
         return {
             "success": False,
-            "error": str(e),
+            "error": (
+                str(e) if settings.DEBUG
+                else "An internal error occurred. Please try again."
+            ),
         }
 
 
@@ -627,7 +635,10 @@ async def stream_chat(
             # Get or create session
             session_id = request.session_id or generate_session_id()
             session_messages = []
-            if session_id and session_id in _sessions:
+            if session_id:
+                if session_id not in _sessions:
+                    conv = conversation_service.get_conversation(user.user_id, session_id)
+                    _sessions[session_id] = _conv_from_db(conv)
                 session_messages = _sessions[session_id].get("messages", [])
 
             # Format conversation history for LangGraph (remove timestamp and extra fields)
@@ -824,7 +835,6 @@ async def stream_chat(
                             assistant_msg["thought"] = thought_events
                         _sessions[session_id]["messages"].append(assistant_msg)
                         _sessions[session_id]["updated_at"] = datetime.now()
-                        _save_sessions()
                         conversation_service.save_message(
                             user_id=user.user_id,
                             session_id=session_id,
@@ -865,37 +875,53 @@ async def stream_chat(
                     from app.agent.nodes.analyzer_node import summarize_data_for_llm as _summarize_data_for_llm
                     all_data = _extract_all_data_func(data_context)
 
+                    # 保存原始全量数据（避免被 summarize 降维覆盖）
+                    original_all_data = list(all_data)
+                    original_count = len(original_all_data)
+                    for key, value in data_context.items():
+                        if isinstance(value, dict) and value.get("_meta") and value["_meta"].get("total_rows"):
+                            original_count = value["_meta"]["total_rows"]
+                            break
+
                     # F-01 先判断（基于原始数据）
-                    if _is_simple_query(plan, all_data):
+                    if _is_simple_query(plan, all_data) and original_count <= 10:
                         logger.info("[StreamChat] Simple query via F-01, using template (no LLM)")
-                        final_answer_text = _format_simple_response(all_data, user_message)
+                        final_answer_text = _format_simple_response(original_all_data, user_message)
                         async for payload in _stream_text(final_answer_text):
                             yield payload
-                        # F-30: all_data 已是降维结果（≤5行），直接用它构造 normalized_data
-                        if all_data:
-                            columns = list(all_data[0].keys()) if isinstance(all_data[0], dict) else []
-                            normalized_data = {"rows": all_data, "total": len(all_data), "columns": columns}
+                        # 使用原始全量数据构造 normalized_data
+                        if original_all_data:
+                            columns = list(original_all_data[0].keys()) if isinstance(original_all_data[0], dict) else []
+                            normalized_data = {"rows": original_all_data, "total": original_count, "columns": columns}
                             yield _sse("data", normalized_data)
                         yield _sse("done", {})
                         return
                     else:
-                        # F-30: Python 数据降维 — 复杂查询降维后再送 analyzer
-                        all_data, data_context = _summarize_data_for_llm(all_data, data_context)
-                        stream_state["data_context"] = data_context
-                        # F-10: Stream analysis output chunk by chunk
-                        logger.info("[StreamChat] Streaming analysis output via SSE")
-                        streamed_text = ""
-                        async for chunk in run_analyzer_stream(stream_state):
-                            streamed_text += chunk
-                            yield _sse("streaming_text", {"content": chunk})
-                        final_answer_text = streamed_text
+                        if original_count > 10:
+                            # 大数据量：直接返回简短摘要，跳过 LLM 分析
+                            final_answer_text = (
+                                f"查询成功，共返回 **{original_count}** 条数据。"
+                                f"详细结果请见下方表格，导出 Excel 可获取完整数据。"
+                            )
+                            logger.info(f"[StreamChat] Large data ({original_count} rows), skipping LLM analysis")
+                            async for payload in _stream_text(final_answer_text):
+                                yield payload
+                        else:
+                            # F-30: Python 数据降维 — 复杂查询降维后再送 analyzer
+                            all_data, data_context = _summarize_data_for_llm(all_data, data_context)
+                            stream_state["data_context"] = data_context
+                            # F-10: Stream analysis output chunk by chunk
+                            logger.info("[StreamChat] Streaming analysis output via SSE")
+                            streamed_text = ""
+                            async for chunk in run_analyzer_stream(stream_state):
+                                streamed_text += chunk
+                                yield _sse("streaming_text", {"content": chunk})
+                            final_answer_text = streamed_text
 
-                    # Send normalized data
-                    # F-30: Use reduced all_data (5 rows after dimensionality reduction)
-                    # instead of raw data from data_context (100 rows)
-                    if all_data:
-                        columns = list(all_data[0].keys()) if isinstance(all_data[0], dict) else []
-                        normalized_data = {"rows": all_data, "total": len(all_data), "columns": columns}
+                    # Send normalized data — 始终使用原始全量数据
+                    if original_all_data:
+                        columns = list(original_all_data[0].keys()) if isinstance(original_all_data[0], dict) else []
+                        normalized_data = {"rows": original_all_data, "total": original_count, "columns": columns}
                         final_data = normalized_data
                         yield _sse("data", normalized_data)
                 else:
@@ -959,7 +985,6 @@ async def stream_chat(
                 _sessions[session_id]["messages"].append(assistant_msg)
                 _sessions[session_id]["updated_at"] = datetime.now()
                 logger.info(f"[StreamChat] Session {session_id} saved with {len(_sessions[session_id]['messages'])} messages")
-                _save_sessions()
 
             # Send done event
             yield _sse("done")
@@ -1014,7 +1039,11 @@ async def stream_chat(
 
         except Exception as e:
             logger.error(f"Stream chat error: {str(e)}")
-            yield _sse("error", {"message": str(e)})
+            error_message = (
+                str(e) if settings.DEBUG
+                else "An internal error occurred. Please try again."
+            )
+            yield _sse("error", {"message": error_message})
 
     # F-20: Heartbeat generator — yields SSE comment every 15s to prevent idle timeout
     async def _heartbeat_gen() -> AsyncIterator[str]:

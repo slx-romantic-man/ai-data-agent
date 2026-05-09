@@ -77,6 +77,7 @@ class EndpointConfig(BaseModel):
     params_mapping: Dict[str, str] = Field(default_factory=dict)
     required_params: List[str] = Field(default_factory=list)
     default_params: Dict[str, Any] = Field(default_factory=dict)
+    params_descriptions: Dict[str, str] = Field(default_factory=dict)
     response_data_path: Optional[str] = None
     response_field_mapping: Dict[str, str] = Field(default_factory=dict)
 
@@ -135,6 +136,7 @@ class APIConfigPublic(BaseModel):
     name: str
     description: Optional[str] = None
     base_url: Optional[str] = None  # Some systems may want to hide this too
+    auth_type: Optional[str] = Field(None, description="认证类型")
     category_id: Optional[int] = None
     category_path: Optional[str] = Field(None, description="分类完整路径")
     is_active: bool

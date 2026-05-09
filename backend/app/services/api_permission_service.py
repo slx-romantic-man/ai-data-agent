@@ -383,15 +383,27 @@ class APIPermissionService:
 
         # Decrypt and mask auth config
         auth_config_masked = None
-        if api.auth_config and decrypt:
-            try:
-                decrypted = decrypt_auth_config(api.auth_config)
-                # Mask sensitive values
-                auth_config_masked = self._mask_auth_config(decrypted)
-            except Exception:
-                auth_config_masked = {"error": "Failed to decrypt"}
-        elif api.auth_config:
-            auth_config_masked = {"masked": True}
+        if api.auth_config:
+            # Handle both encrypted (string) and plain dict auth_config
+            auth_dict = None
+            if isinstance(api.auth_config, dict):
+                # Plain dict - use directly (e.g. from direct DB inserts)
+                auth_dict = api.auth_config.copy()
+            elif isinstance(api.auth_config, str):
+                # Encrypted string - decrypt it
+                try:
+                    auth_dict = decrypt_auth_config(api.auth_config)
+                except Exception:
+                    auth_dict = {"error": "Failed to decrypt"}
+
+            if auth_dict and decrypt:
+                if "error" not in auth_dict:
+                    auth_config_masked = self._mask_auth_config(auth_dict)
+                else:
+                    auth_config_masked = auth_dict
+            elif auth_dict:
+                # Return masked indicator for encrypted, or the actual dict for plain
+                auth_config_masked = {"masked": True} if isinstance(api.auth_config, str) else auth_dict
 
         return APIConfigAdmin(
             id=api.id,
@@ -644,6 +656,7 @@ class APIPermissionService:
                     name=api.name,
                     description=api.description,
                     base_url=api.base_url,
+                    auth_type=api.auth_type,
                     category_id=api.category_id,
                     category_path=category_path,
                     is_active=api.is_active,

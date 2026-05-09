@@ -54,7 +54,7 @@ async def register_weather_api():
                     },
                     "required_params": ["key", "q"],
                     "default_params": {
-                        "key": "e71bfeb75a37444994935141261303"
+                        "key": "your-weather-api-key"
                     },
                     "response_data_path": None,
                     "response_field_mapping": {}

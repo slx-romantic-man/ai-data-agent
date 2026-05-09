@@ -9,6 +9,7 @@ from app.api.v1.history import router as history_router
 from app.api.v1.user_management import router as user_management_router
 from app.api.v1.api_permission import router as api_permission_router
 from app.api.v1.approval import router as approval_router
+from app.api.v1.cia_auth import router as cia_auth_router
 
 
 router = APIRouter(prefix="/v1")
@@ -21,6 +22,7 @@ router.include_router(history_router)
 router.include_router(user_management_router)
 router.include_router(api_permission_router)
 router.include_router(approval_router)
+router.include_router(cia_auth_router)
 
 
 __all__ = ["router"]

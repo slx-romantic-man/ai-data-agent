@@ -34,14 +34,21 @@ class APIFetchTool(BaseTool):
     async def _get_session(self) -> aiohttp.ClientSession:
         """获取或创建aiohttp session"""
         if self._session is None or self._session.closed:
+            import os
             import ssl
-            # Create SSL context that doesn't verify certificates
-            # macOS Python often lacks system CA certificates
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
 
-            connector = aiohttp.TCPConnector(ssl=ssl_context)
+            # SECURITY: SSL verification is enabled by default.
+            # Only disable via environment variable for specific development environments.
+            verify_ssl = os.getenv("API_FETCH_VERIFY_SSL", "true").lower() != "false"
+
+            if verify_ssl:
+                connector = aiohttp.TCPConnector(ssl=True)
+            else:
+                ssl_context = ssl.create_default_context()
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+                connector = aiohttp.TCPConnector(ssl=ssl_context)
+
             self._session = aiohttp.ClientSession(
                 timeout=aiohttp.ClientTimeout(total=60.0),
                 connector=connector
@@ -108,8 +115,12 @@ class APIFetchTool(BaseTool):
         """执行配置化API调用（带权限验证）"""
         api_id = params.get("api_id")
         endpoint_name = params.get("endpoint")
-        request_params = params.get("params", {})
-        path_params = params.get("path_params", {})
+        request_params = dict(params.get("params", {}))
+        path_params = dict(params.get("path_params", {}))
+
+        # 边界修复：filter 为空字符串时，API 会拒绝，自动替换为 "all" 获取全量数据
+        if request_params.get("filter") == "":
+            request_params["filter"] = "all"
 
         # ==================== 权限检查 ====================
         # 首先尝试从数据库权限系统获取API配置
@@ -166,7 +177,7 @@ class APIFetchTool(BaseTool):
             # 使用文件配置的API
             return await self._execute_with_file_config(
                 api_id, endpoint_name, request_params, path_params,
-                api_config, permission
+                api_config, permission, params
             )
 
         # 检查API是否激活
@@ -182,12 +193,25 @@ class APIFetchTool(BaseTool):
                 f"API {api_id} 没有端点: {endpoint_name}。可用端点: {available}"
             )
 
-        # 检查必需参数
+        # 获取参数映射
+        params_mapping = endpoint_config.get("params_mapping", {})
+        reverse_mapping = {v: k for k, v in params_mapping.items()}
+
+        # 统一参数：同时保留原始参数名和映射后的参数名
+        # 这样 agent 传原始名或映射名都能被识别
+        unified_params = dict(request_params)
+        for user_key, api_key in params_mapping.items():
+            if user_key in request_params:
+                unified_params[api_key] = request_params[user_key]
+            if api_key in request_params:
+                unified_params[user_key] = request_params[api_key]
+
+        # 检查必需参数（同时接受原始参数名和映射后的参数名）
         required_params = endpoint_config.get("required_params", [])
         default_params = endpoint_config.get("default_params", {})
         missing_params = [
             p for p in required_params
-            if p not in request_params and p not in path_params and p not in default_params
+            if p not in unified_params and p not in path_params and p not in default_params
         ]
         if missing_params:
             return self._error(f"缺少必需参数: {missing_params}")
@@ -206,15 +230,13 @@ class APIFetchTool(BaseTool):
             base_url = self._resolve_env_vars(base_url)
             path = endpoint_config.get("path", "")
 
-            # 统一参数源
-            all_available_params = {**request_params, **path_params}
             consumed_params = set()
 
-            # 替换路径中的 {placeholder}
+            # 替换路径中的 {placeholder}（使用统一参数，支持映射后的参数名）
             placeholders = re.findall(r'\{([^}]+)\}', path)
             for key in placeholders:
-                if key in all_available_params:
-                    val = all_available_params[key]
+                if key in unified_params:
+                    val = unified_params[key]
                     path = path.replace(f"{{{key}}}", str(val))
                     consumed_params.add(key)
 
@@ -228,12 +250,23 @@ class APIFetchTool(BaseTool):
             # 构建查询参数
             reserved_keys = {"api_id", "endpoint", "params", "path_params", "tool", "parameters", "url", "method", "headers", "body"}
             query_params = dict(default_params)
-            params_mapping = endpoint_config.get("params_mapping", {})
+            user_param_keys = set()
+            # 被消耗的参数也要排除其对应的原始参数名
+            consumed_user_keys = set(consumed_params)
+            for cp in consumed_params:
+                if cp in reverse_mapping:
+                    consumed_user_keys.add(reverse_mapping[cp])
+                if cp in params_mapping:
+                    consumed_user_keys.add(params_mapping[cp])
+
             for user_key, user_value in request_params.items():
-                if user_key in consumed_params or user_key in reserved_keys:
+                if user_key in consumed_user_keys or user_key in reserved_keys:
                     continue
                 api_key = params_mapping.get(user_key, user_key)
                 query_params[api_key] = user_value
+                user_param_keys.add(api_key)
+
+            query_params = self._normalize_query_params(query_params)
 
             # 构建请求头（应用认证）
             headers = {}
@@ -247,7 +280,31 @@ class APIFetchTool(BaseTool):
             session = await self._get_session()
             method = endpoint_config.get("method", "GET").upper()
 
-            logger.info(f"[APIFetch] Calling {method} {url} with params: {query_params}")
+            # POST/PUT/PATCH 参数处理：用户参数和默认参数放 body，认证参数保留在 query string
+            post_body = None
+            if method in ("POST", "PUT", "PATCH"):
+                explicit_body = params.get("body")
+                if explicit_body is not None:
+                    post_body = explicit_body
+                else:
+                    post_body = {}
+                    # 记录认证参数key，避免被误移入body
+                    auth_keys = set()
+                    if auth_type == "api_key":
+                        api_key_param = auth_config.get("api_key_param", auth_config.get("api_key_header", "X-API-Key"))
+                        auth_keys.add(api_key_param)
+                    for k, v in list(query_params.items()):
+                        if k in auth_keys:
+                            continue
+                        if k in default_params or k in user_param_keys:
+                            post_body[k] = v
+                            query_params.pop(k, None)
+                    if not post_body:
+                        post_body = None
+                if post_body is not None:
+                    headers.setdefault("Content-Type", "application/json")
+
+            logger.info(f"[APIFetch] Calling {method} {url} | query: {query_params} | body: {post_body is not None}")
 
             if method == "GET":
                 async with session.get(
@@ -269,7 +326,41 @@ class APIFetchTool(BaseTool):
             elif method == "POST":
                 async with session.post(
                     url, headers=headers, params=query_params,
-                    json=params.get("body")
+                    json=post_body
+                ) as response:
+                    if response.status >= 400:
+                        text = await response.text()
+                        status = "failed"
+                        error_message = f"HTTP {response.status}"
+                        return self._error(f"API请求失败: HTTP {response.status}")
+                    try:
+                        data = await response.json(content_type=None)
+                    except Exception:
+                        text = await response.text()
+                        status = "failed"
+                        error_message = "Non-JSON response"
+                        return self._error(f"API返回非JSON格式，响应内容: {text[:200]}")
+            elif method == "PUT":
+                async with session.put(
+                    url, headers=headers, params=query_params,
+                    json=post_body
+                ) as response:
+                    if response.status >= 400:
+                        text = await response.text()
+                        status = "failed"
+                        error_message = f"HTTP {response.status}"
+                        return self._error(f"API请求失败: HTTP {response.status}")
+                    try:
+                        data = await response.json(content_type=None)
+                    except Exception:
+                        text = await response.text()
+                        status = "failed"
+                        error_message = "Non-JSON response"
+                        return self._error(f"API返回非JSON格式，响应内容: {text[:200]}")
+            elif method == "PATCH":
+                async with session.patch(
+                    url, headers=headers, params=query_params,
+                    json=post_body
                 ) as response:
                     if response.status >= 400:
                         text = await response.text()
@@ -338,7 +429,8 @@ class APIFetchTool(BaseTool):
     async def _execute_with_file_config(
         self, api_id: str, endpoint_name: str,
         request_params: Dict, path_params: Dict,
-        api_config, permission: PermissionContext
+        api_config, permission: PermissionContext,
+        parent_params: Optional[Dict[str, Any]] = None
     ) -> ToolResult:
         """使用文件配置执行API调用（向后兼容）"""
         endpoint_config = api_config.endpoints.get(endpoint_name)
@@ -348,9 +440,21 @@ class APIFetchTool(BaseTool):
                 f"API {api_id} 没有端点: {endpoint_name}。可用端点: {available}"
             )
 
+        params_mapping = dict(endpoint_config.params_mapping)
+        reverse_mapping = {v: k for k, v in params_mapping.items()}
+
+        unified_params = dict(request_params)
+        for user_key, api_key in params_mapping.items():
+            if user_key in request_params:
+                unified_params[api_key] = request_params[user_key]
+            if api_key in request_params:
+                unified_params[user_key] = request_params[api_key]
+
+        required_params = getattr(endpoint_config, 'required_params', []) or []
+        default_params = getattr(endpoint_config, 'default_params', {}) or {}
         missing_params = [
-            p for p in endpoint_config.required_params
-            if p not in request_params and p not in path_params and p not in endpoint_config.default_params
+            p for p in required_params
+            if p not in unified_params and p not in path_params and p not in default_params
         ]
         if missing_params:
             return self._error(f"缺少必需参数: {missing_params}")
@@ -359,13 +463,12 @@ class APIFetchTool(BaseTool):
             base_url = self._resolve_env_vars(api_config.base_url)
             path = endpoint_config.path
 
-            all_available_params = {**request_params, **path_params}
             consumed_params = set()
 
             placeholders = re.findall(r'\{([^}]+)\}', path)
             for key in placeholders:
-                if key in all_available_params:
-                    val = all_available_params[key]
+                if key in unified_params:
+                    val = unified_params[key]
                     path = path.replace(f"{{{key}}}", str(val))
                     consumed_params.add(key)
 
@@ -377,11 +480,22 @@ class APIFetchTool(BaseTool):
 
             reserved_keys = {"api_id", "endpoint", "params", "path_params", "tool", "parameters", "url", "method", "headers", "body"}
             query_params = dict(endpoint_config.default_params)
+            user_param_keys = set()
+            consumed_user_keys = set(consumed_params)
+            for cp in consumed_params:
+                if cp in reverse_mapping:
+                    consumed_user_keys.add(reverse_mapping[cp])
+                if cp in params_mapping:
+                    consumed_user_keys.add(params_mapping[cp])
+
             for user_key, user_value in request_params.items():
-                if user_key in consumed_params or user_key in reserved_keys:
+                if user_key in consumed_user_keys or user_key in reserved_keys:
                     continue
                 api_key = endpoint_config.params_mapping.get(user_key, user_key)
                 query_params[api_key] = user_value
+                user_param_keys.add(api_key)
+
+            query_params = self._normalize_query_params(query_params)
 
             headers = dict(api_config.auth.custom_headers)
             self._apply_auth(headers, api_config.auth)
@@ -389,6 +503,31 @@ class APIFetchTool(BaseTool):
             session = await self._get_session()
 
             method = endpoint_config.method.upper()
+
+            # POST/PUT/PATCH 参数处理
+            post_body = None
+            if method in ("POST", "PUT", "PATCH"):
+                # 统一从顶层 params 查找 explicit_body，与 _execute_configured_api 一致
+                explicit_body = (parent_params or {}).get("body")
+                if explicit_body is not None:
+                    post_body = explicit_body
+                else:
+                    post_body = {}
+                    # 记录认证参数key，避免被误移入body
+                    auth_keys = set()
+                    if api_config.auth.type == AuthType.API_KEY:
+                        auth_keys.add(api_config.auth.api_key_header)
+                    for k, v in list(query_params.items()):
+                        if k in auth_keys:
+                            continue
+                        if k in default_params or k in user_param_keys:
+                            post_body[k] = v
+                            query_params.pop(k, None)
+                    if not post_body:
+                        post_body = None
+                if post_body is not None:
+                    headers.setdefault("Content-Type", "application/json")
+
             if method == "GET":
                 async with session.get(
                     url, headers=headers, params=query_params
@@ -404,7 +543,33 @@ class APIFetchTool(BaseTool):
             elif method == "POST":
                 async with session.post(
                     url, headers=headers, params=query_params,
-                    json=request_params.get("body")
+                    json=post_body
+                ) as response:
+                    if response.status >= 400:
+                        text = await response.text()
+                        return self._error(f"API请求失败: HTTP {response.status}")
+                    try:
+                        data = await response.json(content_type=None)
+                    except Exception:
+                        text = await response.text()
+                        return self._error(f"API返回非JSON格式，响应内容: {text[:200]}")
+            elif method == "PUT":
+                async with session.put(
+                    url, headers=headers, params=query_params,
+                    json=post_body
+                ) as response:
+                    if response.status >= 400:
+                        text = await response.text()
+                        return self._error(f"API请求失败: HTTP {response.status}")
+                    try:
+                        data = await response.json(content_type=None)
+                    except Exception:
+                        text = await response.text()
+                        return self._error(f"API返回非JSON格式，响应内容: {text[:200]}")
+            elif method == "PATCH":
+                async with session.patch(
+                    url, headers=headers, params=query_params,
+                    json=post_body
                 ) as response:
                     if response.status >= 400:
                         text = await response.text()
@@ -447,7 +612,7 @@ class APIFetchTool(BaseTool):
         url = params.get("url")
         method = params.get("method", "GET").upper()
         headers = params.get("headers", {})
-        query_params = params.get("params", {})
+        query_params = self._normalize_query_params(params.get("params", {}))
         body = params.get("body")
 
         try:
@@ -487,6 +652,22 @@ class APIFetchTool(BaseTool):
             return self._error(f"HTTP错误: {str(e)}")
         except Exception as e:
             return self._error(f"请求失败: {str(e)}")
+
+    @staticmethod
+    def _normalize_query_params(params: Dict[str, Any]) -> Dict[str, Any]:
+        """规范化查询参数值：bool→小写字符串, datetime/date→ISO字符串"""
+        from datetime import date, datetime
+        normalized = {}
+        for k, v in params.items():
+            if isinstance(v, bool):
+                normalized[k] = "true" if v else "false"
+            elif isinstance(v, datetime):
+                normalized[k] = v.isoformat()
+            elif isinstance(v, date):
+                normalized[k] = v.isoformat()
+            else:
+                normalized[k] = v
+        return normalized
 
     def _resolve_env_vars(self, value: str) -> str:
         """解析环境变量 ${VAR_NAME:default}"""

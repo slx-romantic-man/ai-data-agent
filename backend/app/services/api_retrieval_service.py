@@ -81,26 +81,27 @@ class APIRetrievalService:
             self._llm_client = get_llm_client()
         return self._llm_client
 
+    def _get_embedding_client(self):
+        """Get embedding client instance (lazy, thread-safe)."""
+        if self._model is None:
+            from app.config.embedding_config import get_embedding_client
+            self._model = get_embedding_client()
+            logger.info(f"Embedding client initialized: {settings.EMBEDDING_PROVIDER}")
+        return self._model
+
     def _get_embedding(self, text: str) -> List[float]:
         """
         Generate embedding for text.
-        Model is loaded lazily on first call.
 
         Args:
             text: Text to embed
 
         Returns:
-            384-dimensional embedding vector
+            Embedding vector
         """
-        if self._model is None:
-            import os
-            os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
-            from sentence_transformers import SentenceTransformer
-            logger.info(f"Loading embedding model: {settings.EMBEDDING_MODEL}")
-            self._model = SentenceTransformer(settings.EMBEDDING_MODEL)
-            logger.info("Embedding model loaded successfully")
-
-        return self._model.encode(text).tolist()
+        client = self._get_embedding_client()
+        embeddings = client.embed([text])
+        return embeddings[0]
 
     def _build_index_text(self, api: Dict[str, Any]) -> str:
         """

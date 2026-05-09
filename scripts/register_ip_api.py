@@ -1,5 +1,5 @@
 """
-注册 Chanjet IP 定位 API 到数据库
+注册 Example IP 定位 API 到数据库
 """
 import asyncio
 from sqlalchemy import select
@@ -35,15 +35,15 @@ async def register_ip_api():
         existing = result.scalar_one_or_none()
 
         if existing:
-            print("Chanjet IP API 已存在，跳过注册")
+            print("Example IP API 已存在，跳过注册")
             return
 
         # 创建 IP 定位 API 配置
         ip_api = APIConfig(
             config_id="ip_location_api",
-            name="Chanjet IP 定位查询",
+            name="Example IP 定位查询",
             description="查询 IP 地址的地理位置信息，包括国家、省份、城市等",
-            base_url="https://midas.chanapp.chanjet.com",
+            base_url="https://api.example.com",
             auth_type="none",
             auth_config={},
             endpoints={
@@ -71,7 +71,7 @@ async def register_ip_api():
         session.add(ip_api)
         await session.commit()
 
-        print("✅ Chanjet IP API 注册成功")
+        print("✅ Example IP API 注册成功")
         print(f"   config_id: {ip_api.config_id}")
         print(f"   name: {ip_api.name}")
         print(f"   category_id: {ip_api.category_id}")

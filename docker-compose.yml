@@ -1,25 +1,6 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: ai-data-agent-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-ai_data_agent}
-      MYSQL_USER: ${MYSQL_USER:-dataagent}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-dataagent123}
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root123}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   backend:
     build:
       context: ./backend
@@ -29,18 +10,44 @@ services:
     ports:
       - "8000:8000"
     environment:
+      # Application
       APP_ENV: ${APP_ENV:-production}
       DEBUG: ${DEBUG:-false}
       SECRET_KEY: ${SECRET_KEY}
-      DATABASE_URL: mysql+aiomysql://${MYSQL_USER:-dataagent}:${MYSQL_PASSWORD:-dataagent123}@mysql:3306/${MYSQL_DATABASE:-ai_data_agent}
+      # Database
+      DATABASE_URL: ${DATABASE_URL}
+      # LLM (主模型)
       LLM_PROVIDER: ${LLM_PROVIDER:-openai}
       LLM_API_KEY: ${LLM_API_KEY}
       LLM_API_BASE: ${LLM_API_BASE}
       LLM_MODEL: ${LLM_MODEL}
+      LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0.1}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-4096}
+      # Embedding (向量模型)
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-openai}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-v3}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY}
+      EMBEDDING_API_BASE: ${EMBEDDING_API_BASE}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-1024}
+      # Auth & Permission
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      API_AUTH_ENCRYPTION_KEY: ${API_AUTH_ENCRYPTION_KEY}
       ENABLE_PERMISSION_CHECK: ${ENABLE_PERMISSION_CHECK:-true}
+      DEFAULT_DATA_SCOPE: ${DEFAULT_DATA_SCOPE:-department}
+      # Vector Store
       QDRANT_URL: file:///app/data/qdrant
       QDRANT_COLLECTION: ${QDRANT_COLLECTION:-api_embeddings}
+      # Retrieval
+      API_RETRIEVAL_CANDIDATE_TOP_K: ${API_RETRIEVAL_CANDIDATE_TOP_K:-100}
+      API_RETRIEVAL_FINAL_TOP_K: ${API_RETRIEVAL_FINAL_TOP_K:-10}
+      API_RETRIEVAL_CACHE_TTL: ${API_RETRIEVAL_CACHE_TTL:-300}
+      # ReAct Loop
+      REACT_MAX_ITERATIONS: ${REACT_MAX_ITERATIONS:-10}
+      REACT_MAX_TOKENS_PER_QUERY: ${REACT_MAX_TOKENS_PER_QUERY:-8000}
+      REACT_TOOL_TIMEOUT_SECONDS: ${REACT_TOOL_TIMEOUT_SECONDS:-30}
+      REACT_LOOP_TIMEOUT_SECONDS: ${REACT_LOOP_TIMEOUT_SECONDS:-120}
+      REACT_CIRCUIT_FAILURE_THRESHOLD: ${REACT_CIRCUIT_FAILURE_THRESHOLD:-3}
+      REACT_CIRCUIT_RECOVERY_TIMEOUT: ${REACT_CIRCUIT_RECOVERY_TIMEOUT:-30.0}
     volumes:
       - qdrant_data:/app/data/qdrant
       - checkpoint_data:/app/data
@@ -53,6 +60,26 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
+
+  mysql:
+    image: mysql:8.0
+    container_name: ai-data-agent-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ai_data_agent}
+      MYSQL_USER: ${MYSQL_USER:-dataagent}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change-me-db-password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 30s
 
   nginx:

@@ -151,19 +151,19 @@ window.AppModules.createApiManagementFeature = function(deps) {
         apiForm.name = apiItem.name;
         apiForm.description = apiItem.description || '';
         apiForm.base_url = apiItem.base_url;
-        apiForm.auth_type = apiItem.auth?.type || 'none';
-        apiForm.api_key_header = apiItem.auth?.api_key_header || 'X-API-Key';
-        apiForm.api_key_value = apiItem.auth?.api_key_value || '';
-        apiForm.bearer_token = apiItem.auth?.bearer_token || '';
-        apiForm.username = apiItem.auth?.username || '';
-        apiForm.password = apiItem.auth?.password || '';
+        apiForm.auth_type = apiItem.auth_type || 'none';
+        apiForm.api_key_header = apiItem.auth_config?.api_key_header || 'X-API-Key';
+        apiForm.api_key_value = apiItem.auth_config?.api_key_value || '';
+        apiForm.bearer_token = apiItem.auth_config?.bearer_token || '';
+        apiForm.username = apiItem.auth_config?.username || '';
+        apiForm.password = apiItem.auth_config?.password || '';
         apiForm.timeout = apiItem.timeout || 30;
         apiForm.retry_count = apiItem.retry_count || 3;
 
         // 加载自定义headers
         apiForm.custom_headers = [];
-        if (apiItem.auth?.custom_headers) {
-            for (const [key, value] of Object.entries(apiItem.auth.custom_headers)) {
+        if (apiItem.auth_config?.custom_headers) {
+            for (const [key, value] of Object.entries(apiItem.auth_config.custom_headers)) {
                 apiForm.custom_headers.push({ key, value });
             }
         }
@@ -177,7 +177,7 @@ window.AppModules.createApiManagementFeature = function(deps) {
                     for (const [pName, pValue] of Object.entries(ep.params_mapping)) {
                         params.push({
                             name: pName,
-                            description: '',
+                            description: (ep.params_descriptions || {})[pName] || '',
                             required: (ep.required_params || []).includes(pName),
                             default_value: (ep.default_params || {})[pName] || ''
                         });
@@ -246,6 +246,7 @@ window.AppModules.createApiManagementFeature = function(deps) {
                 const params_mapping = {};
                 const required_params = [];
                 const default_params = {};
+                const params_descriptions = {};
 
                 for (const param of (ep.params || [])) {
                     if (param.name) {
@@ -255,6 +256,9 @@ window.AppModules.createApiManagementFeature = function(deps) {
                         }
                         if (param.default_value) {
                             default_params[param.name] = param.default_value;
+                        }
+                        if (param.description) {
+                            params_descriptions[param.name] = param.description;
                         }
                     }
                 }
@@ -266,6 +270,7 @@ window.AppModules.createApiManagementFeature = function(deps) {
                     params_mapping: params_mapping,
                     required_params: required_params,
                     default_params: default_params,
+                    params_descriptions: params_descriptions,
                     response_data_path: ep.response_data_path || null,
                     response_field_mapping: ep.response_field_mapping || {}
                 };

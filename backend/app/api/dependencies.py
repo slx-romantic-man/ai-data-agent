@@ -13,9 +13,6 @@ from app.config.settings import settings
 from app.models.user import UserContext
 from app.models.permission import PermissionContext
 from app.agent import get_agent_engine, AgentEngine
-from app.agent.core.react_agent_engine import (
-    ReActAgentEngine, get_react_agent_engine
-)
 from app.access.database import get_db, DatabaseConnection
 from app.access.permission import get_rbac_manager, RBACManager
 from app.utils.logger import get_logger
@@ -28,25 +25,20 @@ logger = get_logger()
 _cached_schema: str = ""
 
 
-def _decode_jwt_payload(token: str) -> dict:
-    """Decode JWT payload without verification (for demo)."""
+from jose import JWTError, jwt
+
+
+def _verify_jwt_token(token: str) -> dict:
+    """Verify JWT token signature and return payload."""
     try:
-        # JWT format: header.payload.signature
-        parts = token.split('.')
-        if len(parts) != 3:
-            return {}
-
-        # Decode payload (middle part)
-        payload = parts[1]
-        # Add padding if needed
-        padding = 4 - len(payload) % 4
-        if padding != 4:
-            payload += '=' * padding
-
-        decoded = base64.urlsafe_b64decode(payload)
-        return json.loads(decoded)
-    except Exception as e:
-        logger.error(f"JWT decode error: {e}")
+        payload = jwt.decode(
+            token,
+            settings.JWT_SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM],
+        )
+        return payload
+    except JWTError as e:
+        logger.warning(f"JWT verification failed: {e}")
         return {}
 
 
@@ -55,13 +47,13 @@ async def get_current_user(
 ) -> UserContext:
     """
     Get current user from JWT token using UserService.
-    This ensures consistency with the user data stored in database.
+    Verifies JWT signature before trusting the payload.
     """
     from app.services.user_service import get_user_service
 
     if credentials:
-        # Decode JWT token to get user_id
-        payload = _decode_jwt_payload(credentials.credentials)
+        # Verify JWT signature and decode payload
+        payload = _verify_jwt_token(credentials.credentials)
         user_id = payload.get("sub") or payload.get("user_id")
 
         if user_id:
@@ -70,23 +62,11 @@ async def get_current_user(
             if user_context:
                 return user_context
 
-            # User provided credentials but not found — DO NOT fall back to admin in DEBUG
-            # This prevents a malicious user from forging a JWT with a non-existent user_id
-            # to gain admin privileges
-            logger.warning(f"User not found in UserService: {user_id}, rejecting authentication")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+        # Log if user not found
+        if user_id:
+            logger.warning(f"User not found in UserService: {user_id}")
 
-    # Demo mode: return default user ONLY when no credentials provided at all
-    if settings.DEBUG:
-        user_service = get_user_service()
-        user_context = user_service.get_user_context("admin")
-        if user_context:
-            return user_context
-
+    # Demo mode disabled in production: do not fallback to default user
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid authentication credentials",
@@ -288,11 +268,6 @@ async def get_agent() -> AgentEngine:
         engine.set_table_schema(get_table_schema())
 
     return engine
-
-
-async def get_react_agent() -> ReActAgentEngine:
-    """Get ReAct agent engine instance."""
-    return await get_react_agent_engine()
 
 
 async def get_database() -> DatabaseConnection:

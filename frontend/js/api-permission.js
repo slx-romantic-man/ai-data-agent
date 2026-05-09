@@ -305,11 +305,22 @@ const apiPermissionTemplates = {
     apiCard(api) {
         const statusClass = api.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500';
         const statusText = api.is_active ? '启用' : '禁用';
+        const authTypeMap = {
+            'none': '<span class="auth-badge auth-none">无认证</span>',
+            'api_key': '<span class="auth-badge auth-apikey">API Key</span>',
+            'bearer': '<span class="auth-badge auth-bearer">Bearer</span>',
+            'basic': '<span class="auth-badge auth-basic">Basic Auth</span>',
+            'custom': '<span class="auth-badge auth-custom">自定义</span>'
+        };
+        const authBadge = authTypeMap[api.auth_type] || authTypeMap['none'];
         return `
             <div class="api-card" data-id="${api.id}">
                 <div class="api-card-header">
                     <h4 class="api-name">${api.name}</h4>
-                    <span class="api-status ${statusClass}">${statusText}</span>
+                    <div class="api-header-tags">
+                        ${authBadge}
+                        <span class="api-status ${statusClass}">${statusText}</span>
+                    </div>
                 </div>
                 <p class="api-description">${api.description || '暂无描述'}</p>
                 <div class="api-meta">
@@ -324,8 +335,16 @@ const apiPermissionTemplates = {
         `;
     },
 
-    // My API Card (User View - no auth info)
+    // My API Card (User View)
     myApiCard(api) {
+        const authTypeMap = {
+            'none': '<span class="auth-badge auth-none">无认证</span>',
+            'api_key': '<span class="auth-badge auth-apikey">API Key</span>',
+            'bearer': '<span class="auth-badge auth-bearer">Bearer</span>',
+            'basic': '<span class="auth-badge auth-basic">Basic Auth</span>',
+            'custom': '<span class="auth-badge auth-custom">自定义</span>'
+        };
+        const authBadge = authTypeMap[api.auth_type] || authTypeMap['none'];
         return `
             <div class="my-api-card">
                 <div class="my-api-header">
@@ -337,7 +356,10 @@ const apiPermissionTemplates = {
                     <h4 class="my-api-name">${api.name}</h4>
                 </div>
                 <p class="my-api-description">${api.description || '暂无描述'}</p>
-                <div class="my-api-category">${api.category_path || '未分类'}</div>
+                <div class="my-api-meta">
+                    <span class="my-api-category">${api.category_path || '未分类'}</span>
+                    ${authBadge}
+                </div>
                 ${api.endpoints && Object.keys(api.endpoints).length > 0 ? `
                     <div class="my-api-endpoints">
                         <span class="endpoints-label">可用端点:</span>

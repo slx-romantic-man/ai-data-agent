@@ -52,6 +52,9 @@ class APIEndpointConfig(BaseModel):
     # 默认参数值
     default_params: Dict[str, Any] = Field(default_factory=dict)
 
+    # 参数描述
+    params_descriptions: Dict[str, str] = Field(default_factory=dict)
+
     # 响应数据路径：从响应中提取数据的JSONPath
     response_data_path: Optional[str] = None  # 如: "data.list" 或 "result.items"
 
@@ -92,6 +95,14 @@ class APIRegistry:
         self._db = None
         self._system_apis: Dict[str, APIConfig] = {}
         self._load_system_apis()
+        # Also load DB APIs into _system_apis so they're available for suggestion generation
+        try:
+            all_apis = self.list_apis()
+            for api_id, api_config in all_apis.items():
+                if api_id not in self._system_apis:
+                    self._system_apis[api_id] = api_config
+        except Exception as e:
+            logger.error(f"Failed to load DB APIs on startup: {e}")
 
     def _run_async(self, coro):
         """Run async coroutine in sync context."""
@@ -120,7 +131,7 @@ class APIRegistry:
         self._system_apis["geo"] = APIConfig(
             name="IP地理位置API",
             description="查询IP地址的地理位置信息，包括国家、省份、城市、运营商、经纬度等",
-            base_url="https://midas.chanapp.chanjet.com",
+            base_url="https://api.example.com",
             auth=APIAuthConfig(
                 type=AuthType.NONE
             ),
@@ -173,6 +184,7 @@ class APIRegistry:
                 params_mapping=ep_data.get("params_mapping", {}),
                 required_params=ep_data.get("required_params", []),
                 default_params=ep_data.get("default_params", {}),
+                params_descriptions=ep_data.get("params_descriptions", {}),
                 response_data_path=ep_data.get("response_data_path"),
                 response_field_mapping=ep_data.get("response_field_mapping", {})
             )
@@ -498,6 +510,47 @@ API [{api_id}] - {api.name}
         result.update(user_apis)
 
         return result
+
+    def get_permitted_apis_for_user(self, user_id: str, role: str) -> Dict[str, APIConfig]:
+        """
+        Get APIs that the user has active permission for.
+        Admin users get all APIs; non-admin users are filtered by user_api_permissions.
+        """
+        return self._run_async(self._get_permitted_apis_for_user_async(user_id, role))
+
+    async def _get_permitted_apis_for_user_async(self, user_id: str, role: str) -> Dict[str, APIConfig]:
+        """Get permitted APIs for a user from database.
+        Queries user_api_permissions by user_id (not login_id) for consistency
+        with grant_permissions/revoke_permissions in api_permission_service.
+        """
+        if role == "admin":
+            return dict(self._system_apis)
+
+        db = await self._get_db()
+        async with db.get_session() as session:
+            from app.access.database.models import UserAPIPermission, APIConfig as ApiConfigDB
+            from sqlalchemy import select, and_
+
+            # Query directly by user_id (same key used in grant_permissions)
+            result = await session.execute(
+                select(ApiConfigDB)
+                .join(UserAPIPermission, ApiConfigDB.id == UserAPIPermission.api_config_id)
+                .where(
+                    and_(
+                        UserAPIPermission.user_id == user_id,
+                        UserAPIPermission.status == "active"
+                    )
+                )
+            )
+            db_configs = result.scalars().all()
+
+            permitted = {}
+            for db_config in db_configs:
+                config_id = db_config.config_id
+                if config_id not in permitted:
+                    permitted[config_id] = self._db_to_pydantic(db_config)
+
+            return permitted
 
     def register_user_api(self, user_id: str, api_id: str, config: APIConfig) -> bool:
         """Register a custom API for a specific user."""
